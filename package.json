@@ -11,13 +11,22 @@
     "test": "pnpm -r test",
     "test:rules": "pnpm --filter @triaji/rules-engine test",
     "test:normalization": "pnpm --filter @triaji/normalization test",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "seed:kb": "npx tsx supabase/seed/run-kb-seed.ts",
+    "embed:kb": "npx tsx supabase/seed/run-kb-embed.ts",
+    "test:search": "npx tsx supabase/seed/test-semantic-search.ts"
   },
   "engines": {
     "node": ">=18.17.0",
     "pnpm": ">=9.0.0"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild", "sharp"]
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp"
+    ]
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0"
   }
 }
