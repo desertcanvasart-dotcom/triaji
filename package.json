@@ -1,0 +1,23 @@
+{
+  "name": "triaji",
+  "version": "1.0.0",
+  "private": true,
+  "description": "تريجي — Arabic-First AI Medical Triage & Booking SaaS",
+  "scripts": {
+    "dev": "pnpm --filter @triaji/web dev",
+    "dev:admin": "pnpm --filter @triaji/admin dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "test:rules": "pnpm --filter @triaji/rules-engine test",
+    "test:normalization": "pnpm --filter @triaji/normalization test",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "engines": {
+    "node": ">=18.17.0",
+    "pnpm": ">=9.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "sharp"]
+  }
+}

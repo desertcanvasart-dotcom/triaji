@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    direction: rtl;
+    font-family: 'Cairo', sans-serif;
+  }
+
+  body {
+    @apply bg-white text-gray-900;
+  }
+
+  /* Ensure numbers render LTR within RTL text */
+  .ltr-nums {
+    unicode-bidi: embed;
+    direction: ltr;
+    display: inline;
+  }
+}
+
+@layer components {
+  /* Scrollbar styling for chat */
+  .chat-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .chat-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .chat-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.15);
+    border-radius: 3px;
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "@triaji/shared",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./types": "./types/index.ts",
+    "./supabase": "./supabase/client.ts",
+    "./constants": "./constants/index.ts",
+    "./constants/*": "./constants/*.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "typescript": "^5.5.0"
+  }
+}

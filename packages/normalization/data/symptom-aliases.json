@@ -1,0 +1,164 @@
+{
+  "headache": {
+    "phrases": [
+      "دماغي واجعاني",
+      "صداع",
+      "راسي بتوجعني"
+    ],
+    "codes": ["headache"]
+  },
+  "worst_headache": {
+    "phrases": [
+      "دماغي هتنفجر"
+    ],
+    "codes": ["worst_headache", "sudden_headache"]
+  },
+  "dizziness": {
+    "phrases": [
+      "دوخة",
+      "الدنيا بتلف",
+      "دايخ",
+      "مش ثابت",
+      "هقع"
+    ],
+    "codes": ["dizziness", "vertigo", "unsteadiness", "near_syncope"]
+  },
+  "chest_pain": {
+    "phrases": [
+      "ألم في صدري",
+      "صدري بيوجعني",
+      "حاسس بضغط على صدري",
+      "قلبي بيوجعني"
+    ],
+    "codes": ["chest_pain", "chest_pressure", "cardiac_pain"]
+  },
+  "breathing": {
+    "phrases": [
+      "مش قادر اتنفس",
+      "نفسي مخنوق",
+      "بتعب لما بمشي",
+      "كتمة"
+    ],
+    "codes": ["shortness_of_breath", "exertional_dyspnea"]
+  },
+  "abdominal": {
+    "phrases": [
+      "بطني واجعاني",
+      "معدتي بتوجعني",
+      "مغص شديد",
+      "حموضة"
+    ],
+    "codes": ["abdominal_pain", "stomach_pain", "cramping", "heartburn", "acid_reflux"]
+  },
+  "fever": {
+    "phrases": [
+      "حرارتي عالية",
+      "سخن",
+      "جسمي ولعان",
+      "بسخن وببرد"
+    ],
+    "codes": ["fever", "high_fever", "body_aches", "chills"]
+  },
+  "back_pain": {
+    "phrases": [
+      "ضهري واجعني",
+      "وجع في الظهر"
+    ],
+    "codes": ["back_pain"]
+  },
+  "neck_pain": {
+    "phrases": [
+      "رقبتي واجعاني"
+    ],
+    "codes": ["neck_pain"]
+  },
+  "cough": {
+    "phrases": [
+      "كحة",
+      "كحة شديدة",
+      "بكح دم"
+    ],
+    "codes": ["cough", "severe_cough", "coughing_blood", "hemoptysis"]
+  },
+  "throat": {
+    "phrases": [
+      "زوري واجعني",
+      "مش قادر ابلع"
+    ],
+    "codes": ["sore_throat", "difficulty_swallowing"]
+  },
+  "rash": {
+    "phrases": [
+      "طفح جلدي",
+      "حساسية",
+      "بشرتي بتحكني"
+    ],
+    "codes": ["rash", "allergic_reaction", "itching"]
+  },
+  "swelling": {
+    "phrases": [
+      "ورم"
+    ],
+    "codes": ["swelling"]
+  },
+  "urinary": {
+    "phrases": [
+      "بتوجعني لما بتبول",
+      "بتبول دم",
+      "حرقان في البول"
+    ],
+    "codes": ["urinary_pain", "blood_in_urine", "hematuria", "burning_urination"]
+  },
+  "general": {
+    "phrases": [
+      "تعبان",
+      "مش قادر اتحرك",
+      "وقعت",
+      "بنزف"
+    ],
+    "codes": ["fatigue", "immobility", "weakness", "fall", "trauma", "bleeding"]
+  },
+  "stroke_signs": {
+    "phrases": [
+      "وشي ملخبط",
+      "مش قادر اتكلم كويس",
+      "ايدي مش بتتحرك"
+    ],
+    "codes": ["facial_droop", "speech_difficulty", "unilateral_weakness"]
+  },
+  "consciousness": {
+    "phrases": [
+      "اغمى عليا",
+      "فقدت وعيي"
+    ],
+    "codes": ["loss_of_consciousness", "syncope"]
+  },
+  "allergic_emergency": {
+    "phrases": [
+      "مش قادر اتنفس وعندي طفح",
+      "حلقي مقفل"
+    ],
+    "codes": ["shortness_of_breath", "rash", "anaphylaxis", "throat_swelling", "airway_obstruction"]
+  },
+  "seizure": {
+    "phrases": [
+      "تشنج",
+      "اترعش"
+    ],
+    "codes": ["seizure", "tremor"]
+  },
+  "diabetic": {
+    "phrases": [
+      "سكري نازل",
+      "حاسس بدوخة وعرق"
+    ],
+    "codes": ["low_blood_sugar", "hypoglycemia", "dizziness", "sweating"]
+  },
+  "meningitis_like": {
+    "phrases": [
+      "رقبتي متيبسة",
+      "النور بيوجعني"
+    ],
+    "codes": ["neck_stiffness", "photophobia"]
+  }
+}
