@@ -50,11 +50,13 @@ export interface Doctor {
 export interface DoctorAvailability {
   id: string;
   doctor_id: string;
-  day_of_week: number;
-  start_time: string;
-  end_time: string;
-  slot_duration_minutes: number;
-  is_active: boolean;
+  tenant_id: string | null;
+  source: 'native' | 'his_sync';
+  slot_datetime: string;
+  duration_minutes: number;
+  is_booked: boolean;
+  his_slot_id: string | null;
+  created_at: string;
 }
 
 // ─── Matched Doctor (from geo-matching RPCs) ────────────────────────────────

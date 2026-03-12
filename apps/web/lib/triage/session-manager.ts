@@ -97,6 +97,7 @@ export async function updateSession(
     | 'emergency_triggered'
     | 'rag_documents_used'
     | 'recommended_doctor_id'
+    | 'booking_id'
     | 'session_end'
   >>
 ): Promise<void> {

@@ -5,11 +5,9 @@ import type { MatchedDoctor } from '@triaji/shared/types';
 interface DoctorCardProps {
   doctor: MatchedDoctor;
   urgencyLevel?: 'routine' | 'urgent' | 'emergency';
+  onBookDoctor?: (doctor: MatchedDoctor) => void;
 }
 
-/**
- * Render star rating with filled/empty stars.
- */
 function StarRating({ rating }: { rating: number }) {
   const fullStars = Math.floor(rating);
   const hasHalf = rating - fullStars >= 0.3;
@@ -24,11 +22,7 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-/**
- * Arabic initials avatar when no photo available.
- */
 function InitialsAvatar({ name }: { name: string }) {
-  // Extract first two characters of the Arabic name (after د.)
   const cleanName = name.replace(/^د\.\s*/, '');
   const parts = cleanName.split(' ');
   const initials = parts.length >= 2
@@ -42,7 +36,7 @@ function InitialsAvatar({ name }: { name: string }) {
   );
 }
 
-export default function DoctorCard({ doctor, urgencyLevel }: DoctorCardProps) {
+export default function DoctorCard({ doctor, urgencyLevel, onBookDoctor }: DoctorCardProps) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow">
       {/* Header: Avatar + Name + Specialty */}
@@ -75,7 +69,6 @@ export default function DoctorCard({ doctor, urgencyLevel }: DoctorCardProps) {
 
       {/* Info Grid */}
       <div className="space-y-2 mb-4">
-        {/* Governorate + Distance */}
         <div className="flex items-center gap-1 text-sm text-gray-600">
           <span>📍</span>
           <span>{doctor.governorateNameAr}</span>
@@ -86,12 +79,10 @@ export default function DoctorCard({ doctor, urgencyLevel }: DoctorCardProps) {
           )}
         </div>
 
-        {/* Clinic address */}
         {doctor.clinicAddressAr && (
           <p className="text-sm text-gray-500 truncate">{doctor.clinicAddressAr}</p>
         )}
 
-        {/* Fee + Rating row */}
         <div className="flex items-center justify-between">
           {doctor.consultationFeeEgp !== null && (
             <span className="text-sm font-semibold text-gray-700 ltr-nums">
@@ -109,7 +100,10 @@ export default function DoctorCard({ doctor, urgencyLevel }: DoctorCardProps) {
 
       {/* Actions */}
       <div className="flex gap-2">
-        <button className="flex-1 bg-teal-600 text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-teal-700 transition-colors">
+        <button
+          onClick={() => onBookDoctor?.(doctor)}
+          className="flex-1 bg-teal-600 text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-teal-700 transition-colors"
+        >
           احجز موعد
         </button>
         <button className="flex-1 border border-gray-300 text-gray-600 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-50 transition-colors">

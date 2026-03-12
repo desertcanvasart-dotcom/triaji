@@ -1,13 +1,14 @@
 'use client';
 
-import type { DoctorRecommendation } from '@triaji/shared/types';
+import type { DoctorRecommendation, MatchedDoctor } from '@triaji/shared/types';
 import DoctorCard from './DoctorCard';
 
 interface DoctorListProps {
   recommendation: DoctorRecommendation;
+  onBookDoctor?: (doctor: MatchedDoctor) => void;
 }
 
-export default function DoctorList({ recommendation }: DoctorListProps) {
+export default function DoctorList({ recommendation, onBookDoctor }: DoctorListProps) {
   const { doctors, specialtyNameAr, urgencyLevel } = recommendation;
 
   return (
@@ -31,7 +32,7 @@ export default function DoctorList({ recommendation }: DoctorListProps) {
               className="animate-fade-in-up"
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              <DoctorCard doctor={doctor} urgencyLevel={urgencyLevel} />
+              <DoctorCard doctor={doctor} urgencyLevel={urgencyLevel} onBookDoctor={onBookDoctor} />
             </div>
           ))}
         </div>
