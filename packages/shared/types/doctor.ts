@@ -57,6 +57,31 @@ export interface DoctorAvailability {
   is_active: boolean;
 }
 
+// ─── Matched Doctor (from geo-matching RPCs) ────────────────────────────────
+
+export interface MatchedDoctor {
+  id: string;
+  nameAr: string;
+  titleAr: string;
+  specialtyId: string;
+  specialtyNameAr: string;
+  governorateNameAr: string;
+  clinicAddressAr: string | null;
+  consultationFeeEgp: number | null;
+  ratingAvg: number;
+  ratingCount: number;
+  languages: string[];
+  photoUrl: string | null;
+  distanceKm: number;
+}
+
+export interface DoctorRecommendation {
+  doctors: MatchedDoctor[];
+  specialtyNameAr: string;
+  urgencyLevel: 'routine' | 'urgent' | 'emergency';
+  summaryAr: string;
+}
+
 // ─── Doctor Rating ───────────────────────────────────────────────────────────
 
 export interface DoctorRating {

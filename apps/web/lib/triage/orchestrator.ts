@@ -5,7 +5,7 @@
  *
  * Flow:
  * 1. Load session + patient profile
- * 2. Normalize patient message (Arabic dialect → symptom codes)
+ * 2. Normalize patient message (Arabic dialect -> symptom codes)
  * 3. EMERGENCY CHECK (deterministic, always runs first)
  * 4. Calculate BRS
  * 5. RAG retrieval
@@ -13,18 +13,19 @@
  * 7. Call Anthropic API
  * 8. Parse AI response
  * 9. Persist messages
- * 10. If complete → update session
+ * 10. If complete -> trigger doctor matching
  */
 
 import { normalize } from '@triaji/normalization';
 import { evaluate } from '@triaji/rules-engine';
 import type { RulesInput } from '@triaji/rules-engine';
-import type { PatientProfile } from '@triaji/shared/types';
+import type { PatientProfile, MatchedDoctor, DoctorRecommendation } from '@triaji/shared/types';
 
 import { retrieveByText } from '@/lib/embeddings/retriever';
 import { buildSystemPrompt, buildMessages } from './prompt-builder';
 import { parseAIResponse, type ParsedResponse } from './response-parser';
 import { callClaude } from './claude-client';
+import { matchDoctors } from './doctor-matcher';
 import {
   getSession,
   getPatientProfile,
@@ -41,13 +42,8 @@ export interface OrchestratorResult {
   isEmergency: boolean;
   /** Whether the triage session is now complete */
   sessionComplete: boolean;
-  /** Determined specialty (if session complete) */
-  specialty?: {
-    nameEn: string;
-    nameAr: string;
-    confidence: number;
-    urgency: string;
-  };
+  /** Doctor recommendation (if session complete and specialty determined) */
+  recommendation?: DoctorRecommendation;
   /** Emergency details (if emergency) */
   emergency?: {
     escalationType: string;
@@ -103,7 +99,7 @@ export async function handlePatientMessage(
     ? await getPatientProfile(session.patient_id)
     : null;
 
-  // 2. Normalize patient message (Arabic dialect → symptom codes)
+  // 2. Normalize patient message (Arabic dialect -> symptom codes)
   const normalized = normalize(patientMessage);
 
   // 3. EMERGENCY CHECK — runs before anything else, always
@@ -144,7 +140,6 @@ export async function handlePatientMessage(
   // 4. BRS is already calculated in rulesResult.brs
 
   // 5. RAG retrieval — semantic search against kb_embeddings
-  // Use the raw Arabic text for better semantic matching
   const ragDocs = await retrieveByText(patientMessage, {
     threshold: 0.50,
     maxResults: 5,
@@ -181,38 +176,6 @@ export async function handlePatientMessage(
     sessionUpdates.chief_complaint_ar = patientMessage;
   }
 
-  // 10. If session complete — update session
-  if (parsed.sessionComplete && parsed.determination) {
-    if (parsed.determination.emergency) {
-      // AI also detected emergency (shouldn't happen since rules engine runs first)
-      sessionUpdates.status = 'escalated';
-      sessionUpdates.emergency_triggered = true;
-      sessionUpdates.urgency_level = 'emergency';
-      sessionUpdates.session_end = new Date().toISOString();
-    } else {
-      // Specialty determined
-      sessionUpdates.status = 'completed';
-      sessionUpdates.urgency_level = parsed.determination.urgency;
-      sessionUpdates.specialty_confidence = parsed.determination.confidence;
-      sessionUpdates.session_end = new Date().toISOString();
-
-      // Look up specialty ID by English name
-      const { createServerClient } = await import('@triaji/shared/supabase');
-      const supabase = createServerClient();
-      const { data: specialty } = await supabase
-        .from('specialties')
-        .select('id')
-        .ilike('name_en', parsed.determination.determined_specialty_en)
-        .single();
-
-      if (specialty) {
-        sessionUpdates.determined_specialty_id = specialty.id;
-      }
-    }
-  }
-
-  await updateSession(sessionId, sessionUpdates as Parameters<typeof updateSession>[1]);
-
   // Build result
   const result: OrchestratorResult = {
     response: parsed.textResponse,
@@ -220,14 +183,59 @@ export async function handlePatientMessage(
     sessionComplete: parsed.sessionComplete,
   };
 
+  // 10. If session complete — update session + trigger doctor matching
   if (parsed.sessionComplete && parsed.determination && !parsed.determination.emergency) {
-    result.specialty = {
-      nameEn: parsed.determination.determined_specialty_en,
-      nameAr: parsed.determination.determined_specialty_ar,
-      confidence: parsed.determination.confidence,
-      urgency: parsed.determination.urgency,
-    };
+    // Specialty determined
+    sessionUpdates.status = 'completed';
+    sessionUpdates.urgency_level = parsed.determination.urgency;
+    sessionUpdates.specialty_confidence = parsed.determination.confidence;
+    sessionUpdates.session_end = new Date().toISOString();
+
+    // Look up specialty ID by English name
+    const { createServerClient } = await import('@triaji/shared/supabase');
+    const supabase = createServerClient();
+    const { data: specialty } = await supabase
+      .from('specialties')
+      .select('id, name_ar')
+      .ilike('name_en', parsed.determination.determined_specialty_en)
+      .single();
+
+    if (specialty) {
+      sessionUpdates.determined_specialty_id = specialty.id;
+
+      // Doctor matching using session location or profile governorate
+      const patientLat = session.patient_lat;
+      const patientLng = session.patient_lng;
+
+      const doctors: MatchedDoctor[] = await matchDoctors({
+        specialtyId: specialty.id as string,
+        patientLat,
+        patientLng,
+        governorateId: profile?.governorate_id ?? null,
+        tenantId: session.tenant_id ?? null,
+      });
+
+      // Save first matched doctor as recommended
+      if (doctors.length > 0 && doctors[0]) {
+        sessionUpdates.recommended_doctor_id = doctors[0].id;
+      }
+
+      result.recommendation = {
+        doctors,
+        specialtyNameAr: (specialty.name_ar as string) ?? parsed.determination.determined_specialty_ar,
+        urgencyLevel: parsed.determination.urgency,
+        summaryAr: parsed.determination.summary_ar,
+      };
+    }
+  } else if (parsed.sessionComplete && parsed.determination?.emergency) {
+    // AI detected emergency (shouldn't normally happen)
+    sessionUpdates.status = 'escalated';
+    sessionUpdates.emergency_triggered = true;
+    sessionUpdates.urgency_level = 'emergency';
+    sessionUpdates.session_end = new Date().toISOString();
   }
+
+  await updateSession(sessionId, sessionUpdates as Parameters<typeof updateSession>[1]);
 
   return result;
 }

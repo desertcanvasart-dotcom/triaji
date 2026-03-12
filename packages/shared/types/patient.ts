@@ -106,6 +106,10 @@ export interface TriageSession {
   // RAG context
   rag_documents_used: string[];
 
+  // Patient geolocation (set via browser Geolocation API)
+  patient_lat: number | null;
+  patient_lng: number | null;
+
   // Outcome
   recommended_doctor_id: string | null;
   booking_id: string | null;
@@ -121,5 +125,7 @@ export interface SessionMessage {
   content_ar: string;
   rag_context_ids: string[];
   emergency_check_result: boolean | null;
+  image_urls: string[] | null;
+  image_analysis_notes: string | null;
   created_at: string;
 }

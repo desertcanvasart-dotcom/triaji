@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import type { DoctorRecommendation } from '@triaji/shared/types';
+import DoctorList from '@/components/booking/DoctorList';
 
 interface ChatMessage {
   id: string;
@@ -12,12 +14,7 @@ interface ChatResult {
   response: string;
   isEmergency: boolean;
   sessionComplete: boolean;
-  specialty?: {
-    nameEn: string;
-    nameAr: string;
-    confidence: number;
-    urgency: string;
-  };
+  recommendation?: DoctorRecommendation;
   emergency?: {
     escalationType: string;
     reasonAr: string;
@@ -31,8 +28,8 @@ export default function ChatPage() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [sessionStatus, setSessionStatus] = useState<'idle' | 'active' | 'completed' | 'escalated'>('idle');
-  const [specialty, setSpecialty] = useState<ChatResult['specialty']>(null!);
-  const [emergencyInfo, setEmergencyInfo] = useState<ChatResult['emergency']>(null!);
+  const [recommendation, setRecommendation] = useState<DoctorRecommendation | null>(null);
+  const [emergencyInfo, setEmergencyInfo] = useState<ChatResult['emergency'] | undefined>(undefined);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -43,20 +40,50 @@ export default function ChatPage() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, scrollToBottom]);
+  }, [messages, recommendation, scrollToBottom]);
+
+  /**
+   * Send patient geolocation to the session for geo-matching.
+   */
+  const updateSessionLocation = useCallback(async (sid: string) => {
+    if (!navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          await fetch('/api/session', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sessionId: sid,
+              patientLat: pos.coords.latitude,
+              patientLng: pos.coords.longitude,
+            }),
+          });
+        } catch {
+          // Silently fail — geo is best-effort
+        }
+      },
+      () => {
+        // Geolocation denied — fallback to governorate matching
+      },
+      { enableHighAccuracy: false, timeout: 5000 }
+    );
+  }, []);
 
   // Create session and send initial greeting
   const startSession = useCallback(async () => {
-    if (sessionId) return;
     setIsLoading(true);
+    setMessages([]);
+    setRecommendation(null);
+    setEmergencyInfo(undefined);
 
     try {
-      // Create a guest patient for demo (in production, this would be an authenticated user)
       const sessionRes = await fetch('/api/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          patientId: null, // Guest mode
+          patientId: null,
           channel: 'app',
         }),
       });
@@ -66,8 +93,12 @@ export default function ChatPage() {
         throw new Error(sessionData.error ?? 'Failed to create session');
       }
 
-      setSessionId(sessionData.session.id);
+      const newSessionId = sessionData.session.id;
+      setSessionId(newSessionId);
       setSessionStatus('active');
+
+      // Request geolocation for doctor matching
+      updateSessionLocation(newSessionId);
 
       // Add AI welcome message
       setMessages([
@@ -89,12 +120,13 @@ export default function ChatPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [sessionId]);
+  }, [updateSessionLocation]);
 
   // Start session on mount
   useEffect(() => {
     startSession();
-  }, [startSession]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const sendMessage = async () => {
     const text = input.trim();
@@ -135,9 +167,11 @@ export default function ChatPage() {
       if (data.isEmergency) {
         setSessionStatus('escalated');
         setEmergencyInfo(data.emergency);
-      } else if (data.sessionComplete && data.specialty) {
+      } else if (data.sessionComplete && data.recommendation) {
         setSessionStatus('completed');
-        setSpecialty(data.specialty);
+        setRecommendation(data.recommendation);
+      } else if (data.sessionComplete) {
+        setSessionStatus('completed');
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'خطأ غير معروف';
@@ -160,6 +194,12 @@ export default function ChatPage() {
       e.preventDefault();
       sendMessage();
     }
+  };
+
+  const handleNewSession = () => {
+    setSessionId(null);
+    setSessionStatus('idle');
+    startSession();
   };
 
   return (
@@ -213,24 +253,19 @@ export default function ChatPage() {
             </div>
           )}
 
-          {/* Specialty Result */}
-          {sessionStatus === 'completed' && specialty && (
-            <div className="bg-teal-50 border-2 border-teal-500 rounded-xl p-4 text-center">
-              <p className="text-teal-700 font-bold text-lg mb-2">
-                تم تحديد التخصص المناسب
-              </p>
-              <p className="text-teal-800 text-xl font-bold mb-1">
-                {specialty.nameAr}
-              </p>
-              <p className="text-teal-600 text-sm mb-2">
-                ({specialty.nameEn})
-              </p>
-              <p className="text-gray-600 text-sm">
-                درجة الثقة: {(specialty.confidence * 100).toFixed(0)}%
-              </p>
-              {/* Doctor booking button placeholder — Phase 6 */}
-              <button className="mt-4 bg-teal-600 text-white px-6 py-3 rounded-xl font-semibold opacity-50 cursor-not-allowed">
-                احجز موعد مع دكتور (قريبًا)
+          {/* Doctor Recommendation */}
+          {sessionStatus === 'completed' && recommendation && (
+            <DoctorList recommendation={recommendation} />
+          )}
+
+          {/* New Session Button */}
+          {(sessionStatus === 'completed' || sessionStatus === 'escalated') && (
+            <div className="text-center pt-2 pb-4">
+              <button
+                onClick={handleNewSession}
+                className="bg-teal-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-teal-700 transition-colors"
+              >
+                بدء محادثة جديدة
               </button>
             </div>
           )}

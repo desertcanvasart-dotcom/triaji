@@ -39,6 +39,8 @@ export type {
   Doctor,
   DoctorAvailability,
   DoctorRating,
+  MatchedDoctor,
+  DoctorRecommendation,
 } from './doctor';
 
 // ─── Booking ─────────────────────────────────────────────────────────────────
