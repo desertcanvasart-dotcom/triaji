@@ -1,4 +1,4 @@
-import type { BRSResult, EmergencyResult } from './types.js';
+import type { BRSResult, EmergencyResult } from './types';
 
 /**
  * Determine the urgency level based on emergency result and BRS.

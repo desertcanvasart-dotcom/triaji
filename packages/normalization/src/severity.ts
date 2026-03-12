@@ -1,4 +1,4 @@
-import type { SeverityLevel } from './types.js';
+import type { SeverityLevel } from './types';
 
 interface SeverityMatch {
   level: SeverityLevel;

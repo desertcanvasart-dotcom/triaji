@@ -1,4 +1,4 @@
-import type { RulesInput, BRSResult } from './types.js';
+import type { RulesInput, BRSResult } from './types';
 
 interface BRSFactor {
   name: string;

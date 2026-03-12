@@ -1,4 +1,4 @@
-import type { RulesInput, EmergencyResult } from './types.js';
+import type { RulesInput, EmergencyResult } from './types';
 
 interface EmergencyRule {
   name: string;

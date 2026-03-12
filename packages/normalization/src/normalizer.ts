@@ -1,7 +1,7 @@
-import type { NormalizedResult } from './types.js';
-import { dialectMap } from './dialect-map.js';
-import { extractBodyParts } from './body-parts.js';
-import { extractSeverity } from './severity.js';
+import type { NormalizedResult } from './types';
+import { dialectMap } from './dialect-map';
+import { extractBodyParts } from './body-parts';
+import { extractSeverity } from './severity';
 
 /**
  * Strips Arabic diacritics (tashkeel) from text.

@@ -1,7 +1,7 @@
-import type { RulesInput, RulesResult } from './types.js';
-import { checkEmergency } from './emergency.js';
-import { calculateBRS } from './brs.js';
-import { determineUrgency } from './urgency.js';
+import type { RulesInput, RulesResult } from './types';
+import { checkEmergency } from './emergency';
+import { calculateBRS } from './brs';
+import { determineUrgency } from './urgency';
 
 /**
  * Main rules evaluator.
