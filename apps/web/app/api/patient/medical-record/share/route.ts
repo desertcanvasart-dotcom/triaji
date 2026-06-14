@@ -23,19 +23,18 @@ export async function POST() {
 
   // Store the share record
   const supabase = createServerClient();
-  // Store share record (best-effort — table may not exist yet)
-  try {
-    await supabase.from('medical_record_shares').insert({
-      token,
-      patient_id: patient.patientId,
-      expires_at: expiresAt.toISOString(),
-    });
-  } catch {
-    // Table might not exist yet — token-only approach
+  const { error: insertError } = await supabase.from('medical_record_shares').insert({
+    token,
+    patient_id: patient.patientId,
+    expires_at: expiresAt.toISOString(),
+  });
+  if (insertError) {
+    return NextResponse.json({ error: 'Failed to create share link' }, { status: 500 });
   }
 
   const baseUrl = process.env['NEXT_PUBLIC_APP_URL'] ?? 'https://triajji.com';
-  const shareUrl = `${baseUrl}/ar/records/shared?token=${token}`;
+  // Points at the viewer page app/ar/share/medical-record/[token]/page.tsx
+  const shareUrl = `${baseUrl}/ar/share/medical-record/${token}`;
 
   return NextResponse.json({
     shareUrl,
