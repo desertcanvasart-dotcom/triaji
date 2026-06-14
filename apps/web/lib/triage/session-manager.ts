@@ -1,15 +1,24 @@
 /**
  * Session Manager
  * CRUD operations for triage sessions and messages in Supabase.
+ * Uses Redis session cache to reduce Supabase reads during active conversations.
  */
 
 import { createServerClient } from '@triaji/shared/supabase';
 import type { TriageSession, SessionMessage, PatientProfile } from '@triaji/shared/types';
+import {
+  getCachedSession,
+  cacheSession,
+  updateCachedSession,
+  invalidateSessionCache,
+} from '@/lib/cache/session-cache';
 
 export interface CreateSessionInput {
   patientId: string | null;
   tenantId?: string;
-  channel?: 'app' | 'website_widget' | 'hospital_kiosk' | 'api';
+  channel?: 'app' | 'website_widget' | 'hospital_kiosk' | 'api' | 'phone_call';
+  callerPhone?: string;
+  callSid?: string;
 }
 
 /**
@@ -59,13 +68,25 @@ export async function createSession(input: CreateSessionInput): Promise<TriageSe
     .single();
 
   if (error) throw new Error(`Failed to create session: ${error.message}`);
-  return data as TriageSession;
+
+  const session = data as TriageSession;
+
+  // Cache the new session in Redis
+  await cacheSession(session);
+
+  return session;
 }
 
 /**
  * Get a session by ID.
+ * Checks Redis cache first, falls back to Supabase on cache miss.
  */
 export async function getSession(sessionId: string): Promise<TriageSession | null> {
+  // Check Redis cache first
+  const cached = await getCachedSession(sessionId);
+  if (cached) return cached;
+
+  // Cache miss — load from Supabase
   const supabase = createServerClient();
 
   const { data, error } = await supabase
@@ -78,7 +99,15 @@ export async function getSession(sessionId: string): Promise<TriageSession | nul
     if (error.code === 'PGRST116') return null; // Not found
     throw new Error(`Failed to get session: ${error.message}`);
   }
-  return data as TriageSession;
+
+  const session = data as TriageSession;
+
+  // Cache for future reads (only cache active sessions)
+  if (session.status === 'active') {
+    await cacheSession(session);
+  }
+
+  return session;
 }
 
 /**
@@ -99,6 +128,13 @@ export async function updateSession(
     | 'recommended_doctor_id'
     | 'booking_id'
     | 'session_end'
+    | 'call_sid'
+    | 'call_duration_seconds'
+    | 'recording_url'
+    | 'transcript_full'
+    | 'handoff_triggered'
+    | 'handoff_reason'
+    | 'detected_lang'
   >>
 ): Promise<void> {
   const supabase = createServerClient();
@@ -109,6 +145,14 @@ export async function updateSession(
     .eq('id', sessionId);
 
   if (error) throw new Error(`Failed to update session: ${error.message}`);
+
+  // Update Redis cache — invalidate on terminal states, update otherwise
+  const terminalStatuses = ['completed', 'escalated', 'abandoned'];
+  if (updates.status && terminalStatuses.includes(updates.status)) {
+    await invalidateSessionCache(sessionId);
+  } else {
+    await updateCachedSession(sessionId, updates);
+  }
 }
 
 /**
@@ -124,6 +168,7 @@ export async function markSessionEscalated(
     urgency_level: 'emergency',
     session_end: new Date().toISOString(),
   });
+  // updateSession already invalidates the cache for terminal states
 }
 
 /**

@@ -1,11 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import type { MatchedDoctor } from '@triaji/shared/types';
 
 interface DoctorCardProps {
   doctor: MatchedDoctor;
   urgencyLevel?: 'routine' | 'urgent' | 'emergency';
-  onBookDoctor?: (doctor: MatchedDoctor) => void;
+  onBookDoctor?: (doctor: MatchedDoctor, appointmentType: 'in_person' | 'telehealth') => void;
 }
 
 function StarRating({ rating }: { rating: number }) {
@@ -37,6 +38,8 @@ function InitialsAvatar({ name }: { name: string }) {
 }
 
 export default function DoctorCard({ doctor, urgencyLevel, onBookDoctor }: DoctorCardProps) {
+  const [selectedType, setSelectedType] = useState<'in_person' | 'telehealth'>('in_person');
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow">
       {/* Header: Avatar + Name + Specialty */}
@@ -64,6 +67,12 @@ export default function DoctorCard({ doctor, urgencyLevel, onBookDoctor }: Docto
           </div>
           <p className="text-sm text-teal-700 font-medium">{doctor.titleAr}</p>
           <p className="text-sm text-gray-500">{doctor.specialtyNameAr}</p>
+          {doctor.insuranceAccepted && doctor.insuranceProviderNameAr && (
+            <p className="text-sm text-green-600 font-medium flex items-center gap-1">
+              <span>&#10003;</span>
+              <span>يقبل {doctor.insuranceProviderNameAr}</span>
+            </p>
+          )}
         </div>
       </div>
 
@@ -86,7 +95,9 @@ export default function DoctorCard({ doctor, urgencyLevel, onBookDoctor }: Docto
         <div className="flex items-center justify-between">
           {doctor.consultationFeeEgp !== null && (
             <span className="text-sm font-semibold text-gray-700 ltr-nums">
-              {doctor.consultationFeeEgp} جنيه للكشف
+              {selectedType === 'telehealth' && doctor.telehealthFeeEgp !== null
+                ? `${doctor.telehealthFeeEgp} جنيه أونلاين`
+                : `${doctor.consultationFeeEgp} جنيه للكشف`}
             </span>
           )}
           <div className="flex items-center gap-1">
@@ -98,10 +109,36 @@ export default function DoctorCard({ doctor, urgencyLevel, onBookDoctor }: Docto
         </div>
       </div>
 
+      {/* Telehealth Type Selector */}
+      {doctor.offersTelehealth && (
+        <div className="flex gap-2 mb-3">
+          <button
+            onClick={() => setSelectedType('in_person')}
+            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              selectedType === 'in_person'
+                ? 'bg-teal-600 text-white'
+                : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            عيادة
+          </button>
+          <button
+            onClick={() => setSelectedType('telehealth')}
+            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              selectedType === 'telehealth'
+                ? 'bg-teal-600 text-white'
+                : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            أونلاين
+          </button>
+        </div>
+      )}
+
       {/* Actions */}
       <div className="flex gap-2">
         <button
-          onClick={() => onBookDoctor?.(doctor)}
+          onClick={() => onBookDoctor?.(doctor, selectedType)}
           className="flex-1 bg-teal-600 text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-teal-700 transition-colors"
         >
           احجز موعد

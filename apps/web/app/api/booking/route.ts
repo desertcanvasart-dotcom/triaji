@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBooking, SlotTakenError, SlotNotFoundError } from '@/lib/booking/engine';
+import { createBooking, createBookingPaymentPending, SlotTakenError, SlotNotFoundError } from '@/lib/booking/engine';
 
 interface BookingRequestBody {
   sessionId: string;
@@ -8,6 +8,7 @@ interface BookingRequestBody {
   patientName: string;
   phoneNumber: string;
   notes?: string;
+  payment_requested?: boolean;
 }
 
 /**
@@ -21,7 +22,7 @@ function isValidEgyptianPhone(phone: string): boolean {
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as BookingRequestBody;
-    const { sessionId, doctorId, slotId, patientName, phoneNumber, notes } = body;
+    const { sessionId, doctorId, slotId, patientName, phoneNumber, notes, payment_requested } = body;
 
     // Validate required fields
     if (!sessionId || !doctorId || !slotId || !patientName || !phoneNumber) {
@@ -47,6 +48,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // ─── Payment-requested flow ───────────────────────────────────────
+    if (payment_requested) {
+      const result = await createBookingPaymentPending({
+        sessionId,
+        doctorId,
+        slotId,
+        patientName: patientName.trim(),
+        phoneNumber: phoneNumber.trim(),
+        notes,
+      });
+
+      return NextResponse.json(result);
+    }
+
+    // ─── Standard flow (no payment) ──────────────────────────────────
     const result = await createBooking({
       sessionId,
       doctorId,

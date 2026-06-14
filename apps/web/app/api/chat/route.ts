@@ -16,6 +16,7 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as {
       sessionId?: string;
       message?: string;
+      lang?: 'ar' | 'en';
     };
 
     if (!body.sessionId) {
@@ -32,7 +33,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await handlePatientMessage(body.sessionId, body.message.trim());
+    const lang = body.lang === 'en' ? 'en' : 'ar';
+    const result = await handlePatientMessage(body.sessionId, body.message.trim(), lang);
 
     return NextResponse.json(result);
   } catch (err) {

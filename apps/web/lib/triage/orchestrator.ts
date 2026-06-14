@@ -19,13 +19,17 @@
 import { normalize } from '@triaji/normalization';
 import { evaluate } from '@triaji/rules-engine';
 import type { RulesInput } from '@triaji/rules-engine';
-import type { PatientProfile, MatchedDoctor, DoctorRecommendation } from '@triaji/shared/types';
+import type { PatientProfile, MatchedDoctor, DoctorRecommendation, StructuredPatientProfile } from '@triaji/shared/types';
+import type { Lang } from '@triaji/shared/i18n';
 
+import { generateSessionSummary } from '@/lib/history/summary-generator';
+import { getRecentHealthRecords } from '@/lib/records/analyser';
 import { retrieveByText } from '@/lib/embeddings/retriever';
 import { buildSystemPrompt, buildMessages } from './prompt-builder';
 import { parseAIResponse, type ParsedResponse } from './response-parser';
 import { callClaude } from './claude-client';
 import { matchDoctors } from './doctor-matcher';
+import { loadFullPatientProfile } from './profile-loader';
 import {
   getSession,
   getPatientProfile,
@@ -58,8 +62,14 @@ export interface OrchestratorResult {
 function buildRulesInput(
   symptoms: string[],
   rawText: string,
-  profile: PatientProfile | null
+  profile: PatientProfile | null,
+  structured?: StructuredPatientProfile | null
 ): RulesInput {
+  // Build family history from structured data
+  const familyHistoryCodes = new Set(
+    structured?.familyHistory?.map((fh) => fh.condition_code) ?? []
+  );
+
   return {
     symptoms,
     rawText,
@@ -74,6 +84,14 @@ function buildRulesInput(
       previousHeartAttack: profile?.previous_heart_attack ?? false,
       brs: profile?.background_risk_score ?? 0,
       riskLevel: profile?.risk_level ?? 'low',
+      familyHistory: {
+        heartDisease: familyHistoryCodes.has('heart_disease'),
+        heartAttack: familyHistoryCodes.has('heart_attack'),
+        stroke: familyHistoryCodes.has('stroke'),
+        hypertension: familyHistoryCodes.has('hypertension'),
+        diabetes: familyHistoryCodes.has('diabetes'),
+        cancer: familyHistoryCodes.has('cancer'),
+      },
     },
   };
 }
@@ -84,7 +102,8 @@ function buildRulesInput(
  */
 export async function handlePatientMessage(
   sessionId: string,
-  patientMessage: string
+  patientMessage: string,
+  lang: Lang = 'ar'
 ): Promise<OrchestratorResult> {
   // 1. Load session state + patient profile
   const session = await getSession(sessionId);
@@ -95,15 +114,19 @@ export async function handlePatientMessage(
     throw new Error(`Session is not active (status: ${session.status})`);
   }
 
-  const profile = session.patient_id
-    ? await getPatientProfile(session.patient_id)
+  const fullProfile = session.patient_id
+    ? await loadFullPatientProfile(session.patient_id)
     : null;
+  const profile = fullProfile?.base ?? (
+    session.patient_id ? await getPatientProfile(session.patient_id) : null
+  );
+  const structured = fullProfile?.structured ?? null;
 
   // 2. Normalize patient message (Arabic dialect -> symptom codes)
   const normalized = normalize(patientMessage);
 
   // 3. EMERGENCY CHECK — runs before anything else, always
-  const rulesInput = buildRulesInput(normalized.symptoms, patientMessage, profile);
+  const rulesInput = buildRulesInput(normalized.symptoms, patientMessage, profile, structured);
   const rulesResult = evaluate(rulesInput);
 
   if (rulesResult.emergency.triggered) {
@@ -145,8 +168,28 @@ export async function handlePatientMessage(
     maxResults: 5,
   });
 
-  // 6. Build LLM prompt
-  const systemPrompt = buildSystemPrompt(profile, rulesResult.brs, ragDocs);
+  // 6. Build LLM prompt (language-aware)
+  let systemPrompt = buildSystemPrompt(profile, rulesResult.brs, ragDocs, lang, structured);
+
+  // 6b. Inject recent health records context
+  if (session.patient_id) {
+    const recentRecords = await getRecentHealthRecords(session.patient_id, 90);
+    if (recentRecords.length > 0) {
+      const summaryField = lang === 'en' ? 'summary_en' : 'summary_ar';
+      const headerLabel = lang === 'en'
+        ? '--- Recent Patient Health Records ---'
+        : '--- السجل الطبي الأخير للمريض ---';
+      const footerLabel = lang === 'en'
+        ? '--- End of Records ---'
+        : '--- نهاية السجل ---';
+      const recordLines = recentRecords.map((r) => {
+        const summary = r[summaryField] ?? r.summary_ar ?? '';
+        return `• ${r.record_type}: ${summary}`;
+      });
+      systemPrompt += `\n${headerLabel}\n${recordLines.join('\n')}\n${footerLabel}\n`;
+    }
+  }
+
   const history = await getSessionMessages(sessionId);
   const messages = buildMessages(history, patientMessage);
 
@@ -191,14 +234,43 @@ export async function handlePatientMessage(
     sessionUpdates.specialty_confidence = parsed.determination.confidence;
     sessionUpdates.session_end = new Date().toISOString();
 
-    // Look up specialty ID by English name
+    // Look up specialty ID by English name — try exact match first, then fuzzy
     const { createServerClient } = await import('@triaji/shared/supabase');
     const supabase = createServerClient();
-    const { data: specialty } = await supabase
+
+    const aiSpecialty = parsed.determination.determined_specialty_en.trim();
+
+    // 1) Exact case-insensitive match
+    let { data: specialty } = await supabase
       .from('specialties')
       .select('id, name_ar')
-      .ilike('name_en', parsed.determination.determined_specialty_en)
+      .ilike('name_en', aiSpecialty)
       .single();
+
+    // 2) Partial/fuzzy match — Claude may say "Orthopedic Surgery" but DB has "Orthopedics"
+    if (!specialty) {
+      const { data: allSpecialties } = await supabase
+        .from('specialties')
+        .select('id, name_ar, name_en');
+
+      if (allSpecialties && allSpecialties.length > 0) {
+        const needle = aiSpecialty.toLowerCase();
+        // Find the best match: either the DB name contains the AI name or vice versa
+        specialty = allSpecialties.find((s) => {
+          const dbName = (s.name_en as string).toLowerCase();
+          return dbName.includes(needle) || needle.includes(dbName);
+        }) ?? null;
+
+        // 3) Word-level overlap fallback (e.g. "Gastro" matches "Gastroenterology")
+        if (!specialty) {
+          const needleWords = needle.split(/[\s&,]+/).filter((w) => w.length > 3);
+          specialty = allSpecialties.find((s) => {
+            const dbName = (s.name_en as string).toLowerCase();
+            return needleWords.some((w) => dbName.includes(w));
+          }) ?? null;
+        }
+      }
+    }
 
     if (specialty) {
       sessionUpdates.determined_specialty_id = specialty.id;
@@ -213,6 +285,7 @@ export async function handlePatientMessage(
         patientLng,
         governorateId: profile?.governorate_id ?? null,
         tenantId: session.tenant_id ?? null,
+        insuranceCode: profile?.insurance_provider_code ?? null,
       });
 
       // Save first matched doctor as recommended
@@ -226,6 +299,17 @@ export async function handlePatientMessage(
         urgencyLevel: parsed.determination.urgency,
         summaryAr: parsed.determination.summary_ar,
       };
+    } else {
+      // Specialty not found in DB — still complete the session with AI's Arabic name
+      console.error(`[Orchestrator] Specialty not found in DB: "${aiSpecialty}"`);
+
+      // Fall back to empty doctor list with the AI-provided specialty name
+      result.recommendation = {
+        doctors: [],
+        specialtyNameAr: parsed.determination.determined_specialty_ar,
+        urgencyLevel: parsed.determination.urgency,
+        summaryAr: parsed.determination.summary_ar,
+      };
     }
   } else if (parsed.sessionComplete && parsed.determination?.emergency) {
     // AI detected emergency (shouldn't normally happen)
@@ -236,6 +320,13 @@ export async function handlePatientMessage(
   }
 
   await updateSession(sessionId, sessionUpdates as Parameters<typeof updateSession>[1]);
+
+  // Auto-generate session summary for patient history
+  if (result.sessionComplete) {
+    generateSessionSummary(sessionId).catch((err) => {
+      console.error('[History] Failed to generate session summary:', err);
+    });
+  }
 
   return result;
 }

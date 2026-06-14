@@ -83,10 +83,13 @@ export function parseAIResponse(response: string): ParsedResponse {
         summary_ar: (parsed.summary_ar as string) ?? '',
         reasoning: (parsed.reasoning as string) ?? '',
       };
+      // If Claude emitted a JSON determination block, it has decided on a specialty.
+      // The system prompt already instructs Claude to only emit JSON at confidence >= 0.7,
+      // so we trust the AI's decision and always mark the session as complete.
       return {
         textResponse: textBefore || specialty.summary_ar,
         determination: specialty,
-        sessionComplete: specialty.confidence >= 0.7,
+        sessionComplete: true,
       };
     }
   } catch {

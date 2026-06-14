@@ -14,6 +14,7 @@ export interface DoctorMatchInput {
   governorateId: string | null;
   tenantId: string | null;
   radiusKm?: number;
+  insuranceCode?: string | null;
 }
 
 interface RpcDoctorRow {
@@ -30,6 +31,8 @@ interface RpcDoctorRow {
   languages: string[] | null;
   photo_url: string | null;
   distance_km: number | null;
+  offers_telehealth?: boolean;
+  telehealth_fee_egp?: number | null;
 }
 
 function mapDoctor(d: RpcDoctorRow): MatchedDoctor {
@@ -47,7 +50,61 @@ function mapDoctor(d: RpcDoctorRow): MatchedDoctor {
     languages: d.languages ?? ['ar'],
     photoUrl: d.photo_url,
     distanceKm: d.distance_km ?? 0,
+    insuranceAccepted: false,
+    offersTelehealth: d.offers_telehealth ?? false,
+    telehealthFeeEgp: d.telehealth_fee_egp ?? null,
   };
+}
+
+/**
+ * Enrich matched doctors with insurance acceptance information.
+ * Sorts insurance-accepting doctors first.
+ */
+async function enrichWithInsurance(
+  doctors: MatchedDoctor[],
+  insuranceCode: string | null
+): Promise<MatchedDoctor[]> {
+  if (!insuranceCode || insuranceCode === 'no_insurance' || doctors.length === 0) {
+    return doctors.map((d) => ({ ...d, insuranceAccepted: false }));
+  }
+
+  const supabase = createServerClient();
+  const doctorIds = doctors.map((d) => d.id);
+
+  // Get insurance provider ID
+  const { data: provider } = await supabase
+    .from('insurance_providers')
+    .select('id, name_ar')
+    .eq('code', insuranceCode)
+    .single();
+
+  if (!provider) {
+    return doctors.map((d) => ({ ...d, insuranceAccepted: false }));
+  }
+
+  // Check which doctors accept this insurance
+  const { data: acceptingDoctors } = await supabase
+    .from('doctor_insurance')
+    .select('doctor_id')
+    .in('doctor_id', doctorIds)
+    .eq('insurance_provider_id', provider.id)
+    .eq('is_active', true);
+
+  const acceptingIds = new Set((acceptingDoctors ?? []).map((d) => d.doctor_id as string));
+  const providerNameAr = provider.name_ar as string;
+
+  // Sort: insurance-accepting doctors first, then the rest
+  const enriched = doctors.map((d) => ({
+    ...d,
+    insuranceAccepted: acceptingIds.has(d.id),
+    insuranceProviderNameAr: acceptingIds.has(d.id) ? providerNameAr : undefined,
+  }));
+
+  return enriched.sort((a, b) => {
+    if (a.insuranceAccepted && !b.insuranceAccepted) return -1;
+    if (!a.insuranceAccepted && b.insuranceAccepted) return 1;
+    return 0;
+  });
 }
 
 /**
@@ -58,6 +115,7 @@ function mapDoctor(d: RpcDoctorRow): MatchedDoctor {
  */
 export async function matchDoctors(input: DoctorMatchInput): Promise<MatchedDoctor[]> {
   const supabase = createServerClient();
+  let matched: MatchedDoctor[] = [];
 
   // Strategy 1: precise geo-match if lat/lng available
   if (input.patientLat !== null && input.patientLng !== null) {
@@ -71,11 +129,11 @@ export async function matchDoctors(input: DoctorMatchInput): Promise<MatchedDoct
     });
 
     if (!error && data && (data as RpcDoctorRow[]).length > 0) {
-      return (data as RpcDoctorRow[]).map(mapDoctor);
+      matched = (data as RpcDoctorRow[]).map(mapDoctor);
     }
 
     // Expand radius to 200km if no results within initial radius
-    if (!error && (!data || (data as RpcDoctorRow[]).length === 0)) {
+    if (matched.length === 0 && !error && (!data || (data as RpcDoctorRow[]).length === 0)) {
       const { data: wider } = await supabase.rpc('find_doctors_near', {
         p_specialty_id: input.specialtyId,
         p_patient_lat: input.patientLat,
@@ -85,13 +143,13 @@ export async function matchDoctors(input: DoctorMatchInput): Promise<MatchedDoct
         p_limit: 5,
       });
       if (wider && (wider as RpcDoctorRow[]).length > 0) {
-        return (wider as RpcDoctorRow[]).map(mapDoctor);
+        matched = (wider as RpcDoctorRow[]).map(mapDoctor);
       }
     }
   }
 
   // Strategy 2: governorate fallback if no precise location
-  if (input.governorateId) {
+  if (matched.length === 0 && input.governorateId) {
     const { data } = await supabase.rpc('find_doctors_by_governorate', {
       p_specialty_id: input.specialtyId,
       p_governorate_id: input.governorateId,
@@ -99,49 +157,55 @@ export async function matchDoctors(input: DoctorMatchInput): Promise<MatchedDoct
       p_limit: 5,
     });
     if (data && (data as RpcDoctorRow[]).length > 0) {
-      return (data as RpcDoctorRow[]).map(mapDoctor);
+      matched = (data as RpcDoctorRow[]).map(mapDoctor);
     }
   }
 
   // Strategy 3: specialty-only fallback (any doctor in Egypt for this specialty)
-  const { data: fallback } = await supabase
-    .from('doctors')
-    .select('id, name_ar, title_ar, specialty_id, clinic_address_ar, consultation_fee_egp, rating_avg, rating_count, languages, photo_url, governorate_id')
-    .eq('specialty_id', input.specialtyId)
-    .eq('is_active', true)
-    .eq('accepting_new_patients', true)
-    .order('rating_avg', { ascending: false })
-    .limit(5);
+  if (matched.length === 0) {
+    const { data: fallback } = await supabase
+      .from('doctors')
+      .select('id, name_ar, title_ar, specialty_id, clinic_address_ar, consultation_fee_egp, rating_avg, rating_count, languages, photo_url, governorate_id, offers_telehealth, telehealth_fee_egp')
+      .eq('specialty_id', input.specialtyId)
+      .eq('is_active', true)
+      .eq('accepting_new_patients', true)
+      .order('rating_avg', { ascending: false })
+      .limit(5);
 
-  if (fallback && fallback.length > 0) {
-    // Need to fetch specialty and governorate names separately
-    const specialtyIds = [...new Set(fallback.map((d) => d.specialty_id as string))];
-    const govIds = [...new Set(fallback.map((d) => d.governorate_id as string))];
+    if (fallback && fallback.length > 0) {
+      // Need to fetch specialty and governorate names separately
+      const specialtyIds = [...new Set(fallback.map((d) => d.specialty_id as string))];
+      const govIds = [...new Set(fallback.map((d) => d.governorate_id as string))];
 
-    const [{ data: specs }, { data: govs }] = await Promise.all([
-      supabase.from('specialties').select('id, name_ar').in('id', specialtyIds),
-      supabase.from('governorates').select('id, name_ar').in('id', govIds),
-    ]);
+      const [{ data: specs }, { data: govs }] = await Promise.all([
+        supabase.from('specialties').select('id, name_ar').in('id', specialtyIds),
+        supabase.from('governorates').select('id, name_ar').in('id', govIds),
+      ]);
 
-    const specMap = new Map((specs ?? []).map((s) => [s.id as string, s.name_ar as string]));
-    const govMap = new Map((govs ?? []).map((g) => [g.id as string, g.name_ar as string]));
+      const specMap = new Map((specs ?? []).map((s) => [s.id as string, s.name_ar as string]));
+      const govMap = new Map((govs ?? []).map((g) => [g.id as string, g.name_ar as string]));
 
-    return fallback.map((d) => ({
-      id: d.id as string,
-      nameAr: d.name_ar as string,
-      titleAr: (d.title_ar as string | null) ?? 'دكتور',
-      specialtyId: d.specialty_id as string,
-      specialtyNameAr: specMap.get(d.specialty_id as string) ?? '',
-      governorateNameAr: govMap.get(d.governorate_id as string) ?? '',
-      clinicAddressAr: d.clinic_address_ar as string | null,
-      consultationFeeEgp: d.consultation_fee_egp as number | null,
-      ratingAvg: (d.rating_avg as number | null) ?? 0,
-      ratingCount: (d.rating_count as number | null) ?? 0,
-      languages: (d.languages as string[] | null) ?? ['ar'],
-      photoUrl: d.photo_url as string | null,
-      distanceKm: 0,
-    }));
+      matched = fallback.map((d) => ({
+        id: d.id as string,
+        nameAr: d.name_ar as string,
+        titleAr: (d.title_ar as string | null) ?? 'دكتور',
+        specialtyId: d.specialty_id as string,
+        specialtyNameAr: specMap.get(d.specialty_id as string) ?? '',
+        governorateNameAr: govMap.get(d.governorate_id as string) ?? '',
+        clinicAddressAr: d.clinic_address_ar as string | null,
+        consultationFeeEgp: d.consultation_fee_egp as number | null,
+        ratingAvg: (d.rating_avg as number | null) ?? 0,
+        ratingCount: (d.rating_count as number | null) ?? 0,
+        languages: (d.languages as string[] | null) ?? ['ar'],
+        photoUrl: d.photo_url as string | null,
+        distanceKm: 0,
+        insuranceAccepted: false,
+        offersTelehealth: (d.offers_telehealth as boolean | null) ?? false,
+        telehealthFeeEgp: (d.telehealth_fee_egp as number | null) ?? null,
+      }));
+    }
   }
 
-  return [];
+  // Enrich all matched doctors with insurance information
+  return enrichWithInsurance(matched, input.insuranceCode ?? null);
 }
