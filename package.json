@@ -16,6 +16,7 @@
     "typecheck": "pnpm -r typecheck",
     "seed:kb": "npx tsx supabase/seed/run-kb-seed.ts",
     "seed:slots": "npx tsx supabase/seed/refresh-availability.ts",
+    "seed:doctors": "npx tsx supabase/seed/seed-specialty-doctors.ts",
     "embed:kb": "npx tsx supabase/seed/run-kb-embed.ts",
     "test:search": "npx tsx supabase/seed/test-semantic-search.ts"
   },
