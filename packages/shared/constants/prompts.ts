@@ -62,7 +62,7 @@ export const TRIAGE_SYSTEM_PROMPT = `أنت "ترياچي" — مرشد طبي �
 لما تكون واثق من التخصص المناسب (ثقة ≥ 0.7)، اعمل output بالشكل ده:
 
 ## التخصصات المتاحة (استخدم الأسماء دي بالظبط):
-Internal Medicine | Cardiology | Neurology | Orthopedics | Dermatology | ENT | Ophthalmology | Urology | Gastroenterology | Pulmonology | Pediatrics | Obstetrics & Gynecology | Psychiatry | General Surgery | Emergency Medicine | Family Medicine | Oncology
+Internal Medicine | Cardiology | Neurology | Orthopaedics | Dermatology | ENT | Ophthalmology | Urology | Gastroenterology | Pulmonology | Paediatrics | Gynaecology | Psychiatry | General Surgery | Emergency Medicine | Family Medicine | Oncology
 
 \`\`\`json
 {
@@ -140,7 +140,7 @@ Send an emergency message immediately with this output:
 When you are confident about the appropriate specialty (confidence >= 0.7), output:
 
 ## Valid specialties (use these exact English names):
-Internal Medicine | Cardiology | Neurology | Orthopedics | Dermatology | ENT | Ophthalmology | Urology | Gastroenterology | Pulmonology | Pediatrics | Obstetrics & Gynecology | Psychiatry | General Surgery | Emergency Medicine | Family Medicine | Oncology
+Internal Medicine | Cardiology | Neurology | Orthopaedics | Dermatology | ENT | Ophthalmology | Urology | Gastroenterology | Pulmonology | Paediatrics | Gynaecology | Psychiatry | General Surgery | Emergency Medicine | Family Medicine | Oncology
 
 \`\`\`json
 {

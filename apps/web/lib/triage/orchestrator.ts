@@ -243,7 +243,7 @@ export async function handlePatientMessage(
     // 1) Exact case-insensitive match
     let { data: specialty } = await supabase
       .from('specialties')
-      .select('id, name_ar')
+      .select('id, name_ar, name_en')
       .ilike('name_en', aiSpecialty)
       .single();
 
@@ -272,6 +272,21 @@ export async function handlePatientMessage(
       }
     }
 
+    // 4) Final fallback — default to a general specialty that has doctors, so a
+    //    completed non-emergency triage never returns zero recommendations
+    //    (e.g. the AI may emit "Family Medicine", which isn't in the catalog).
+    if (!specialty) {
+      console.warn(
+        `[Orchestrator] No specialty match for "${aiSpecialty}"; falling back to Internal Medicine`
+      );
+      const { data: fallback } = await supabase
+        .from('specialties')
+        .select('id, name_ar, name_en')
+        .ilike('name_en', 'Internal Medicine')
+        .single();
+      specialty = fallback ?? null;
+    }
+
     if (specialty) {
       sessionUpdates.determined_specialty_id = specialty.id;
 
@@ -279,7 +294,7 @@ export async function handlePatientMessage(
       const patientLat = session.patient_lat;
       const patientLng = session.patient_lng;
 
-      const doctors: MatchedDoctor[] = await matchDoctors({
+      let doctors: MatchedDoctor[] = await matchDoctors({
         specialtyId: specialty.id as string,
         patientLat,
         patientLng,
@@ -287,6 +302,34 @@ export async function handlePatientMessage(
         tenantId: session.tenant_id ?? null,
         insuranceCode: profile?.insurance_provider_code ?? null,
       });
+
+      // If the determined specialty has no available doctors (data gap, e.g.
+      // Family Medicine), fall back to Internal Medicine so the patient still
+      // gets bookable options instead of an empty list.
+      if (
+        doctors.length === 0 &&
+        String(specialty.name_en).toLowerCase() !== 'internal medicine'
+      ) {
+        const { data: gp } = await supabase
+          .from('specialties')
+          .select('id, name_ar, name_en')
+          .ilike('name_en', 'Internal Medicine')
+          .single();
+        if (gp) {
+          const gpDoctors = await matchDoctors({
+            specialtyId: gp.id as string,
+            patientLat,
+            patientLng,
+            governorateId: profile?.governorate_id ?? null,
+            tenantId: session.tenant_id ?? null,
+            insuranceCode: profile?.insurance_provider_code ?? null,
+          });
+          if (gpDoctors.length > 0) {
+            specialty = gp;
+            doctors = gpDoctors;
+          }
+        }
+      }
 
       // Save first matched doctor as recommended
       if (doctors.length > 0 && doctors[0]) {
