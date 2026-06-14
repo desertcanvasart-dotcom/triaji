@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Triajji Widget Test — مستشفى القاهرة التجريبي</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 40px;
+      direction: rtl;
+      min-height: 100vh;
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { color: #1A2F4A; margin-bottom: 16px; font-size: 28px; }
+    h2 { color: #374151; margin-bottom: 8px; font-size: 20px; }
+    p { color: #4A5568; margin-bottom: 12px; line-height: 1.8; }
+    .card {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .hero {
+      background: linear-gradient(135deg, #0D7A7A, #1A2F4A);
+      color: white;
+      padding: 48px 32px;
+      border-radius: 16px;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+    .hero h1 { color: white; font-size: 32px; }
+    .hero p { color: rgba(255,255,255,0.85); font-size: 18px; }
+    .services { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .service {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .service-icon { font-size: 32px; margin-bottom: 8px; }
+    .service h3 { color: #1A2F4A; font-size: 16px; margin-bottom: 4px; }
+    .service p { color: #6b7280; font-size: 13px; }
+    /* This CSS should NOT conflict with widget styles */
+    button { background: red; color: yellow; border: 5px dotted blue; }
+    .test-note {
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 24px;
+      font-size: 14px;
+      color: #92400e;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="hero">
+      <h1>🏥 مستشفى القاهرة التجريبي</h1>
+      <p>أفضل رعاية صحية في مصر — خبرة أكثر من 20 سنة</p>
+    </div>
+
+    <div class="card">
+      <h2>خدماتنا الطبية</h2>
+      <p>نقدم مجموعة شاملة من الخدمات الطبية المتخصصة بأحدث التقنيات</p>
+    </div>
+
+    <div class="services">
+      <div class="service">
+        <div class="service-icon">🫀</div>
+        <h3>أمراض القلب</h3>
+        <p>فحوصات شاملة للقلب</p>
+      </div>
+      <div class="service">
+        <div class="service-icon">🦴</div>
+        <h3>العظام</h3>
+        <p>جراحة وعلاج العظام</p>
+      </div>
+      <div class="service">
+        <div class="service-icon">👶</div>
+        <h3>أطفال</h3>
+        <p>رعاية متكاملة للأطفال</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 24px;">
+      <h2>تواصل معنا</h2>
+      <p>العنوان: شارع القصر العيني، وسط البلد، القاهرة</p>
+      <p>الهاتف: 02-2345-6789</p>
+    </div>
+
+    <div class="test-note">
+      <strong>ملاحظة اختبار:</strong>
+      هذه صفحة تجريبية لاختبار ودجت ترياڃي.
+      الأزرار في هذه الصفحة عندها CSS مختلف (أحمر، أصفر، أزرق) عشان نتأكد إن Shadow DOM بيعزل الأنماط صح.
+      <br><br>
+      انقر على زر المحادثة في أسفل الصفحة لبدء التوجيه الطبي.
+    </div>
+  </div>
+
+  <!-- Triajji Widget Integration -->
+  <script>
+    window.TriajjiConfig = {
+      tenantSlug: 'test-clinic',
+      position: 'bottom-right',
+      apiUrl: 'http://localhost:3000',
+    };
+  </script>
+  <script src="http://localhost:3000/widget.js" async></script>
+</body>
+</html>

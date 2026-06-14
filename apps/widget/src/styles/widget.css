@@ -1,0 +1,681 @@
+/* ─── Triajji Widget Styles (Shadow DOM Scoped) ─────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+
+:host {
+  all: initial;
+  font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+  direction: rtl;
+  text-align: right;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1a1a1a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ─── Floating Button ──────────────────────────────────────────────────────── */
+
+.triaji-trigger {
+  position: fixed;
+  bottom: 24px;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 28px;
+  cursor: pointer;
+  font-family: 'Cairo', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
+}
+
+.triaji-trigger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+}
+
+.triaji-trigger.right {
+  right: 24px;
+}
+
+.triaji-trigger.left {
+  left: 24px;
+}
+
+.triaji-trigger-icon {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+/* Pulse animation — only on first visit */
+.triaji-trigger.pulse {
+  animation: triaji-pulse 1.5s ease-in-out 3;
+}
+
+@keyframes triaji-pulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); }
+  50% { box-shadow: 0 4px 30px rgba(13, 122, 122, 0.5); }
+}
+
+/* ─── Chat Panel ───────────────────────────────────────────────────────────── */
+
+.triaji-panel {
+  position: fixed;
+  bottom: 24px;
+  z-index: 2147483647;
+  width: 380px;
+  height: 600px;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
+  background: #fff;
+  transform-origin: bottom right;
+  animation: triaji-open 0.2s ease-out;
+}
+
+.triaji-panel.right {
+  right: 24px;
+}
+
+.triaji-panel.left {
+  left: 24px;
+  transform-origin: bottom left;
+}
+
+@keyframes triaji-open {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Mobile — full screen */
+@media (max-width: 639px) {
+  .triaji-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+  }
+}
+
+/* ─── Header ───────────────────────────────────────────────────────────────── */
+
+.triaji-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.triaji-header-logo {
+  height: 28px;
+  width: auto;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.triaji-header-title {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.triaji-close-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.triaji-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ─── Messages ─────────────────────────────────────────────────────────────── */
+
+.triaji-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #f9fafb;
+}
+
+.triaji-messages::-webkit-scrollbar {
+  width: 4px;
+}
+
+.triaji-messages::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 2px;
+}
+
+.triaji-bubble {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.triaji-bubble.ai {
+  align-self: flex-start;
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid #e5e7eb;
+  border-bottom-left-radius: 4px;
+}
+
+.triaji-bubble.patient {
+  align-self: flex-end;
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+/* Typing indicator */
+.triaji-typing {
+  align-self: flex-start;
+  display: flex;
+  gap: 4px;
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  border-bottom-left-radius: 4px;
+}
+
+.triaji-typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #9ca3af;
+  animation: triaji-bounce 1.4s ease-in-out infinite;
+}
+
+.triaji-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.triaji-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes triaji-bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-6px); }
+}
+
+/* ─── Input Area ───────────────────────────────────────────────────────────── */
+
+.triaji-input-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid #e5e7eb;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.triaji-input {
+  flex: 1;
+  border: 1px solid #d1d5db;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-family: 'Cairo', sans-serif;
+  direction: rtl;
+  outline: none;
+  transition: border-color 0.15s;
+  background: #f9fafb;
+}
+
+.triaji-input:focus {
+  border-color: var(--triaji-primary, #0D7A7A);
+  background: #fff;
+}
+
+.triaji-input::placeholder {
+  color: #9ca3af;
+}
+
+.triaji-send-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.triaji-send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.triaji-send-btn svg {
+  width: 18px;
+  height: 18px;
+  transform: rotate(180deg); /* RTL — flip send arrow */
+}
+
+/* ─── Emergency State ──────────────────────────────────────────────────────── */
+
+.triaji-emergency {
+  background: #dc2626;
+  color: #fff;
+  padding: 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.triaji-emergency-icon {
+  font-size: 48px;
+}
+
+.triaji-emergency-title {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.triaji-emergency-text {
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.triaji-emergency-phone {
+  font-size: 32px;
+  font-weight: 700;
+  direction: ltr;
+  letter-spacing: 2px;
+}
+
+/* ─── Doctor Cards ─────────────────────────────────────────────────────────── */
+
+.triaji-doctors-section {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.triaji-doctors-header {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.triaji-doctors-summary {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+.triaji-doctor-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  gap: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.triaji-doctor-card:hover {
+  border-color: var(--triaji-primary, #0D7A7A);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.triaji-doctor-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.triaji-doctor-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.triaji-doctor-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.triaji-doctor-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.triaji-doctor-specialty {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.triaji-doctor-meta {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.triaji-doctor-fee {
+  font-weight: 600;
+  color: #059669;
+}
+
+/* ─── Slot Picker ──────────────────────────────────────────────────────────── */
+
+.triaji-slots-section {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.triaji-slots-header {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+
+.triaji-slot-back {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: 'Cairo', sans-serif;
+  color: #6b7280;
+  padding: 4px 0;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.triaji-slot-back:hover {
+  color: var(--triaji-primary, #0D7A7A);
+}
+
+.triaji-slot-day-group {
+  margin-bottom: 12px;
+}
+
+.triaji-slot-day-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.triaji-slot-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.triaji-slot-chip {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-family: 'Cairo', sans-serif;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.triaji-slot-chip:hover {
+  border-color: var(--triaji-primary, #0D7A7A);
+  color: var(--triaji-primary, #0D7A7A);
+}
+
+.triaji-slot-chip.selected {
+  color: #fff;
+  border-color: transparent;
+}
+
+.triaji-no-slots {
+  text-align: center;
+  color: #9ca3af;
+  padding: 24px;
+  font-size: 14px;
+}
+
+/* ─── Booking Form ─────────────────────────────────────────────────────────── */
+
+.triaji-booking-form {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.triaji-form-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.triaji-form-summary {
+  background: #f3f4f6;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.8;
+}
+
+.triaji-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.triaji-form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.triaji-form-input {
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: 'Cairo', sans-serif;
+  direction: rtl;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.triaji-form-input:focus {
+  border-color: var(--triaji-primary, #0D7A7A);
+}
+
+.triaji-form-input.ltr {
+  direction: ltr;
+  text-align: left;
+}
+
+.triaji-form-error {
+  font-size: 12px;
+  color: #dc2626;
+}
+
+.triaji-form-submit {
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'Cairo', sans-serif;
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.triaji-form-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Confirmation ─────────────────────────────────────────────────────────── */
+
+.triaji-confirmation {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  gap: 16px;
+}
+
+.triaji-confirm-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #dcfce7;
+  color: #16a34a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+}
+
+.triaji-confirm-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.triaji-confirm-details {
+  background: #f3f4f6;
+  border-radius: 10px;
+  padding: 16px;
+  width: 100%;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #374151;
+}
+
+.triaji-confirm-close-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Cairo', sans-serif;
+  color: #fff;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+/* ─── Loading Spinner ──────────────────────────────────────────────────────── */
+
+.triaji-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  flex: 1;
+}
+
+.triaji-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e5e7eb;
+  border-top-color: var(--triaji-primary, #0D7A7A);
+  border-radius: 50%;
+  animation: triaji-spin 0.8s linear infinite;
+}
+
+@keyframes triaji-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Powered By ───────────────────────────────────────────────────────────── */
+
+.triaji-powered {
+  text-align: center;
+  padding: 6px;
+  font-size: 11px;
+  color: #9ca3af;
+  background: #fff;
+  border-top: 1px solid #f3f4f6;
+  flex-shrink: 0;
+}
+
+.triaji-powered a {
+  color: #6b7280;
+  text-decoration: none;
+  font-weight: 600;
+}
