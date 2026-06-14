@@ -26,7 +26,11 @@
     "onlyBuiltDependencies": [
       "esbuild",
       "sharp"
-    ]
+    ],
+    "overrides": {
+      "@types/react-signature-canvas>@types/react": "19.2.14",
+      "recharts>@types/react": "19.2.14"
+    }
   },
   "devDependencies": {
     "tsx": "^4.21.0"

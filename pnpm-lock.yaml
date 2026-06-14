@@ -4,6 +4,10 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  '@types/react-signature-canvas>@types/react': 19.2.14
+  recharts>@types/react: 19.2.14
+
 importers:
 
   .:
@@ -8323,7 +8327,7 @@ snapshots:
 
   '@types/react-signature-canvas@1.0.7':
     dependencies:
-      '@types/react': 18.3.28
+      '@types/react': 19.2.14
       '@types/signature_pad': 2.3.6
 
   '@types/react@18.3.28':
