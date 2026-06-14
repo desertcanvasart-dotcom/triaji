@@ -1,0 +1,129 @@
+{
+  "_comment": "Egyptian-Arabic medical complaints, hand-curated to exercise common dialect patterns plus the harder cases (mid-sentence pauses, code-switching, numeric phrases, body-part anatomy). Voice IDs are ElevenLabs multilingual stock voices. Replace with custom Egyptian-voice clones for production-grade benchmarking.",
+  "voice": {
+    "male": "pNInz6obpgDQGcFmaJgB",
+    "female": "EXAVITQu4vr5lon40v3"
+  },
+  "seeds": [
+    {
+      "id": "001-headache-simple",
+      "text": "السلام عليكم، أنا تعبان جدا، راسي بتوجعني من امبارح والصداع مش راضي يروح خالص.",
+      "description": "Greeting + simple headache, common opener",
+      "dialect": "egyptian_cairene"
+    },
+    {
+      "id": "002-chest-pain-urgent",
+      "text": "دكتور أنا حاسس بضغط شديد على صدري، نفسي مخنوق، والألم بيوصل لذراعي الشمال.",
+      "description": "Cardiac red flag — chest pressure radiating to left arm",
+      "dialect": "egyptian_cairene"
+    },
+    {
+      "id": "003-fever-child",
+      "text": "ابني عنده تلت سنين، حرارته طلعت تمنية وتلاتين ونص، وبيرجف وعينيه حمرا.",
+      "description": "Paediatric fever with numbers as words (key challenge for ASR)",
+      "dialect": "egyptian_cairene"
+    },
+    {
+      "id": "004-abdominal-pain",
+      "text": "بطني بتقطعني من الصبح، عندي إسهال شديد ومش قادر آكل حاجة، وحاسس بدوخة لما باقف.",
+      "description": "Abdominal pain + diarrhoea + dizziness (multi-symptom)",
+      "dialect": "egyptian_cairene"
+    },
+    {
+      "id": "005-stroke-signs",
+      "text": "ست في البيت فجأة وشها ملخبط وإيدها الشمال مش بتتحرك ومش قادرة تتكلم كويس.",
+      "description": "Stroke FAST signs — high-priority detection test",
+      "dialect": "egyptian_cairene"
+    },
+    {
+      "id": "006-shortness-of-breath",
+      "text": "والله يا دكتور أنا بتعب لما بمشي شوية، نفسي بيقطع وبحس بكتمة في صدري، خصوصا بالليل.",
+      "description": "Exertional dyspnea + orthopnea",
+      "dialect": "egyptian_cairene"
+    },
+    {
+      "id": "007-diabetes-followup",
+      "text": "أنا عندي سكر من سنتين، السكر بتاعي الصبح كان مية وتمانين، وبحس بحرقان في رجلي.",
+      "description": "Chronic disease follow-up with numbers + peripheral neuropathy hint",
+      "dialect": "egyptian_cairene"
+    },
+    {
+      "id": "008-back-pain-code-switch",
+      "text": "دكتور، ضهري واجعني من ساعة ما رفعت حاجة تقيلة، وعندي tingling في رجلي اليمين.",
+      "description": "Back pain with code-switched English medical term",
+      "dialect": "egyptian_cairene"
+    },
+    {
+      "id": "009-mid-sentence-pause",
+      "text": "أنا حاسس... يعني... بوجع غريب في صدري، مش عارف أوصفه، بس بييجي ويروح كل شوية.",
+      "description": "Hesitation + filler words — tests turn detection",
+      "dialect": "egyptian_cairene"
+    },
+    {
+      "id": "010-elderly-grandma-style",
+      "text": "ست الكل يا دكتور، الدنيا بتلف بيا، وقلبي بيدق بسرعة، وحاسة إن نفسي هيقف.",
+      "description": "Elderly female speech pattern — vertigo + palpitations + anxiety",
+      "dialect": "egyptian_cairene"
+    },
+    {
+      "id": "011-pharmacy-question",
+      "text": "كنت عايز أسأل، الدوا اللي اسمه باراسيتامول، أقدر آخده مع المضاد الحيوي ولا فيه تعارض؟",
+      "description": "Medication interaction question — tests drug name recognition",
+      "dialect": "egyptian_cairene"
+    },
+    {
+      "id": "012-skin-rash",
+      "text": "ظهر لي طفح جلدي أحمر في إيدي ودراعي، بيحكني جدا، وبدأ من امبارح بعد ما أكلت سمك.",
+      "description": "Allergic reaction — rash + itching + food trigger",
+      "dialect": "egyptian_cairene"
+    },
+    {
+      "id": "013-urinary",
+      "text": "بحس بحرقان شديد لما بتبول، ولما رحت الحمام لقيت دم في البول، وضهري بيوجعني من فوق.",
+      "description": "UTI / kidney stone — burning urination + hematuria + flank pain",
+      "dialect": "egyptian_cairene"
+    },
+    {
+      "id": "014-mental-health",
+      "text": "مش عارف ليه بحس بضيق طول الوقت، مش بنام كويس، ومش قادر أركز في شغلي، وقلبي بيدق بسرعة.",
+      "description": "Anxiety / depression presentation — tests sensitive content handling",
+      "dialect": "egyptian_cairene"
+    },
+    {
+      "id": "015-fall-elderly",
+      "text": "أبويا وقع في الحمام من ساعتين، عمره خمسة وسبعين سنة، إيده اليمين منتفخة ومش قادر يحركها.",
+      "description": "Geriatric fall — fracture risk, age numerals",
+      "dialect": "egyptian_cairene"
+    },
+    {
+      "id": "016-cough-blood",
+      "text": "بكح من تلت أسابيع وامبارح لاحظت إن في دم في البلغم، ووزني نزل كتير الفترة الأخيرة.",
+      "description": "Hemoptysis + weight loss — TB / malignancy red flags",
+      "dialect": "egyptian_cairene"
+    },
+    {
+      "id": "017-emergency-unconscious",
+      "text": "جوزي اغمى عليه من شوية ولسه مش بيرد عليا، وجسمه بيرتعش، وفمه فيه زبد.",
+      "description": "Seizure / loss of consciousness — top-priority emergency",
+      "dialect": "egyptian_cairene"
+    },
+    {
+      "id": "018-pediatric-cough",
+      "text": "بنتي عندها سنتين ونص، بتكح بصوت زي النباح، وصوتها بحت، وحرارتها سبعة وتلاتين وتمنية.",
+      "description": "Croup-like presentation in toddler",
+      "dialect": "egyptian_cairene"
+    },
+    {
+      "id": "019-pregnancy",
+      "text": "أنا حامل في الشهر التامن وحاسة إن البيبي مش بيتحرك زي الأول، ورجلي منتفخة جدا.",
+      "description": "Pregnancy red flags — reduced fetal movement + edema",
+      "dialect": "egyptian_cairene"
+    },
+    {
+      "id": "020-confirmation-needed",
+      "text": "أيوه دكتور، صح، الوجع في الناحية اليمين من بطني تحت، وبييجي ويروح كل ربع ساعة تقريبا.",
+      "description": "Possible appendicitis — periodic RLQ pain, tests confirmation language",
+      "dialect": "egyptian_cairene"
+    }
+  ]
+}

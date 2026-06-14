@@ -1,0 +1,13 @@
+node_modules/
+dist/
+fixtures/audio/*.wav
+fixtures/audio/*.mp3
+fixtures/audio/*.opus
+fixtures/audio/*.ogg
+fixtures/audio/*.m4a
+results/*.md
+results/*.json
+!fixtures/audio/.gitkeep
+!results/.gitkeep
+.env
+.env.local

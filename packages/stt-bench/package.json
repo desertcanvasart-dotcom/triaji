@@ -1,0 +1,27 @@
+{
+  "name": "@triaji/stt-bench",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Arabic STT provider benchmark harness for Triaji (batch + streaming).",
+  "scripts": {
+    "bench": "tsx bin/bench.ts",
+    "bench:batch": "tsx bin/bench.ts --mode batch",
+    "bench:stream": "tsx bin/bench.ts --mode streaming",
+    "seed:tts": "tsx bin/seed-tts.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "echo 'no tests yet'"
+  },
+  "dependencies": {
+    "@deepgram/sdk": "^5.0.0",
+    "dotenv": "^16.4.5",
+    "openai": "^4.73.0",
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.7.0"
+  }
+}
