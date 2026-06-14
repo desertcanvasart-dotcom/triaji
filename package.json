@@ -15,6 +15,7 @@
     "test:normalization": "pnpm --filter @triaji/normalization test",
     "typecheck": "pnpm -r typecheck",
     "seed:kb": "npx tsx supabase/seed/run-kb-seed.ts",
+    "seed:slots": "npx tsx supabase/seed/refresh-availability.ts",
     "embed:kb": "npx tsx supabase/seed/run-kb-embed.ts",
     "test:search": "npx tsx supabase/seed/test-semantic-search.ts"
   },
