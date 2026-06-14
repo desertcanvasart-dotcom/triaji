@@ -1,7 +1,23 @@
-export type { HisAdapter } from './interface.js';
-export type { HisSlot, HisBooking, HisDoctor } from './types.js';
-export { getAdapter } from './factory.js';
-export type { HisVendor, HisAdapterConfig } from './factory.js';
-export { ShifaAdapter } from './adapters/shifa.js';
-export { NeuronAdapter } from './adapters/neuron.js';
-export { GenericAdapter } from './adapters/generic.js';
+// ─── Core Interface + Types ─────────────────────────────────────────────────
+export type {
+  HisAdapter,
+  HisVendor,
+  HisConnectionResult,
+  HisDoctor,
+  HisSlot,
+  HisBookingRequest,
+  HisBookingResult,
+  HisCancelResult,
+} from './interface';
+
+export type { SyncResult, SyncError } from './types';
+
+// ─── Factory ────────────────────────────────────────────────────────────────
+export { getAdapter } from './factory';
+export type { HisAdapterConfig } from './factory';
+
+// ─── Adapters ───────────────────────────────────────────────────────────────
+export { ShifaAdapter } from './adapters/shifa';
+export { GenericRestAdapter } from './adapters/generic';
+export { MockHisAdapter } from './adapters/mock';
+export { NeuronAdapter } from './adapters/neuron';

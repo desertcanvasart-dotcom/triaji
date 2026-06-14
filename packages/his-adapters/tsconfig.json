@@ -5,7 +5,9 @@
     "rootDir": "."
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "tests/**/*.ts",
+    "mock-server/**/*.ts"
   ],
   "exclude": ["node_modules", "dist"]
 }

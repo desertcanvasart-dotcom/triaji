@@ -1,35 +1,45 @@
-import type { HisAdapter } from './interface.js';
-import { ShifaAdapter } from './adapters/shifa.js';
-import { NeuronAdapter } from './adapters/neuron.js';
-import { GenericAdapter } from './adapters/generic.js';
+/**
+ * HIS Adapter Factory
+ * Creates the appropriate adapter based on vendor + config.
+ */
 
-export type HisVendor = 'shifa' | 'neuron' | 'generic';
+import type { HisAdapter, HisVendor } from './interface';
+import { ShifaAdapter } from './adapters/shifa';
+import { NeuronAdapter } from './adapters/neuron';
+import { GenericRestAdapter } from './adapters/generic';
+import { MockHisAdapter } from './adapters/mock';
 
 export interface HisAdapterConfig {
+  vendor: HisVendor;
   baseUrl: string;
-  apiKey: string;
+  authType: 'api_key' | 'oauth2' | 'basic';
+  credentials: {
+    apiKey?: string;
+    username?: string;
+    password?: string;
+    clientId?: string;
+    clientSecret?: string;
+    tokenUrl?: string;
+  };
+  tenantId: string;
+  /** Field mapping for generic REST adapter */
+  fieldMapping?: Record<string, string>;
   timeout?: number;
 }
 
-/**
- * Factory function to create an HIS adapter for the given vendor.
- *
- * @param vendor - The HIS vendor identifier
- * @param _config - Connection configuration for the adapter
- * @returns An HisAdapter instance for the specified vendor
- * @throws Error if the vendor is not supported
- */
-export function getAdapter(vendor: HisVendor, _config: HisAdapterConfig): HisAdapter {
-  switch (vendor) {
+export function getAdapter(config: HisAdapterConfig): HisAdapter {
+  switch (config.vendor) {
     case 'shifa':
-      return new ShifaAdapter();
+      return new ShifaAdapter(config);
+    case 'generic_rest':
+      return new GenericRestAdapter(config);
+    case 'mock':
+      return new MockHisAdapter(config);
     case 'neuron':
-      return new NeuronAdapter();
-    case 'generic':
-      return new GenericAdapter();
+      return new NeuronAdapter(config);
     default: {
-      const exhaustive: never = vendor;
-      throw new Error(`Unsupported HIS vendor: ${exhaustive as string}`);
+      const exhaustive: never = config.vendor;
+      throw new Error(`Unknown HIS vendor: ${exhaustive as string}`);
     }
   }
 }
