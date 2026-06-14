@@ -19,16 +19,37 @@ const RELATION_LABELS: Record<string, { ar: string; en: string }> = {
 
 type OptionRow = { code: string; name_ar: string; name_en: string };
 
+// Display metadata + adult reference ranges per vital_type (enum from migration 039).
+const VITAL_META: Record<
+  string,
+  { title_ar: string; title_en: string; reference_min?: number; reference_max?: number }
+> = {
+  weight_kg: { title_ar: 'الوزن', title_en: 'Weight' },
+  height_cm: { title_ar: 'الطول', title_en: 'Height' },
+  bmi: { title_ar: 'مؤشر كتلة الجسم', title_en: 'BMI', reference_min: 18.5, reference_max: 24.9 },
+  blood_pressure_systolic: { title_ar: 'الضغط الانقباضي', title_en: 'Systolic BP', reference_min: 90, reference_max: 120 },
+  blood_pressure_diastolic: { title_ar: 'الضغط الانبساطي', title_en: 'Diastolic BP', reference_min: 60, reference_max: 80 },
+  blood_glucose_fasting: { title_ar: 'سكر صائم', title_en: 'Fasting glucose', reference_min: 70, reference_max: 100 },
+  blood_glucose_random: { title_ar: 'سكر عشوائي', title_en: 'Random glucose', reference_min: 70, reference_max: 140 },
+  heart_rate: { title_ar: 'معدل ضربات القلب', title_en: 'Heart rate', reference_min: 60, reference_max: 100 },
+  oxygen_saturation: { title_ar: 'تشبع الأكسجين', title_en: 'Oxygen saturation', reference_min: 95, reference_max: 100 },
+  temperature: { title_ar: 'درجة الحرارة', title_en: 'Temperature', reference_min: 36.1, reference_max: 37.2 },
+  waist_cm: { title_ar: 'محيط الخصر', title_en: 'Waist circumference' },
+};
+
+// Best-effort abnormal check from a "min-max" reference range string; null if undecidable.
+function isOutOfRange(value: number | string, range?: string): boolean | null {
+  if (!range) return null;
+  const m = range.match(/^\s*([\d.]+)\s*-\s*([\d.]+)\s*$/);
+  const v = typeof value === 'string' ? parseFloat(value) : value;
+  if (!m || Number.isNaN(v)) return null;
+  return v < parseFloat(m[1]!) || v > parseFloat(m[2]!);
+}
+
 /**
- * Builds the dashboard view-model in the exact shape the MedicalRecordDashboard
- * component (MedicalRecordData) consumes. Every field is always present so the
- * client never crashes on a missing array.
- *
- * NOTE: `vital_trends` and `latest_results` require derived transforms
- * (grouping vitals into trend series with reference metadata, and parsing the
- * health_records.lab_values blob into per-test rows). Those are returned empty
- * for now — the dashboard renders graceful empty states — and are tracked as a
- * follow-up once the vital-type metadata + lab_values schema are finalised.
+ * Builds the empty dashboard view-model (MedicalRecordData) for a patient with
+ * no profile yet. Every field is present so the client never crashes on a
+ * missing array. The populated path below fills these from real data.
  */
 function emptyRecord(nameAr: string, nameEn: string | null) {
   return {
@@ -76,6 +97,7 @@ export async function GET() {
     profileResult,
     followUpsResult,
     labResultsResult,
+    vitalsResult,
     bookingsResult,
     allergyOpts,
     conditionOpts,
@@ -104,12 +126,19 @@ export async function GET() {
 
     supabase
       .from('health_records')
-      .select('id, lab_date')
+      .select('lab_values, lab_name, lab_date, has_abnormal_values')
       .eq('patient_id', pid)
       .eq('record_type', 'lab_result')
       .is('deleted_at', null)
       .order('lab_date', { ascending: false })
-      .limit(1),
+      .limit(10),
+
+    supabase
+      .from('vitals_history')
+      .select('vital_type, value, unit, measured_at, source')
+      .eq('patient_id', pid)
+      .order('measured_at', { ascending: true })
+      .limit(500),
 
     supabase
       .from('bookings')
@@ -249,6 +278,64 @@ export async function GET() {
     ? Math.floor((todayMs - new Date(lastLab.lab_date).getTime()) / 86400000)
     : null;
 
+  // Vital trends — group history rows (already ordered oldest→newest) by type
+  type VitalRow = { vital_type: string; value: number; unit: string; measured_at: string; source: string };
+  const trendMap = new Map<string, VitalRow[]>();
+  for (const v of (vitalsResult.data as VitalRow[] | null) ?? []) {
+    const arr = trendMap.get(v.vital_type) ?? [];
+    arr.push(v);
+    trendMap.set(v.vital_type, arr);
+  }
+  const vital_trends = [...trendMap.entries()]
+    .filter(([type]) => VITAL_META[type])
+    .map(([type, rows]) => {
+      const meta = VITAL_META[type]!;
+      return {
+        type,
+        title_ar: meta.title_ar,
+        title_en: meta.title_en,
+        unit: rows[0]?.unit ?? '',
+        data: rows.map((r) => ({
+          date: r.measured_at,
+          value: Number(r.value),
+          source: r.source as 'clinic_visit' | 'lab_result' | 'patient_self',
+        })),
+        ...(meta.reference_min !== undefined ? { reference_min: meta.reference_min } : {}),
+        ...(meta.reference_max !== undefined ? { reference_max: meta.reference_max } : {}),
+      };
+    });
+
+  // Latest results — expand each lab record's lab_values blob into per-test rows
+  type LabValueItem = {
+    test_code?: string;
+    test_name?: string;
+    value: number | string;
+    unit?: string;
+    reference_range?: string;
+  };
+  type LabRecord = {
+    lab_values: LabValueItem[] | null;
+    lab_name: string | null;
+    lab_date: string;
+    has_abnormal_values: boolean | null;
+  };
+  const latest_results = ((labResultsResult.data as LabRecord[] | null) ?? []).flatMap((rec) => {
+    const items = Array.isArray(rec.lab_values) ? rec.lab_values : [];
+    return items.map((it) => {
+      const code = String(it.test_code ?? it.test_name ?? 'unknown');
+      const name = String(it.test_name ?? it.test_code ?? code);
+      return {
+        testCode: code,
+        testNameAr: name,
+        testNameEn: name,
+        value: String(it.value ?? ''),
+        unit: it.unit ?? '',
+        isAbnormal: isOutOfRange(it.value, it.reference_range) ?? (rec.has_abnormal_values ?? false),
+        date: rec.lab_date,
+      };
+    });
+  });
+
   return NextResponse.json({
     patient_name_ar: nameAr,
     patient_name_en: null,
@@ -260,11 +347,9 @@ export async function GET() {
     allergies,
     medications,
     chronic_conditions,
-    // TODO: derive trend series (group vitals_history by type + reference metadata)
-    vital_trends: [],
+    vital_trends,
     follow_ups,
-    // TODO: parse health_records.lab_values blob into per-test LabResult rows
-    latest_results: [],
+    latest_results,
     surgeries,
     family_history,
     is_paediatric: (profile.is_paediatric as boolean) ?? false,
