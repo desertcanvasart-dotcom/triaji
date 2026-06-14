@@ -361,6 +361,98 @@ describe('BRS Calculator', () => {
     });
   });
 
+  // ─── Family History Factors ──────────────────────────────────────
+
+  describe('Family History Factors', () => {
+    it('should add 0 points when no family history provided', () => {
+      const result = calculateBRS(baseInput());
+      expect(result.factors).not.toContain('family_history');
+    });
+
+    it('should add 0 points when all family history is false', () => {
+      const input = baseInput();
+      input.profile.familyHistory = {
+        heartDisease: false,
+        heartAttack: false,
+        stroke: false,
+        hypertension: false,
+        diabetes: false,
+        cancer: false,
+      };
+      const result = calculateBRS(input);
+      expect(result.factors).not.toContain('family_history');
+    });
+
+    it('should add 1 point for single family condition (stroke)', () => {
+      const input = baseInput();
+      input.profile.familyHistory = {
+        heartDisease: false,
+        heartAttack: false,
+        stroke: true,
+        hypertension: false,
+        diabetes: false,
+        cancer: false,
+      };
+      const result = calculateBRS(input);
+      expect(result.score).toBe(1);
+      expect(result.factors).toContain('family_history');
+    });
+
+    it('should add 1 point for heart disease or heart attack (grouped)', () => {
+      const input = baseInput();
+      input.profile.familyHistory = {
+        heartDisease: true,
+        heartAttack: true,
+        stroke: false,
+        hypertension: false,
+        diabetes: false,
+        cancer: false,
+      };
+      const result = calculateBRS(input);
+      // heartDisease OR heartAttack = 1, not 2
+      expect(result.score).toBe(1);
+      expect(result.factors).toContain('family_history');
+    });
+
+    it('should cap family history at 3 points max', () => {
+      const input = baseInput();
+      input.profile.familyHistory = {
+        heartDisease: true,
+        heartAttack: true,
+        stroke: true,
+        hypertension: true,
+        diabetes: true,
+        cancer: false,
+      };
+      const result = calculateBRS(input);
+      // heart(1) + stroke(1) + hypertension(1) + diabetes(1) = 4 → capped at 3
+      expect(result.score).toBe(3);
+      expect(result.factors).toContain('family_history');
+    });
+
+    it('should combine family history with other factors', () => {
+      const input = baseInput();
+      input.profile.age = 65; // +2
+      input.profile.smokingStatus = 'current'; // +2
+      input.profile.familyHistory = {
+        heartDisease: true,
+        heartAttack: false,
+        stroke: true,
+        hypertension: false,
+        diabetes: true,
+        cancer: false,
+      };
+      // family: heart(1)+stroke(1)+diabetes(1) = 3
+      // total: 2+2+3 = 7
+      const result = calculateBRS(input);
+      expect(result.score).toBe(7);
+      expect(result.level).toBe('medium');
+      expect(result.factors).toContain('age_over_60');
+      expect(result.factors).toContain('smoking_current');
+      expect(result.factors).toContain('family_history');
+    });
+  });
+
   // ─── Determinism ──────────────────────────────────────────────────
 
   describe('Determinism', () => {

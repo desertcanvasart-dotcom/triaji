@@ -125,3 +125,90 @@ export async function sendWhatsAppMessage(
     };
   }
 }
+
+/**
+ * Send a WhatsApp document message via Meta Graph API.
+ * Used for sending PDF clinical documents (prescriptions, lab orders, etc.)
+ * In DEV_MODE (no token), logs to console.
+ */
+export async function sendWhatsAppDocument(
+  to: string,
+  documentUrl: string,
+  filename: string,
+  caption: string
+): Promise<WhatsAppResult> {
+  const token = process.env.WHATSAPP_API_TOKEN;
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+
+  // DEV_MODE — log instead of sending
+  if (!token || !phoneNumberId) {
+    console.log('[WhatsApp DEV_MODE] Would send document to:', to);
+    console.log('[WhatsApp DEV_MODE] Document:', filename);
+    console.log('[WhatsApp DEV_MODE] Caption:', caption.slice(0, 200));
+    return { success: true, messageId: `dev-wa-doc-${Date.now()}` };
+  }
+
+  const url = `https://graph.facebook.com/${WHATSAPP_API_VERSION}/${phoneNumberId}/messages`;
+  const normalised = normaliseEgyptianPhone(to);
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to: normalised,
+        type: 'document',
+        document: {
+          link: documentUrl,
+          filename,
+          caption,
+        },
+      }),
+    });
+
+    const data = (await res.json()) as {
+      messages?: Array<{ id: string }>;
+      error?: { message: string };
+    };
+
+    if (!res.ok || data.error) {
+      return {
+        success: false,
+        error: data.error?.message ?? `HTTP ${res.status}`,
+      };
+    }
+
+    return {
+      success: true,
+      messageId: data.messages?.[0]?.id,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Unknown WhatsApp error',
+    };
+  }
+}
+
+/**
+ * Clinical document WhatsApp message templates.
+ */
+export function clinicalDocumentCaption(
+  type: 'prescription' | 'lab_order' | 'imaging_order' | 'consultation_summary',
+  doctorName: string,
+  docNumber: string,
+  dateAr: string
+): string {
+  const templates: Record<string, string> = {
+    prescription: `أرسل لك الدكتور ${doctorName} روشتتك الطبية 💊\nرقم الروشتة: ${docNumber} | التاريخ: ${dateAr}\nالروشتة مرفقة. ترياڃي 🏥`,
+    lab_order: `أرسل لك الدكتور ${doctorName} طلب التحاليل 🧪\nرقم الطلب: ${docNumber} | التاريخ: ${dateAr}\nالطلب مرفق. ترياڃي 🏥`,
+    imaging_order: `أرسل لك الدكتور ${doctorName} طلب الأشعة 📡\nرقم الطلب: ${docNumber} | التاريخ: ${dateAr}\nالطلب مرفق. ترياڃي 🏥`,
+    consultation_summary: `أرسل لك الدكتور ${doctorName} ملخص كشفك 📋\nالتاريخ: ${dateAr}\nالملخص مرفق. ترياڃي 🏥`,
+  };
+
+  return templates[type] ?? '';
+}

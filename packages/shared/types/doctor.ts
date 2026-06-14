@@ -41,6 +41,8 @@ export interface Doctor {
   rating_count: number;
   his_doctor_id: string | null;
   is_active: boolean;
+  offers_telehealth: boolean;
+  telehealth_fee_egp: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -75,6 +77,10 @@ export interface MatchedDoctor {
   languages: string[];
   photoUrl: string | null;
   distanceKm: number;
+  insuranceAccepted: boolean;
+  insuranceProviderNameAr?: string;
+  offersTelehealth: boolean;
+  telehealthFeeEgp: number | null;
 }
 
 export interface DoctorRecommendation {
@@ -94,4 +100,24 @@ export interface DoctorRating {
   rating: number;
   comment_ar: string | null;
   created_at: string;
+}
+
+// ─── Insurance ────────────────────────────────────────────────────────────────
+
+export interface InsuranceProvider {
+  id: string;
+  code: string;
+  name_ar: string;
+  name_en: string;
+  type: 'private' | 'government' | 'none';
+  logo_url: string | null;
+  is_active: boolean;
+  sort_order: number;
+}
+
+export interface DoctorInsurance {
+  id: string;
+  doctor_id: string;
+  insurance_provider_id: string;
+  is_active: boolean;
 }

@@ -224,6 +224,96 @@ const EMERGENCY_RULES: EmergencyRule[] = [
       return hasDiabetes && hasLowSugar;
     },
   },
+
+  // ══ PAEDIATRIC EMERGENCY RULES ════════════════════════════
+
+  // Fever in infant under 3 months = emergency
+  {
+    name: 'paediatric_fever_neonate',
+    priority: 2,
+    escalationType: 'emergency_room',
+    responseAr:
+      '🚨 حرارة في رضيع أقل من 3 شهور — حالة طوارئ.\n' +
+      'توجه فوراً لأقرب طوارئ أطفال.\n' +
+      'لا تعطي خافض حرارة بدون استشارة طبيب.',
+    check: (input) => {
+      const p = input.profile;
+      if (!p.isPaediatric || !p.ageMonths || p.ageMonths >= 3) return false;
+      return hasAny(input.symptoms, ['fever', 'high_temperature', 'hot_body']);
+    },
+  },
+
+  // Fever ≥38.5°C in 3–36 months = urgent
+  {
+    name: 'paediatric_fever_infant',
+    priority: 5,
+    escalationType: 'emergency_room',
+    responseAr:
+      '⚠️ حرارة مرتفعة في طفل صغير.\n' +
+      'توجه لأقرب طوارئ أطفال أو طبيب أطفال اليوم.\n' +
+      'أعطيه خافض حرارة (باراسيتامول) حسب الوزن.',
+    check: (input) => {
+      const p = input.profile;
+      if (!p.isPaediatric || !p.ageMonths) return false;
+      if (p.ageMonths < 3 || p.ageMonths > 36) return false;
+      return hasAny(input.symptoms, ['high_fever', 'fever_above_38_5']);
+    },
+  },
+
+  // Any seizure in child = emergency
+  {
+    name: 'paediatric_seizure',
+    priority: 1,
+    escalationType: 'call_ambulance',
+    responseAr:
+      '🚨 تشنج عند طفل — حالة طوارئ.\n' +
+      'اتصل بالإسعاف فوراً.\n' +
+      'ضع الطفل على جنبه في مكان آمن.\n' +
+      'لا تضع أي شيء في فمه.',
+    check: (input) => {
+      if (!input.profile.isPaediatric) return false;
+      return hasAny(input.symptoms, ['seizure', 'convulsions', 'fits', 'shaking_episode']);
+    },
+  },
+
+  // Breathing difficulty in child = emergency
+  {
+    name: 'paediatric_breathing',
+    priority: 2,
+    escalationType: 'emergency_room',
+    responseAr:
+      '🚨 صعوبة تنفس عند طفل — حالة طوارئ.\n' +
+      'توجه فوراً لأقرب طوارئ أطفال.\n' +
+      'إذا كان عنده بخاخ سالبوتامول، أعطيه بختين.',
+    check: (input) => {
+      if (!input.profile.isPaediatric) return false;
+      return hasAny(input.symptoms, [
+        'breathing_difficulty',
+        'shortness_of_breath',
+        'wheezing',
+        'chest_retraction',
+        'blue_lips',
+        'grunting',
+      ]);
+    },
+  },
+
+  // Rash + fever in child = urgent
+  {
+    name: 'paediatric_rash_fever',
+    priority: 4,
+    escalationType: 'emergency_room',
+    responseAr:
+      '⚠️ طفح جلدي مع حرارة عند طفل.\n' +
+      'توجه لطوارئ أطفال اليوم — قد يحتاج فحص.\n' +
+      'لا تعطيه أسبرين.',
+    check: (input) => {
+      if (!input.profile.isPaediatric) return false;
+      const hasFever = hasAny(input.symptoms, ['fever', 'high_temperature', 'hot_body', 'high_fever']);
+      const hasRash = hasAny(input.symptoms, ['rash', 'skin_rash', 'spots', 'hives']);
+      return hasFever && hasRash;
+    },
+  },
 ];
 
 /**

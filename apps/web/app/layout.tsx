@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'تريجي — الدكتور الصح، في المكان الصح',
+  title: 'ترياچي — الدكتور الصح، في المكان الصح',
   description: 'منصة فرز طبي ذكية بالعربي — الدكتور الصح، في المكان الصح',
 };
 
@@ -21,7 +21,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
       </head>

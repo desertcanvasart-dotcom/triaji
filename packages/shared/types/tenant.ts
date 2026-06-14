@@ -47,6 +47,12 @@ export interface TenantConfig {
   sms_enabled: boolean;
   custom_prompts: Record<string, string>;
   feature_flags: Record<string, boolean>;
+
+  // Phone call center (Phase 11)
+  phone_number: string | null;
+  phone_number_active: boolean;
+  human_agent_number: string | null;
+
   updated_at: string;
 }
 

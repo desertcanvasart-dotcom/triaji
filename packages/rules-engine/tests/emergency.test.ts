@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { checkEmergency } from '../src/emergency.js';
-import type { RulesInput } from '../src/types.js';
+import { checkEmergencyWithICU } from '../src/emergency-icu.js';
+import type { RulesInput, IcuBedInfo } from '../src/types.js';
 
 /** Baseline profile with all-clear values for isolation testing */
 function baseInput(overrides?: Partial<RulesInput>): RulesInput {
@@ -690,5 +691,54 @@ describe('Emergency Rules', () => {
         expect(checkEmergency(input)).toEqual(baseline);
       }
     });
+  });
+});
+
+describe('checkEmergencyWithICU', () => {
+  const mockIcuBeds: IcuBedInfo[] = [
+    { hospitalNameAr: 'مستشفى القاهرة', hospitalNameEn: 'Cairo Hospital', unitType: 'general_icu', availableBeds: 2, distanceKm: 3.2, phoneDirect: '02-23456789' },
+    { hospitalNameAr: 'مستشفى النيل', hospitalNameEn: 'Nile Hospital', unitType: 'cardiac_icu', availableBeds: 1, distanceKm: 5.7, phoneDirect: '02-34567890' },
+  ];
+
+  const mockFindBeds = async () => mockIcuBeds;
+
+  it('returns base emergency result when no location provided', async () => {
+    const input = baseInput({ symptoms: ['cardiac_arrest'] });
+    const result = await checkEmergencyWithICU(input, undefined, mockFindBeds);
+    expect(result.triggered).toBe(true);
+    expect(result.nearbyIcuBeds).toBeUndefined();
+  });
+
+  it('includes nearby ICU beds when emergency triggered with location', async () => {
+    const input = baseInput({ symptoms: ['cardiac_arrest'] });
+    const result = await checkEmergencyWithICU(input, { lat: 30.0, lng: 31.2 }, mockFindBeds);
+    expect(result.triggered).toBe(true);
+    expect(result.nearbyIcuBeds).toHaveLength(2);
+    expect(result.nearbyIcuBeds![0].hospitalNameAr).toBe('مستشفى القاهرة');
+  });
+
+  it('returns max 3 ICU beds', async () => {
+    const manyBeds = [...mockIcuBeds, ...mockIcuBeds, ...mockIcuBeds]; // 6 beds
+    const result = await checkEmergencyWithICU(
+      baseInput({ symptoms: ['cardiac_arrest'] }),
+      { lat: 30.0, lng: 31.2 },
+      async () => manyBeds
+    );
+    expect(result.nearbyIcuBeds).toHaveLength(3);
+  });
+
+  it('returns base result when no emergency triggered', async () => {
+    const input = baseInput({ symptoms: ['headache'] });
+    const result = await checkEmergencyWithICU(input, { lat: 30.0, lng: 31.2 }, mockFindBeds);
+    expect(result.triggered).toBe(false);
+    expect(result.nearbyIcuBeds).toBeUndefined();
+  });
+
+  it('returns base result when ICU query fails (fail-safe)', async () => {
+    const failingFn = async () => { throw new Error('Network error'); };
+    const input = baseInput({ symptoms: ['cardiac_arrest'] });
+    const result = await checkEmergencyWithICU(input, { lat: 30.0, lng: 31.2 }, failingFn);
+    expect(result.triggered).toBe(true);
+    expect(result.nearbyIcuBeds).toBeUndefined();
   });
 });

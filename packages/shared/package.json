@@ -5,9 +5,14 @@
   "type": "module",
   "exports": {
     "./types": "./types/index.ts",
+    "./types/*": "./types/*.ts",
+    "./i18n/*": "./i18n/*.ts",
     "./supabase": "./supabase/client.ts",
     "./constants": "./constants/index.ts",
-    "./constants/*": "./constants/*.ts"
+    "./constants/*": "./constants/*.ts",
+    "./i18n": "./i18n/strings.ts",
+    "./api": "./api/client.ts",
+    "./lib/whatsapp/client": "./lib/whatsapp/client.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

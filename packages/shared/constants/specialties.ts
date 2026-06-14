@@ -8,7 +8,7 @@ export interface SpecialtyEntry {
 }
 
 /**
- * 17 base medical specialties used across the Triaji platform.
+ * 17 base medical specialties used across the Triajji platform.
  * Maps to the specialties table in the database.
  */
 export const SPECIALTIES: readonly SpecialtyEntry[] = [

@@ -14,6 +14,17 @@ export interface RulesInput {
     previousHeartAttack: boolean;
     brs: number;
     riskLevel: 'low' | 'medium' | 'high';
+    familyHistory?: {
+      heartDisease: boolean;
+      heartAttack: boolean;
+      stroke: boolean;
+      hypertension: boolean;
+      diabetes: boolean;
+      cancer: boolean;
+    };
+    /** Paediatric fields */
+    isPaediatric?: boolean;
+    ageMonths?: number; // precise age in months for children
   };
 }
 
@@ -36,4 +47,17 @@ export interface RulesResult {
   emergency: EmergencyResult;
   brs: BRSResult;
   urgencyLevel: 'routine' | 'urgent' | 'emergency';
+}
+
+export interface IcuBedInfo {
+  hospitalNameAr: string;
+  hospitalNameEn: string;
+  unitType: string;
+  availableBeds: number;
+  distanceKm: number;
+  phoneDirect: string | null;
+}
+
+export interface EmergencyWithICUResult extends EmergencyResult {
+  nearbyIcuBeds?: IcuBedInfo[];
 }

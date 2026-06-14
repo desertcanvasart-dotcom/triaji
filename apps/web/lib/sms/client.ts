@@ -5,7 +5,7 @@
  * DEV_MODE: When SMS_GATEWAY_URL is not set, logs to console instead of sending.
  */
 
-import { normaliseEgyptianPhone } from '@/lib/whatsapp/client';
+import { normaliseEgyptianPhone } from '@triaji/shared/lib/whatsapp/client';
 
 export interface SMSResult {
   success: boolean;
@@ -22,7 +22,7 @@ export async function sendSMS(
 ): Promise<SMSResult> {
   const gatewayUrl = process.env.SMS_GATEWAY_URL;
   const apiKey = process.env.SMS_GATEWAY_API_KEY;
-  const senderName = process.env.SMS_SENDER_NAME ?? 'تريجي';
+  const senderName = process.env.SMS_SENDER_NAME ?? 'ترياچي';
 
   // DEV_MODE — log instead of sending
   if (!gatewayUrl || !apiKey) {

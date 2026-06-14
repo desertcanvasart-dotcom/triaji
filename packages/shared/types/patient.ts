@@ -14,6 +14,9 @@ import type {
   UrgencyLevel,
   SessionChannel,
   MessageRole,
+  PregnancyStatus,
+  MenopauseStatus,
+  MenstrualRegularity,
 } from './enums';
 
 // ─── Patient ─────────────────────────────────────────────────────────────────
@@ -80,6 +83,16 @@ export interface PatientProfile {
   background_risk_score: number;
   risk_level: RiskLevel;
 
+  // Insurance
+  insurance_provider_code: string | null;
+
+  // Reproductive health (female only)
+  pregnancy_status: PregnancyStatus | null;
+  previous_pregnancies: number | null;
+  menstrual_regularity: MenstrualRegularity | null;
+  menopause_status: MenopauseStatus | null;
+  last_menstrual_period_approx: string | null;
+
   updated_at: string;
 }
 
@@ -114,6 +127,17 @@ export interface TriageSession {
   recommended_doctor_id: string | null;
   booking_id: string | null;
   channel: SessionChannel;
+
+  // Phone call fields (Phase 11)
+  call_sid: string | null;
+  call_duration_seconds: number | null;
+  recording_url: string | null;
+  transcript_full: string | null;
+  handoff_triggered: boolean;
+  handoff_reason: string | null;
+
+  // Bilingual phone support (Phase 13)
+  detected_lang: 'ar' | 'en';
 }
 
 // ─── Session Message ─────────────────────────────────────────────────────────
@@ -128,4 +152,30 @@ export interface SessionMessage {
   image_urls: string[] | null;
   image_analysis_notes: string | null;
   created_at: string;
+}
+
+// ─── Session Summary (Patient History) ─────────────────────────────────────
+export interface SessionSummary {
+  id: string;
+  session_id: string;
+  patient_id: string;
+  tenant_id: string | null;
+  chief_complaint_ar: string;
+  symptoms_ar: string[];
+  specialty_name_ar: string | null;
+  urgency_level: string | null;
+  doctor_name_ar: string | null;
+  appointment_datetime: string | null;
+  outcome: 'booked' | 'emergency_escalated' | 'no_booking' | 'cancelled';
+  patient_notes_ar: string | null;
+  created_at: string;
+}
+
+export interface HistoryConsent {
+  id: string;
+  patient_id: string;
+  doctor_id: string;
+  granted_at: string;
+  expires_at: string | null;
+  revoked_at: string | null;
 }

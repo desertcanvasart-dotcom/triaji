@@ -2,17 +2,17 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'تريجي — لوحة التحكم',
-  description: 'لوحة تحكم تريجي للمستشفيات والعيادات',
+  title: 'Triajji Admin',
+  description: 'Triajji Admin Panel — Hospital & Clinic Management',
 };
 
-export default function AdminLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ar" dir="rtl">
+    <html lang="en" dir="ltr">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -21,11 +21,11 @@ export default function AdminLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className="font-cairo bg-gray-50 text-gray-900 antialiased">
+      <body className="bg-gray-50 text-gray-900 antialiased">
         {children}
       </body>
     </html>

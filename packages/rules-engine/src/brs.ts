@@ -108,6 +108,22 @@ export function calculateBRS(input: RulesInput): BRSResult {
     }
   }
 
+  // Family history: capped at +3 total
+  if (input.profile.familyHistory) {
+    const fh = input.profile.familyHistory;
+    const familyScore = Math.min(
+      (fh.heartDisease || fh.heartAttack ? 1 : 0) +
+      (fh.stroke ? 1 : 0) +
+      (fh.hypertension ? 1 : 0) +
+      (fh.diabetes ? 1 : 0),
+      3
+    );
+    if (familyScore > 0) {
+      score += familyScore;
+      factors.push('family_history');
+    }
+  }
+
   return {
     score,
     level: classifyLevel(score),

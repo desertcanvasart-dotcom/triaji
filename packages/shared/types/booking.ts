@@ -16,6 +16,11 @@ export interface Booking {
   booking_source: BookingSource;
   confirmation_sent_at: string | null;
   confirmation_channel: ConfirmChannel | null;
+  appointment_type: 'in_person' | 'telehealth';
+  livekit_room_name: string | null;
+  call_started_at: string | null;
+  call_ended_at: string | null;
+  call_duration_seconds: number | null;
   notes_ar: string | null;
   created_at: string;
   updated_at: string;
