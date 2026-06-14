@@ -165,8 +165,8 @@ export default async function CallLogPage({
 
   // Normalize the joined data into flat rows
   const calls: CallRow[] = (rawCalls ?? []).map((row) => {
-    const patient = row.patients as { phone_number: string } | null;
-    const specialty = row.specialties as { name_ar: string; name_en: string } | null;
+    const patient = row.patients as unknown as { phone_number: string } | null;
+    const specialty = row.specialties as unknown as { name_ar: string; name_en: string } | null;
 
     return {
       id: row.id as string,

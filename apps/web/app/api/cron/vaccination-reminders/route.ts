@@ -66,11 +66,11 @@ export async function GET(request: NextRequest) {
 
     if (!guardianRel) continue;
 
-    const guardian = guardianRel.guardian as Record<string, string> | null;
+    const guardian = guardianRel.guardian as unknown as Record<string, string> | null;
     if (!guardian?.phone_number) continue;
 
     const guardianLang = guardian.preferred_language ?? 'ar';
-    const vaccine = vacc.vaccine as Record<string, string> | null;
+    const vaccine = vacc.vaccine as unknown as Record<string, string> | null;
     const vaccineName = guardianLang === 'ar'
       ? (vaccine?.name_ar ?? vacc.vaccine_code)
       : (vaccine?.name_en ?? vacc.vaccine_code);
@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Group overdue by patient to avoid sending multiple messages
-  const overdueByPatient = new Map<string, typeof overdueVaccines>();
+  const overdueByPatient = new Map<string, NonNullable<typeof overdueVaccines>>();
   for (const vacc of overdueVaccines ?? []) {
     const existing = overdueByPatient.get(vacc.patient_id) ?? [];
     existing.push(vacc);
@@ -149,7 +149,7 @@ export async function GET(request: NextRequest) {
 
     if (!guardianRel) continue;
 
-    const guardian = guardianRel.guardian as Record<string, string> | null;
+    const guardian = guardianRel.guardian as unknown as Record<string, string> | null;
     if (!guardian?.phone_number) continue;
 
     const guardianLang = guardian.preferred_language ?? 'ar';
@@ -202,7 +202,7 @@ export async function GET(request: NextRequest) {
 
     if (!guardianRel) continue;
 
-    const guardian = guardianRel.guardian as Record<string, string> | null;
+    const guardian = guardianRel.guardian as unknown as Record<string, string> | null;
     if (!guardian?.phone_number) continue;
 
     const guardianLang = guardian.preferred_language ?? 'ar';

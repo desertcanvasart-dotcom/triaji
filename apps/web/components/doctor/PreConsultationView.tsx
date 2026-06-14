@@ -130,6 +130,7 @@ export default function PreConsultationView({ patientId, lang }: PreConsultation
 
       for (let i = 0; i < medsData.length; i++) {
         const drugA = medsData[i];
+        if (!drugA) continue;
         const otherDrugs = medsData
           .filter((_, j) => j !== i)
           .map((m) => ({
@@ -242,7 +243,7 @@ export default function PreConsultationView({ patientId, lang }: PreConsultation
     return (order[b.severity] ?? 0) - (order[a.severity] ?? 0);
   });
 
-  const highestSeverity = sorted[0].severity;
+  const highestSeverity = sorted[0]?.severity;
   const bannerColors =
     highestSeverity === 'contraindicated' || highestSeverity === 'major'
       ? 'border-red-300 bg-red-50'

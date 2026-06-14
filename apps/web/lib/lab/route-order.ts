@@ -135,7 +135,7 @@ async function routeViaChainApi(
     return { success: false, routingId: '', method: 'chain_api', error: 'Health record not found' };
   }
 
-  const patient = healthRecord.patient as Record<string, string> | null;
+  const patient = healthRecord.patient as unknown as Record<string, string> | null;
   if (!patient) {
     return { success: false, routingId: '', method: 'chain_api', error: 'Patient not found' };
   }
@@ -155,7 +155,7 @@ async function routeViaChainApi(
 
   const chainOrder: LabChainOrder = {
     tenantId: labTenantId,
-    patientId: patient.id,
+    patientId: patient.id ?? '',
     patient: chainPatient,
     tests: chainTests,
     branchId,

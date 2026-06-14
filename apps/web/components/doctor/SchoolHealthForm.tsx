@@ -82,7 +82,7 @@ export default function SchoolHealthForm({ patientId, patientName, lang }: Schoo
   // Form state
   const [academicYear, setAcademicYear] = useState(academicYears[0]);
   const [schoolName, setSchoolName] = useState('');
-  const [grade, setGrade] = useState(GRADES[0].value);
+  const [grade, setGrade] = useState(GRADES[0]!.value);
   const [examDate, setExamDate] = useState(new Date().toISOString().split('T')[0]);
   const [heightCm, setHeightCm] = useState('');
   const [weightKg, setWeightKg] = useState('');

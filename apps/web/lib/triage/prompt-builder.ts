@@ -32,8 +32,8 @@ function formatPatientProfile(
   const lines: string[] = [];
 
   // Paediatric context
-  const isPaediatric = (profile as Record<string, unknown>).is_paediatric === true;
-  const dateOfBirth = (profile as Record<string, unknown>).date_of_birth as string | undefined;
+  const isPaediatric = (profile as unknown as Record<string, unknown>).is_paediatric === true;
+  const dateOfBirth = (profile as unknown as Record<string, unknown>).date_of_birth as string | undefined;
 
   if (isPaediatric && dateOfBirth) {
     const dob = new Date(dateOfBirth);

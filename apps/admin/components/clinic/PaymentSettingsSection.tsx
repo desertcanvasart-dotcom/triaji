@@ -245,7 +245,7 @@ export default function PaymentSettingsSection({
                         <label className="block text-xs text-gray-600 mb-1">{field.label}</label>
                         <input
                           type="text"
-                          value={(config as Record<string, string | boolean | string[]>)[field.key] as string ?? ''}
+                          value={(config as unknown as Record<string, string | boolean | string[]>)[field.key] as string ?? ''}
                           onChange={(e) => updateField(field.key, e.target.value)}
                           placeholder={field.placeholder}
                           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none font-mono"

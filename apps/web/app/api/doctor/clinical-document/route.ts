@@ -202,6 +202,7 @@ export async function POST(request: NextRequest) {
 
         for (let i = 0; i < prescriptionDrugs.length; i++) {
           const newDrug = prescriptionDrugs[i];
+          if (!newDrug) continue;
           const otherPrescriptionDrugs = prescriptionDrugs
             .filter((_, j) => j !== i)
             .map((d) => ({

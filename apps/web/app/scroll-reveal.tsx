@@ -18,7 +18,7 @@ export default function ScrollReveal({ children, delay = 0, className = '' }: Sc
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           setVisible(true);
           observer.unobserve(el);
         }

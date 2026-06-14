@@ -677,6 +677,7 @@ export default function ChatClient({ lang }: ChatClientProps) {
           {/* Booking Confirmation */}
           {bookingStep === 'confirmed' && bookingData && (
             <BookingConfirmation
+              lang={lang}
               doctorNameAr={bookingData.doctorNameAr}
               doctorId={selectedDoctor?.id ?? ''}
               specialtyNameAr={bookingData.specialtyNameAr}

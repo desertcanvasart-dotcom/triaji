@@ -172,7 +172,7 @@ Triajji 🏥`;
     sent_by: admin.id,
     sent_at: new Date().toISOString(),
     channel: 'whatsapp',
-  }).then(() => {}).catch(() => {});
+  }).then(() => {}, () => {});
 
   return NextResponse.json({ success: true, sent_to: patient.phone });
 }

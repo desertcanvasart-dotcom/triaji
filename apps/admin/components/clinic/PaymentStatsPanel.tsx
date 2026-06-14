@@ -105,7 +105,7 @@ export default function PaymentStatsPanel({ tenantId }: { tenantId: string }) {
       if (data) {
         setUnpaidList(
           data.map((txn) => {
-            const patient = txn.patients as Record<string, string> | null;
+            const patient = txn.patients as unknown as Record<string, string> | null;
             return {
               id: txn.id as string,
               triaji_reference: txn.triaji_reference as string,

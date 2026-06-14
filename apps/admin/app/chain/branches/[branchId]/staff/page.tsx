@@ -1,15 +1,16 @@
 import Link from 'next/link';
 
-export default function BranchStaffPage({
+export default async function BranchStaffPage({
   params,
 }: {
-  params: { branchId: string };
+  params: Promise<{ branchId: string }>;
 }) {
+  const { branchId } = await params;
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <Link
-          href={`/chain/branches/${params.branchId}`}
+          href={`/chain/branches/${branchId}`}
           className="text-gray-400 hover:text-gray-600 transition-colors"
         >
           {'\u2190'}
