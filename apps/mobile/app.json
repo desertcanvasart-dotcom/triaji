@@ -1,0 +1,76 @@
+{
+  "expo": {
+    "name": "Triajji",
+    "slug": "triaji",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "triaji",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0D7A7A"
+    },
+    "ios": {
+      "bundleIdentifier": "com.triaji.app",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Triajji needs microphone access for voice input and telehealth calls.",
+        "NSCameraUsageDescription": "Triajji needs camera access for telehealth video calls.",
+        "NSLocationWhenInUseUsageDescription": "Triajji uses your location to find nearby ICU beds and hospitals.",
+        "NSFaceIDUsageDescription": "Use Face ID to securely sign in to Triajji."
+      }
+    },
+    "android": {
+      "package": "com.triaji.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0D7A7A"
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#0D7A7A"
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Triajji needs microphone access for voice input."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Triajji uses your location to find nearby ICU beds and hospitals."
+        }
+      ],
+      "expo-local-authentication"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "triaji-expo-project-id"
+      }
+    }
+  }
+}
