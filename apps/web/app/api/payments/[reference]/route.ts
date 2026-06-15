@@ -113,16 +113,16 @@ export async function GET(
     }
 
     case 'lab_invoice': {
+      // lab_order_routing has no order_number column — identify by chain_order_id.
       const { data: order } = await supabase
         .from('lab_order_routing')
-        .select('order_number')
+        .select('chain_order_id')
         .eq('id', txn.payable_id)
         .single();
 
-      if (order) {
-        description_ar = `فاتورة تحاليل #${order.order_number}`;
-        description_en = `Lab invoice #${order.order_number}`;
-      }
+      const orderRef = order?.chain_order_id ?? txn.payable_id;
+      description_ar = `فاتورة تحاليل #${orderRef}`;
+      description_en = `Lab invoice #${orderRef}`;
       break;
     }
 

@@ -94,14 +94,21 @@ async function getTenantBookingMode(tenantId: string): Promise<BookingMode> {
 
   const { data: integration } = await supabase
     .from('his_integrations')
-    .select('id, vendor, booking_mode')
+    .select('id, vendor')
     .eq('tenant_id', tenantId)
     .eq('sync_enabled', true)
     .single();
 
   if (!integration) return 'native';
 
-  const mode = (integration.booking_mode as string) ?? 'hybrid';
+  // booking_mode is configured on tenant_config (not his_integrations).
+  const { data: config } = await supabase
+    .from('tenant_config')
+    .select('booking_mode')
+    .eq('tenant_id', tenantId)
+    .single();
+
+  const mode = (config?.booking_mode as string) ?? 'hybrid';
   if (mode === 'his_integration' || mode === 'hybrid') return mode;
   return 'native';
 }

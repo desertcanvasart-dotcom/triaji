@@ -103,14 +103,18 @@ export async function GET(request: NextRequest) {
             .upsert(
               {
                 chain_code: chainCode,
-                branch_id: slot.branchId,
-                branch_name: slot.branchName,
-                branch_name_ar: slot.branchNameAr,
+                chain_branch_id: slot.branchId,
+                name_en: slot.branchName,
+                name_ar: slot.branchNameAr,
+                // address_ar is NOT NULL but the slot feed carries no address; the
+                // admin branch editor fills the real address later.
+                address_ar: '',
                 home_collection: slot.homeCollection ?? false,
                 is_active: true,
-                last_synced_at: new Date().toISOString(),
               },
-              { onConflict: 'chain_code,branch_id' },
+              // Insert new branches only; never overwrite admin-maintained fields
+              // (address_ar, name) on branches that already exist.
+              { onConflict: 'chain_code,chain_branch_id', ignoreDuplicates: true },
             );
 
           branchesSynced++;
@@ -148,13 +152,8 @@ export async function GET(request: NextRequest) {
 
         testsSynced = existingMappings?.length ?? 0;
 
-        // Update last_synced_at for all mappings of this chain
-        if (testsSynced > 0) {
-          await supabase
-            .from('lab_chain_test_mapping')
-            .update({ last_synced_at: new Date().toISOString() })
-            .eq('chain_code', chainCode);
-        }
+        // lab_chain_test_mapping has no last_synced_at column; the sync log below
+        // records the run timestamp, so there is nothing to stamp on the mappings.
 
         await logSync(supabase, {
           chain_code: chainCode,

@@ -120,11 +120,12 @@ export async function POST(request: NextRequest) {
 
   const isPrimary = (count ?? 0) === 0;
 
-  // Look up insurer tenant for routing
-  const { data: insurerTenant } = await supabase
-    .from('tenants')
-    .select('id')
-    .eq('insurance_provider_code', body.insurer_code)
+  // Look up insurer tenant for routing. The insurer↔tenant mapping lives on
+  // tenant_config.insurer_code (there is no tenants.insurance_provider_code column).
+  const { data: insurerConfig } = await supabase
+    .from('tenant_config')
+    .select('tenant_id')
+    .eq('insurer_code', body.insurer_code)
     .maybeSingle();
 
   const { data: policy, error } = await supabase
@@ -132,7 +133,7 @@ export async function POST(request: NextRequest) {
     .insert({
       patient_id: patient.patientId,
       insurer_code: body.insurer_code,
-      insurer_tenant_id: insurerTenant?.id ?? null,
+      insurer_tenant_id: insurerConfig?.tenant_id ?? null,
       policy_number: body.policy_number,
       card_number: body.card_number ?? null,
       member_name_ar: body.member_name_ar ?? null,

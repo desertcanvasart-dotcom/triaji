@@ -135,7 +135,7 @@ export async function GET(
       // 4. Lab results
       supabase
         .from('health_records')
-        .select('id, lab_values, lab_date, lab_name, summary_ar, has_abnormal_values, created_at')
+        .select('id, lab_values, lab_date, lab_name, summary_ar, has_abnormal_values, created_at:uploaded_at')
         .eq('patient_id', patientId)
         .eq('record_type', 'lab_result')
         .is('deleted_at', null)

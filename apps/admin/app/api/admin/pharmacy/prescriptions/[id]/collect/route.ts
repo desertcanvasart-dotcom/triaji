@@ -51,7 +51,6 @@ export async function POST(
     .update({
       status: 'collected',
       collected_at: now,
-      collected_by: admin.id,
     })
     .eq('id', id)
     .select()

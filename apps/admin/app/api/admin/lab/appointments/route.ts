@@ -19,13 +19,16 @@ export async function GET(request: NextRequest) {
   const date = searchParams.get('date') ?? new Date().toISOString().split('T')[0];
   const status = searchParams.get('status');
 
+  // appointment_date/time were merged into a single appointment_datetime column;
+  // select a day by range.
   let query = supabase
     .from('lab_appointments')
     .select('*')
-    .eq('appointment_date', date)
-    .order('appointment_time', { ascending: true });
+    .gte('appointment_datetime', `${date}T00:00:00`)
+    .lte('appointment_datetime', `${date}T23:59:59.999`)
+    .order('appointment_datetime', { ascending: true });
 
-  if (tenant) query = query.eq('tenant_id', tenant);
+  if (tenant) query = query.eq('lab_tenant_id', tenant);
   if (status) query = query.eq('status', status);
 
   const { data, error } = await query;
@@ -68,18 +71,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'patient_name_ar is required' }, { status: 400 });
   }
 
+  // appointment_date/time → appointment_datetime; source → is_walk_in; notes → notes_ar;
+  // order_routing_id → lab_order_routing_id; tenant_id → lab_tenant_id.
+  const appointmentDatetime = appointment_date
+    ? (appointment_time ? `${appointment_date}T${appointment_time}` : appointment_date)
+    : new Date().toISOString();
+
   const { data, error } = await supabase
     .from('lab_appointments')
     .insert({
-      tenant_id: tenantId,
+      lab_tenant_id: tenantId,
       patient_name_ar,
       patient_phone: patient_phone ?? null,
       patient_id: patient_id ?? null,
-      appointment_date: appointment_date ?? new Date().toISOString().split('T')[0],
-      appointment_time: appointment_time ?? null,
-      source: source ?? 'walk_in',
-      order_routing_id: order_routing_id ?? null,
-      notes: notes ?? null,
+      appointment_datetime: appointmentDatetime,
+      is_walk_in: source ? source === 'walk_in' : true,
+      is_home_collection: false,
+      lab_order_routing_id: order_routing_id ?? null,
+      notes_ar: notes ?? null,
       status: 'scheduled',
     })
     .select()

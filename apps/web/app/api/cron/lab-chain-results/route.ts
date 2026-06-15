@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
   // ─── Find pending chain orders ──────────────────────────────────────────────
   const { data: pendingOrders, error: queryError } = await supabase
     .from('lab_order_routing')
-    .select('id, chain_code, chain_order_id, status, partial_results_count')
+    .select('id, chain_code, chain_order_id, status')
     .not('chain_code', 'is', null)
     .not('chain_order_id', 'is', null)
     .in('status', ['received', 'sample_collected', 'processing'])
@@ -86,11 +86,8 @@ export async function GET(request: NextRequest) {
           partialReceived++;
         }
       } else {
-        // Not ready yet — update last_polled_at
-        await supabase
-          .from('lab_order_routing')
-          .update({ last_polled_at: now.toISOString() })
-          .eq('id', routingId);
+        // Not ready yet — nothing to persist (lab_order_routing has no poll-timestamp
+        // column); it will be re-polled on the next cron run.
         notReady++;
       }
     } catch (err) {

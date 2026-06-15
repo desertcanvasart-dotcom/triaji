@@ -44,7 +44,6 @@ export async function POST(
     .update({
       status: 'received',
       received_at: new Date().toISOString(),
-      received_by: admin.id,
     })
     .eq('id', id)
     .select()

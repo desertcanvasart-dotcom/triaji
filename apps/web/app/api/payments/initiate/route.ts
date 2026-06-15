@@ -121,10 +121,12 @@ async function lookupPayable(
     }
 
     case 'lab_invoice': {
+      // lab_order_routing carries no price/order-number columns — identify the order
+      // by chain_order_id (or the routing id) and require the caller to pass amount_egp.
       const { data } = await supabase
         .from('lab_order_routing')
         .select(`
-          total_egp, patient_id, order_number,
+          patient_id, chain_order_id,
           patients:patient_id ( name_ar, phone_number )
         `)
         .eq('id', payableId)
@@ -132,13 +134,14 @@ async function lookupPayable(
 
       if (!data) return null;
       const patient = data.patients as unknown as Record<string, string> | null;
+      const orderRef = data.chain_order_id ?? payableId;
       return {
-        amount_egp: data.total_egp,
+        amount_egp: 0,
         patient_id: data.patient_id,
         patient_name: patient?.name_ar ?? '',
         patient_phone: patient?.phone_number ?? '',
-        description_ar: `فاتورة تحاليل #${data.order_number}`,
-        description_en: `Lab invoice #${data.order_number}`,
+        description_ar: `فاتورة تحاليل #${orderRef}`,
+        description_en: `Lab invoice #${orderRef}`,
       };
     }
 

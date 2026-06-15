@@ -63,36 +63,25 @@ async function getChainConfig(
   supabase: ReturnType<typeof createServerClient>,
   labTenantId: string,
 ): Promise<ChainConfig | null> {
-  // Check tenant_config for chain_code
+  // A lab tenant maps to a chain via tenants.chain_id → lab_chains.id → lab_chains.code.
   const { data: tenant } = await supabase
     .from('tenants')
-    .select('config')
+    .select('chain_id')
     .eq('id', labTenantId)
     .single();
 
-  const config = tenant?.config as Record<string, unknown> | null;
-  const chainCode = config?.chain_code as string | undefined;
+  if (!tenant?.chain_id) return null;
 
-  if (chainCode && ['alborg', 'almokhtabar', 'alfa'].includes(chainCode)) {
-    return {
-      chainCode: chainCode as LabChainCode,
-      branchId: config?.chain_branch_id as string | undefined,
-    };
-  }
-
-  // Fallback: check lab_chains table
   const { data: chainRow } = await supabase
     .from('lab_chains')
-    .select('chain_code, branch_id')
-    .eq('lab_tenant_id', labTenantId)
+    .select('code')
+    .eq('id', tenant.chain_id)
     .eq('is_active', true)
     .maybeSingle();
 
-  if (chainRow?.chain_code) {
-    return {
-      chainCode: chainRow.chain_code as LabChainCode,
-      branchId: chainRow.branch_id ?? undefined,
-    };
+  const chainCode = chainRow?.code as string | undefined;
+  if (chainCode && ['alborg', 'almokhtabar', 'alfa'].includes(chainCode)) {
+    return { chainCode: chainCode as LabChainCode };
   }
 
   return null;
@@ -116,8 +105,6 @@ async function routeViaChainApi(
       id,
       patient_id,
       lab_values,
-      test_codes,
-      notes,
       patient:patients!health_records_patient_id_fkey (
         id,
         name_ar,
@@ -139,8 +126,10 @@ async function routeViaChainApi(
     return { success: false, routingId: '', method: 'chain_api', error: 'Patient not found' };
   }
 
-  // Map test codes via lab_chain_test_mapping
-  const testCodes = (healthRecord.test_codes as string[]) ?? [];
+  // Map test codes via lab_chain_test_mapping. health_records has no test-code column;
+  // ordered tests live in lab_order_items (names only, no chain-mappable codes), so until
+  // coded ordering exists the chain order carries no coded tests.
+  const testCodes: string[] = [];
   const chainTests = await mapTestCodes(supabase, chainCode, testCodes);
 
   // Build chain order
@@ -195,7 +184,6 @@ async function routeViaChainApi(
         .update({
           chain_order_id: result.orderId,
           status: 'received',
-          estimated_date: result.estimatedDate,
         })
         .eq('id', routingId);
 
@@ -283,7 +271,6 @@ async function handleApiFallback(
       manual_fallback_active: true,
       api_error_count: errorCount,
       last_api_error: errorMsg,
-      last_api_error_at: new Date().toISOString(),
     })
     .eq('id', routingId);
 
@@ -304,7 +291,7 @@ async function mapTestCodes(
 
   const { data: mappings } = await supabase
     .from('lab_chain_test_mapping')
-    .select('triaji_code, chain_test_code, test_name, test_name_ar')
+    .select('triaji_code, chain_test_code, chain_test_name_ar')
     .eq('chain_code', chainCode)
     .in('triaji_code', triajiCodes);
 
@@ -317,8 +304,8 @@ async function mapTestCodes(
     return {
       code,
       chainCode: mapping?.chain_test_code,
-      name: mapping?.test_name ?? code,
-      nameAr: mapping?.test_name_ar,
+      name: mapping?.chain_test_name_ar ?? code,
+      nameAr: mapping?.chain_test_name_ar,
     };
   });
 }

@@ -137,36 +137,58 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
-    // 6. Create lab_appointments record
+    // 6. Persist the booking. lab_appointments is keyed to a lab tenant + order
+    //    (lab_tenant_id is NOT NULL and the table holds no chain metadata), so we
+    //    can only create an appointment row when the booking is tied to an existing
+    //    lab_order_routing. The chain's confirmation is authoritative regardless.
     const supabase = getServiceClient();
 
-    const { data: appointment, error: dbError } = await supabase
-      .from('lab_appointments')
-      .insert({
-        user_id: userId,
-        chain_code: chainCode,
-        chain_booking_id: bookingResult.bookingId,
-        chain_confirmation_code: bookingResult.confirmationCode,
-        slot_id: body.slotId,
-        patient_name: body.patientName,
-        patient_phone: body.patientPhone,
-        patient_dob: body.patientDOB ?? null,
-        patient_sex: body.patientSex ?? null,
-        order_id: body.orderId ?? null,
-        test_codes: body.testCodes ?? [],
-        branch_name: bookingResult.branchName ?? null,
-        appointment_date: bookingResult.date ?? null,
-        appointment_time: bookingResult.time ?? null,
-        home_collection: false,
-        status: 'confirmed',
-      })
-      .select('id')
-      .single();
+    const apptDatetime = bookingResult.date
+      ? (bookingResult.time ? `${bookingResult.date}T${bookingResult.time}` : bookingResult.date)
+      : new Date().toISOString();
 
-    if (dbError) {
-      console.error('[lab-chain-book] db error:', dbError.message);
-      // Booking was successful at chain level even if DB fails.
-      // Log but don't fail — the patient has a confirmation code.
+    let appointmentId: string | null = null;
+
+    if (body.orderId) {
+      const { data: routing } = await supabase
+        .from('lab_order_routing')
+        .select('id, lab_tenant_id, patient_id')
+        .eq('id', body.orderId)
+        .single();
+
+      if (routing?.lab_tenant_id) {
+        const { data: appointment, error: apptError } = await supabase
+          .from('lab_appointments')
+          .insert({
+            lab_order_routing_id: routing.id,
+            lab_tenant_id: routing.lab_tenant_id,
+            patient_id: routing.patient_id ?? null,
+            patient_name_ar: body.patientName,
+            patient_phone: body.patientPhone,
+            appointment_datetime: apptDatetime,
+            is_home_collection: false,
+            is_walk_in: false,
+            status: 'confirmed',
+          })
+          .select('id')
+          .single();
+
+        if (apptError) {
+          console.error('[lab-chain-book] appointment insert error:', apptError.message);
+        } else {
+          appointmentId = appointment?.id ?? null;
+        }
+
+        // Record the chain booking reference on the routing row.
+        await supabase
+          .from('lab_order_routing')
+          .update({
+            chain_order_id: bookingResult.bookingId,
+            chain_branch_name_ar: bookingResult.branchName ?? null,
+            lab_appointment_id: appointmentId,
+          })
+          .eq('id', routing.id);
+      }
     }
 
     // 7. Send WhatsApp confirmation
@@ -194,7 +216,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       appointmentDate: bookingResult.date,
       appointmentTime: bookingResult.time,
       homeCollection: false,
-      appointmentId: appointment?.id ?? null,
+      appointmentId,
     });
   } catch (err) {
     console.error('[lab-chain-book] unexpected error:', err);

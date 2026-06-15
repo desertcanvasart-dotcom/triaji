@@ -53,7 +53,6 @@ export async function POST(
     .update({
       status: newStatus,
       ready_at: new Date().toISOString(),
-      prepared_by: admin.id,
     })
     .eq('id', id)
     .select()

@@ -29,7 +29,6 @@ export async function DELETE(request: NextRequest) {
     .from('his_integrations')
     .update({
       sync_enabled: false,
-      updated_at: new Date().toISOString(),
     })
     .eq('tenant_id', admin.tenant_id)
     .eq('sync_enabled', true);

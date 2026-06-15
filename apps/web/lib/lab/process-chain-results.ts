@@ -47,14 +47,13 @@ export async function processChainResults(
   const isComplete = chainResult.status === 'completed';
 
   if (!isComplete) {
-    // Store partial results, keep status as 'processing'
+    // Keep status as 'processing' and keep polling. lab_order_routing has no
+    // partial-results columns, so partial payloads aren't persisted — they are
+    // re-fetched on the next poll until the chain reports 'completed'.
     await supabase
       .from('lab_order_routing')
       .update({
         status: 'processing',
-        partial_results: chainResult.results as unknown as Record<string, unknown>[],
-        partial_results_count: chainResult.results.length,
-        last_polled_at: new Date().toISOString(),
       })
       .eq('id', routingId);
 
@@ -90,22 +89,27 @@ export async function processChainResults(
   // Generate Arabic summary via Claude
   const summaries = await generateResultSummary(labValues);
 
-  // Create health_records row (same format as Phase 17)
+  // Create health_records row (same format as Phase 17 manual upload). Lab results
+  // live in the lab_values jsonb; there is no source/test_codes/chain_order_id column
+  // (the chain order id is tracked on lab_order_routing). file_* are NOT NULL, so use
+  // the chain PDF when present, otherwise a sentinel.
+  const resultDate = chainResult.completedAt ?? new Date().toISOString();
   const { data: newRecord, error: insertError } = await supabase
     .from('health_records')
     .insert({
       patient_id: ctx.patientId,
       record_type: 'lab_result',
-      source: 'chain_api',
-      source_chain_code: ctx.chainCode,
       lab_values: labValues,
-      test_codes: mappedResults.map((r) => r.triajiCode ?? r.testCode),
+      lab_name: ctx.chainCode,
+      lab_date: resultDate,
+      has_abnormal_values: labValues.some((lv) => lv.abnormal),
       summary_ar: summaries.summaryAr,
       summary_en: summaries.summaryEn,
       pdf_url: chainResult.pdfUrl,
-      result_date: chainResult.completedAt ?? new Date().toISOString(),
-      chain_order_id: chainResult.orderId,
-      created_at: new Date().toISOString(),
+      file_url: chainResult.pdfUrl ?? 'system/chain-lab-result',
+      file_name: 'lab-result.pdf',
+      mime_type: 'application/pdf',
+      uploaded_at: resultDate,
     })
     .select('id')
     .single();
@@ -122,9 +126,8 @@ export async function processChainResults(
     .from('lab_order_routing')
     .update({
       status: 'results_ready',
-      results_health_record_id: newHealthRecordId,
-      results_received_at: new Date().toISOString(),
-      partial_results: null, // Clear partial results
+      result_health_record_id: newHealthRecordId,
+      results_ready_at: new Date().toISOString(),
     })
     .eq('id', routingId);
 

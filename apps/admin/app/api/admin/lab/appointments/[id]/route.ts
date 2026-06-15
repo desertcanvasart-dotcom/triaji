@@ -34,15 +34,16 @@ export async function PUT(
     );
   }
 
-  const update: Record<string, unknown> = { status, updated_at: new Date().toISOString() };
-  if (notes !== undefined) update.notes = notes;
+  // lab_appointments has no updated_at column; notes are stored in notes_ar.
+  const update: Record<string, unknown> = { status };
+  if (notes !== undefined) update.notes_ar = notes;
 
   let query = supabase
     .from('lab_appointments')
     .update(update)
     .eq('id', id);
 
-  if (tenant) query = query.eq('tenant_id', tenant);
+  if (tenant) query = query.eq('lab_tenant_id', tenant);
 
   const { data, error } = await query.select().single();
 

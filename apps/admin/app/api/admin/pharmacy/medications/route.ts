@@ -18,17 +18,15 @@ export async function GET(request: NextRequest) {
 
   const activeOnly = searchParams.get('active') !== 'false';
   const search = searchParams.get('search');
-  const category = searchParams.get('category');
 
   let query = supabase
     .from('pharmacy_medications')
     .select('*')
-    .order('name_ar', { ascending: true });
+    .order('drug_name_ar', { ascending: true });
 
   if (tenant) query = query.eq('tenant_id', tenant);
   if (activeOnly) query = query.eq('is_active', true);
-  if (category) query = query.eq('category', category);
-  if (search) query = query.or(`name_ar.ilike.%${search}%,name_en.ilike.%${search}%,barcode.ilike.%${search}%`);
+  if (search) query = query.or(`drug_name_ar.ilike.%${search}%,drug_name_en.ilike.%${search}%,generic_name_en.ilike.%${search}%`);
 
   const { data, error } = await query;
 
@@ -56,34 +54,30 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json();
   const {
-    catalog_medication_id, name_ar, name_en, generic_name, barcode,
-    category, form, strength, unit, price, stock_quantity,
-    min_stock_level, requires_prescription, storage_conditions, manufacturer,
+    name_ar, name_en, generic_name, form, strength, price,
+    stock_quantity, requires_prescription, manufacturer,
   } = body;
 
   if (!name_ar) {
     return NextResponse.json({ error: 'name_ar is required' }, { status: 400 });
   }
 
+  const stock = stock_quantity ?? 0;
+
   const { data, error } = await supabase
     .from('pharmacy_medications')
     .insert({
       tenant_id: tenantId,
-      catalog_medication_id: catalog_medication_id ?? null,
-      name_ar,
-      name_en: name_en ?? null,
-      generic_name: generic_name ?? null,
-      barcode: barcode ?? null,
-      category: category ?? null,
-      form: form ?? null,
+      drug_name_ar: name_ar,
+      drug_name_en: name_en ?? null,
+      generic_name_en: generic_name ?? null,
+      form_ar: form ?? null,
       strength: strength ?? null,
-      unit: unit ?? null,
-      price: price ?? null,
-      stock_quantity: stock_quantity ?? 0,
-      min_stock_level: min_stock_level ?? 0,
+      price_egp: price ?? null,
+      stock_quantity: stock,
+      in_stock: stock > 0,
       requires_prescription: requires_prescription ?? true,
-      storage_conditions: storage_conditions ?? null,
-      manufacturer: manufacturer ?? null,
+      manufacturer_ar: manufacturer ?? null,
       is_active: true,
     })
     .select()

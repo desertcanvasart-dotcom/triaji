@@ -51,32 +51,38 @@ export async function POST(request: NextRequest) {
   const eventType = payload.event_type as string | undefined;
   const chainOrderId = payload.order_id as string | undefined;
 
+  // ─── Find routing record (correlate the webhook to an order) ────────────────
+  let routing: { id: string; status: string } | null = null;
+  if (chainOrderId) {
+    const { data } = await supabase
+      .from('lab_order_routing')
+      .select('id, status')
+      .eq('chain_code', CHAIN_CODE)
+      .eq('chain_order_id', chainOrderId)
+      .maybeSingle();
+    routing = (data as { id: string; status: string } | null) ?? null;
+  }
+
   // ─── Log webhook to lab_chain_webhooks ──────────────────────────────────────
+  // chain_order_id lives inside payload; correlation is via routing_id.
   await supabase
     .from('lab_chain_webhooks')
     .insert({
       chain_code: CHAIN_CODE,
       event_type: eventType ?? 'unknown',
-      chain_order_id: chainOrderId,
       payload,
-      received_at: new Date().toISOString(),
+      signature,
+      is_verified: isValid,
+      routing_id: routing?.id ?? null,
     })
     .then(({ error }) => {
       if (error) console.error(`[webhook/almokhtabar] Failed to log webhook:`, error);
     });
 
-  // ─── Find routing record ───────────────────────────────────────────────────
   if (!chainOrderId) {
     console.log(`[webhook/almokhtabar] No order_id in payload, event: ${eventType}`);
     return NextResponse.json({ received: true });
   }
-
-  const { data: routing } = await supabase
-    .from('lab_order_routing')
-    .select('id, status')
-    .eq('chain_code', CHAIN_CODE)
-    .eq('chain_order_id', chainOrderId)
-    .maybeSingle();
 
   if (!routing) {
     console.warn(`[webhook/almokhtabar] No routing found for chain_order_id: ${chainOrderId}`);
@@ -93,13 +99,7 @@ export async function POST(request: NextRequest) {
       }
     } catch (err) {
       console.error(`[webhook/almokhtabar] Failed to process results for ${chainOrderId}:`, err);
-      await supabase
-        .from('lab_chain_webhooks')
-        .update({ processing_error: (err as Error).message })
-        .eq('chain_code', CHAIN_CODE)
-        .eq('chain_order_id', chainOrderId)
-        .order('received_at', { ascending: false })
-        .limit(1);
+      // lab_chain_webhooks has no processing_error column; the error is logged above.
     }
   }
 

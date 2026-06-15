@@ -140,7 +140,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     if (consent) {
       const { data: records } = await supabase
         .from('health_records')
-        .select('id, record_type, title_ar, uploaded_at')
+        .select('id, record_type, title_ar:summary_ar, uploaded_at')
         .eq('patient_id', booking.patient_id)
         .order('uploaded_at', { ascending: false });
 

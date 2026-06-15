@@ -50,8 +50,6 @@ export async function POST(
     .from('prescription_routing')
     .update({
       stock_confirmation,
-      stock_checked_at: new Date().toISOString(),
-      stock_checked_by: admin.id,
     })
     .eq('id', id)
     .select()

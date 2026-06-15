@@ -136,20 +136,12 @@ async function updatePharmacyInvoice(
 }
 
 async function updateLabInvoice(
-  supabase: ReturnType<typeof createServerClient>,
-  payableId: string,
+  _supabase: ReturnType<typeof createServerClient>,
+  _payableId: string,
 ) {
-  const { error } = await supabase
-    .from('lab_order_routing')
-    .update({
-      payment_status: 'paid',
-      paid_at: new Date().toISOString(),
-    })
-    .eq('id', payableId);
-
-  if (error) {
-    console.error('[processWebhook] Failed to update lab_order_routing:', error.message);
-  }
+  // lab_order_routing has no payment_status/paid_at columns — the authoritative
+  // record of payment is the payment_transactions row (already marked completed by
+  // the caller). Nothing to mirror onto the routing record.
 }
 
 async function updateInsuranceCopay(

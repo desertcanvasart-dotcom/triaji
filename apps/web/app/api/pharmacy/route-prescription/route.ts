@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
     // Authenticate: either doctor or patient
     let authenticatedAs: 'doctor' | 'patient' = 'patient';
     let authenticatedId: string | null = null;
+    let doctorAccountId: string | null = null;
 
     // Try doctor auth first
     const accessToken = request.cookies.get('sb-access-token')?.value
@@ -56,6 +57,7 @@ export async function POST(request: NextRequest) {
         if (doctorAccount && doctorAccount.verification_status === 'verified') {
           authenticatedAs = 'doctor';
           authenticatedId = (doctorAccount as DoctorAccount).doctor_id;
+          doctorAccountId = (doctorAccount as DoctorAccount).id;
         }
       }
     }
@@ -81,7 +83,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const {
-      health_record_id, pharmacy_tenant_id, patient_name_ar, patient_phone,
+      health_record_id, pharmacy_tenant_id, patient_phone,
       notes,
     } = body;
 
@@ -108,10 +110,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify the health record exists
+    // Verify the health record exists. patient name/phone are NOT stored on
+    // health_records — they come from the patients row; the prescriber is on the record.
     const { data: healthRecord, error: hrError } = await supabase
       .from('health_records')
-      .select('id, patient_name_ar, patient_phone')
+      .select(`
+        id,
+        patient_id,
+        prescribing_doctor,
+        patient:patients!health_records_patient_id_fkey ( name_ar, phone_number )
+      `)
       .eq('id', health_record_id)
       .single();
 
@@ -122,19 +130,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const recordPatient = healthRecord.patient as unknown as
+      { name_ar: string | null; phone_number: string | null } | null;
+
+    // prescription_routing.doctor_id is NOT NULL: the authenticated doctor when a
+    // doctor routes, otherwise the prescriber recorded on the health record.
+    const doctorId = authenticatedAs === 'doctor'
+      ? authenticatedId
+      : (healthRecord.prescribing_doctor as string | null);
+
+    if (!doctorId) {
+      return NextResponse.json(
+        { error: 'Cannot route prescription: no prescribing doctor on record' },
+        { status: 422 }
+      );
+    }
+
+    const resolvedPhone = patient_phone ?? recordPatient?.phone_number ?? '';
+
     // Create prescription routing record
     const { data: routing, error: routingError } = await supabase
       .from('prescription_routing')
       .insert({
         health_record_id,
+        patient_id: healthRecord.patient_id,
         pharmacy_tenant_id,
-        patient_name_ar: patient_name_ar ?? healthRecord.patient_name_ar,
-        patient_phone: patient_phone ?? healthRecord.patient_phone,
+        doctor_id: doctorId,
+        doctor_account_id: doctorAccountId,
+        patient_phone: resolvedPhone,
         status: 'routed',
         routed_at: new Date().toISOString(),
-        routed_by: authenticatedAs,
-        routed_by_id: authenticatedId,
-        notes: notes ?? null,
+        routing_note_ar: notes ?? null,
       })
       .select()
       .single();

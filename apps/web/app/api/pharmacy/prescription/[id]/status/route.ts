@@ -24,9 +24,9 @@ export async function GET(
     const { data, error } = await supabase
       .from('prescription_routing')
       .select(`
-        id, status, routed_at, received_at, stock_checked_at, ready_at, collected_at,
+        id, status, routed_at, received_at, stock_confirmation, ready_at, collected_at,
         pharmacy_tenant_id,
-        tenants:pharmacy_tenant_id(name_ar, name_en, phone, address_ar)
+        tenants:pharmacy_tenant_id(name_ar, name_en)
       `)
       .eq('id', id)
       .single();
@@ -55,8 +55,10 @@ export async function GET(
         step: 'stock_checked',
         label_ar: 'تم فحص التوفر',
         label_en: 'Stock Checked',
-        timestamp: data.stock_checked_at,
-        completed: !!data.stock_checked_at,
+        // prescription_routing has no stock_checked_at timestamp; completion is
+        // signalled by the presence of the stock_confirmation JSONB.
+        timestamp: null,
+        completed: !!data.stock_confirmation,
       },
       {
         step: 'ready',
