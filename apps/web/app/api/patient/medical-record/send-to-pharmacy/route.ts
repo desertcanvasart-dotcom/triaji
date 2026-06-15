@@ -126,8 +126,12 @@ export async function POST(request: NextRequest) {
     .insert({
       patient_id: patient.patientId,
       record_type: 'prescription',
-      title_ar: 'روشتة من السجل الطبي',
       document_type: 'prescription',
+      // file_* are NOT NULL on health_records; this is a system-materialised
+      // prescription with no uploaded file, so use sentinels.
+      file_url: 'system/self-routed-prescription',
+      file_name: 'prescription.json',
+      mime_type: 'application/json',
       prescription_date: new Date().toISOString().split('T')[0],
       medications: [
         {
