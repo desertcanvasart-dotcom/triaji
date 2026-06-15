@@ -118,7 +118,18 @@ for those lacking `default`.
   (`SUPABASE_SERVICE_ROLE_KEY`, and `NEXT_PUBLIC_SUPABASE_ANON_KEY` if it rolled). The JWT is
   long-lived (exp ~2036) so it stays valid until rolled.
 - **Verify-only (lower priority):** runtime-test telehealth/LiveKit, payments webhooks, the admin app
-  UI, mobile, and the widget — none deeply exercised.
+  UI, and mobile — none deeply exercised.
+  - **Widget — RUNTIME-VERIFIED (2026-06-16).** Built clean (Vite, 39 modules, 167 KB), served from
+    web `/widget.js`, loaded against a port-agnostic test harness with a real tenant
+    (`dr-ahmed-clinic`): script loads (200) + executes, reads `TriajjiConfig`, calls
+    `/api/embed/config?tenant=…` (200, resolves real tenant config), mounts `#triaji-widget-host`
+    with a **closed** Shadow DOM, and the launcher renders in the widget's own teal — fully isolated
+    from the host page's intentionally-hostile `button{background:red;…}` CSS (Shadow DOM isolation
+    confirmed visually). Note: the chat panel couldn't be opened via automation (closed shadow root +
+    0×0 fixed-position host = unreachable by selector/JS/coord-click); needs a manual click to
+    exercise the chat/session flow. Build artifacts/test harness were not committed.
+  - **admin lab/pharmacy UI:** API data contract verified (queries resolve 200; embeds valid), but
+    `lab_order_routing`/`prescription_routing` are empty, so the pages couldn't be rendered with data.
 
 ## ✅ Protocol-compliance feature — DONE + APPLIED (2026-06-16)
 - `057_protocol_alerts.sql` **applied to the live DB** and verified end-to-end: table 200,
