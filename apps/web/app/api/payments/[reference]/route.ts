@@ -59,12 +59,13 @@ export async function GET(
 
   switch (txn.payable_type) {
     case 'booking': {
+      // `bookings` has no date_ar/time_ar columns (only appointment_datetime),
+      // and `doctors` uses name_ar/name_en/title_ar (no full_name_* / title_en).
       const { data: booking } = await supabase
         .from('bookings')
         .select(`
-          doctors:doctor_id ( full_name_ar, full_name_en, title_ar, title_en ),
-          tenants:tenant_id ( name_ar, name_en ),
-          date_ar, time_ar
+          doctors:doctor_id ( name_ar, name_en, title_ar ),
+          tenants:tenant_id ( name_ar, name_en )
         `)
         .eq('id', txn.payable_id)
         .single();
@@ -72,8 +73,8 @@ export async function GET(
       if (booking) {
         const doctor = booking.doctors as unknown as Record<string, string> | null;
         const tenant = booking.tenants as unknown as Record<string, string> | null;
-        description_ar = `حجز موعد — ${doctor?.title_ar ?? ''} ${doctor?.full_name_ar ?? ''}`;
-        description_en = `Appointment — ${doctor?.title_en ?? ''} ${doctor?.full_name_en ?? ''}`;
+        description_ar = `حجز موعد — ${doctor?.title_ar ?? ''} ${doctor?.name_ar ?? ''}`;
+        description_en = `Appointment — ${doctor?.name_en ?? ''}`;
         providerName_ar = tenant?.name_ar ?? '';
         providerName_en = tenant?.name_en ?? '';
       }

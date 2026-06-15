@@ -51,16 +51,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: msg }, { status: 409 });
     }
 
-    // Verify doctor exists
+    // Verify doctor exists. `doctors` has no phone column; phone (when present)
+    // lives on doctor_accounts (joined by doctor_id).
     const { data: doctor } = await supabase
       .from('doctors')
-      .select('id, name_ar, phone_number')
+      .select('id, name_ar')
       .eq('id', body.doctor_id)
       .single();
 
     if (!doctor) {
       return NextResponse.json({ error: 'Doctor not found' }, { status: 404 });
     }
+
+    const { data: doctorAccount } = await supabase
+      .from('doctor_accounts')
+      .select('phone')
+      .eq('doctor_id', doctor.id)
+      .maybeSingle();
+
+    const doctorWithPhone = { ...doctor, phone: doctorAccount?.phone ?? null };
 
     // Create GP relationship request
     const { data: gpRelationship, error: insertError } = await supabase
@@ -80,7 +89,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Send notification to doctor asynchronously
-    notifyDoctorOfGPRequest(patient.patientId, doctor, gpRelationship.id);
+    notifyDoctorOfGPRequest(patient.patientId, doctorWithPhone, gpRelationship.id);
 
     return NextResponse.json({ success: true, gpRelationship }, { status: 201 });
   } catch (err) {
@@ -91,9 +100,12 @@ export async function POST(request: NextRequest) {
 
 async function notifyDoctorOfGPRequest(
   patientId: string,
-  doctor: { phone_number: string; name_ar: string },
+  doctor: { phone: string | null; name_ar: string },
   requestId: string
 ) {
+  // No phone on file — nothing to notify.
+  if (!doctor.phone) return;
+
   const supabase = getServiceClient();
 
   try {
@@ -109,7 +121,7 @@ async function notifyDoctorOfGPRequest(
     const confirmUrl = `${baseUrl}/api/gp/confirm/${requestId}`;
 
     const { sendGPRequestNotification } = await import('@/lib/gp/notifications');
-    await sendGPRequestNotification(doctor.phone_number, 'ar', {
+    await sendGPRequestNotification(doctor.phone, 'ar', {
       requesterName: patientData.name_ar,
       initiatedBy: 'patient',
       confirmUrl,

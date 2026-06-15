@@ -49,25 +49,28 @@ async function lookupPayable(
 ): Promise<PayableInfo | null> {
   switch (payableType) {
     case 'booking': {
+      // `bookings` has no fee_egp/patient_name/patient_phone columns:
+      // the consultation fee is on doctors, and patient name/phone are on patients.
       const { data } = await supabase
         .from('bookings')
         .select(`
-          fee_egp, patient_name, patient_phone,
-          doctors:doctor_id ( full_name_ar, full_name_en, specialty_ar, specialty_en ),
-          patient_id
+          patient_id,
+          doctors:doctor_id ( name_ar, name_en, consultation_fee_egp ),
+          patients:patient_id ( name_ar, phone_number )
         `)
         .eq('id', payableId)
         .single();
 
       if (!data) return null;
       const doctor = data.doctors as unknown as Record<string, string> | null;
+      const patient = data.patients as unknown as Record<string, string> | null;
       return {
-        amount_egp: data.fee_egp,
+        amount_egp: Number(doctor?.consultation_fee_egp ?? 0),
         patient_id: data.patient_id,
-        patient_name: data.patient_name ?? '',
-        patient_phone: data.patient_phone ?? '',
-        description_ar: `حجز موعد — ${doctor?.full_name_ar ?? ''}`,
-        description_en: `Appointment — ${doctor?.full_name_en ?? ''}`,
+        patient_name: patient?.name_ar ?? '',
+        patient_phone: patient?.phone_number ?? '',
+        description_ar: `حجز موعد — ${doctor?.name_ar ?? ''}`,
+        description_en: `Appointment — ${doctor?.name_en ?? ''}`,
       };
     }
 

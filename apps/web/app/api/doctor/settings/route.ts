@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
         doctor_id,
         name_ar,
         name_en,
-        specialty_name_ar,
+        specialty_ar,
         syndicate_number,
         email,
         phone,

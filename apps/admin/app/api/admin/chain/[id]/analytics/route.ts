@@ -103,18 +103,9 @@ export async function GET(
     };
   });
 
-  // Average wait time across branches
-  const { data: waitData } = await supabase
-    .from('bookings')
-    .select('wait_minutes')
-    .in('tenant_id', branchIds)
-    .gte('created_at', `${today}T00:00:00`)
-    .not('wait_minutes', 'is', null);
-
-  const waitValues = (waitData ?? []).map((w) => w.wait_minutes).filter(Boolean);
-  const avgWait = waitValues.length > 0
-    ? Math.round(waitValues.reduce((a, b) => a + b, 0) / waitValues.length)
-    : 0;
+  // Average wait time across branches.
+  // `bookings` has no wait_minutes column (no source for this metric yet).
+  const avgWait = 0;
 
   // Per-branch status cards
   const branchStats = await Promise.all(
@@ -132,17 +123,8 @@ export async function GET(
         .eq('tenant_id', branch.id)
         .eq('is_active', true);
 
-      const { data: branchWait } = await supabase
-        .from('bookings')
-        .select('wait_minutes')
-        .eq('tenant_id', branch.id)
-        .gte('created_at', `${today}T00:00:00`)
-        .not('wait_minutes', 'is', null);
-
-      const branchWaitValues = (branchWait ?? []).map((w) => w.wait_minutes).filter(Boolean);
-      const branchAvgWait = branchWaitValues.length > 0
-        ? Math.round(branchWaitValues.reduce((a, b) => a + b, 0) / branchWaitValues.length)
-        : 0;
+      // `bookings` has no wait_minutes column (no source for this metric yet).
+      const branchAvgWait = 0;
 
       return {
         branch_id: branch.id,

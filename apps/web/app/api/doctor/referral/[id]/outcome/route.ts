@@ -134,15 +134,19 @@ function notifyReferralOutcome(
 ) {
   const supabase = getServiceClient();
 
+  // `doctors` has no phone column; the referring doctor's phone (when present)
+  // lives on doctor_accounts (joined by doctor_id).
   Promise.all([
-    supabase.from('doctors').select('phone_number').eq('id', referringDoctorId).single(),
+    supabase.from('doctor_accounts').select('phone').eq('doctor_id', referringDoctorId).maybeSingle(),
     supabase.from('patients').select('name_ar').eq('id', patientId).single(),
   ])
     .then(async ([referrerRes, patientRes]) => {
-      if (!referrerRes.data || !patientRes.data) return;
+      if (!patientRes.data) return;
+      const referrerPhone = referrerRes.data?.phone ?? null;
+      if (!referrerPhone) return; // no phone on file — skip notification
 
       const { sendReferralOutcomeToReferrer } = await import('@/lib/referral/notifications');
-      await sendReferralOutcomeToReferrer(referrerRes.data.phone_number, 'ar', {
+      await sendReferralOutcomeToReferrer(referrerPhone, 'ar', {
         specialistName: specialist.name_ar,
         patientName: patientRes.data.name_ar,
         outcomeSummaryAr,

@@ -134,16 +134,20 @@ function notifyReferralDeclined(
 ) {
   const supabase = getServiceClient();
 
+  // `doctors` has no phone column; the referring doctor's phone (when present)
+  // lives on doctor_accounts (joined by doctor_id).
   Promise.all([
-    supabase.from('doctors').select('phone_number, name_ar').eq('id', referringDoctorId).single(),
+    supabase.from('doctor_accounts').select('phone').eq('doctor_id', referringDoctorId).maybeSingle(),
     supabase.from('patients').select('name_ar').eq('id', patientId).single(),
     supabase.from('specialties').select('name_ar').eq('id', specialtyId).single(),
   ])
     .then(async ([referrerRes, patientRes, specialtyRes]) => {
-      if (!referrerRes.data || !patientRes.data || !specialtyRes.data) return;
+      if (!patientRes.data || !specialtyRes.data) return;
+      const referrerPhone = referrerRes.data?.phone ?? null;
+      if (!referrerPhone) return; // no phone on file — skip notification
 
       const { sendReferralDeclinedToReferrer } = await import('@/lib/referral/notifications');
-      await sendReferralDeclinedToReferrer(referrerRes.data.phone_number, 'ar', {
+      await sendReferralDeclinedToReferrer(referrerPhone, 'ar', {
         decliningDoctorName: decliningDoctor.name_ar,
         patientName: patientRes.data.name_ar,
         specialtyAr: specialtyRes.data.name_ar,

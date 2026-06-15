@@ -80,7 +80,7 @@ export async function POST(
         governorate_id: doctorAccount.governorate_id,
         clinic_address_ar: doctorAccount.clinic_name_ar,
         is_active: true,
-        accepts_new_patients: true,
+        accepting_new_patients: true,
         available_for_booking: true,
       })
       .select('id')

@@ -26,10 +26,12 @@ export async function PUT(
     return NextResponse.json({ error: 'status is required.' }, { status: 400 });
   }
 
-  // Fetch current booking
+  // Fetch current booking.
+  // `bookings` has no patient_phone/patient_name (join patients) and the slot
+  // FK column is slot_id (not availability_slot_id).
   const { data: booking, error: fetchError } = await supabase
     .from('bookings')
-    .select('id, status, doctor_id, appointment_datetime, patient_phone, patient_name, availability_slot_id')
+    .select('id, status, doctor_id, appointment_datetime, slot_id, patients:patient_id ( name_ar, phone_number )')
     .eq('id', id)
     .single();
 
@@ -79,11 +81,11 @@ export async function PUT(
   }
 
   // If cancelled, release the slot
-  if (newStatus === 'cancelled' && booking.availability_slot_id) {
+  if (newStatus === 'cancelled' && booking.slot_id) {
     await supabase
       .from('doctor_availability')
       .update({ is_booked: false })
-      .eq('id', booking.availability_slot_id);
+      .eq('id', booking.slot_id);
 
     // Send cancellation notification (DEV_MODE: log to console)
     const { data: doctor } = await supabase
@@ -92,7 +94,10 @@ export async function PUT(
       .eq('id', booking.doctor_id)
       .single();
 
-    if (doctor && booking.patient_phone) {
+    const patient = booking.patients as unknown as { name_ar: string | null; phone_number: string | null } | null;
+    const patientPhone = patient?.phone_number ?? null;
+
+    if (doctor && patientPhone) {
       const appointmentDate = new Date(booking.appointment_datetime);
       const dateAr = appointmentDate.toLocaleDateString('ar-EG', {
         weekday: 'long',
@@ -108,7 +113,7 @@ export async function PUT(
       const cancellationMsg = `عذراً، تم إلغاء موعدك مع ${doctor.title_ar} ${doctor.name_ar}\nبتاريخ ${dateAr} الساعة ${timeAr}\n\nلحجز موعد جديد، استخدم ترياچي.\nترياچي 🏥`;
 
       console.log('[DEV_MODE] Cancellation notification:');
-      console.log(`[DEV_MODE] To: ${booking.patient_phone}`);
+      console.log(`[DEV_MODE] To: ${patientPhone}`);
       console.log(`[DEV_MODE] Message: ${cancellationMsg}`);
     }
   }

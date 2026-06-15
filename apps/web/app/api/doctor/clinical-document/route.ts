@@ -424,17 +424,17 @@ export async function POST(request: NextRequest) {
         treatment_plan_ar?: string;
         treatment_plan_en?: string;
         follow_up_notes_ar?: string;
-        follow_up_notes_en?: string;
       };
+      // session_summaries columns: doctor_assessment_*, doctor_plan_*, doctor_followup_ar.
+      // There is no doctor_followup_en column, so follow_up_notes_en is dropped.
       await supabase
         .from('session_summaries')
         .update({
-          doctor_diagnosis_ar: summaryData.diagnosis_ar ?? null,
-          doctor_diagnosis_en: summaryData.diagnosis_en ?? null,
-          doctor_treatment_plan_ar: summaryData.treatment_plan_ar ?? null,
-          doctor_treatment_plan_en: summaryData.treatment_plan_en ?? null,
-          doctor_follow_up_ar: summaryData.follow_up_notes_ar ?? null,
-          doctor_follow_up_en: summaryData.follow_up_notes_en ?? null,
+          doctor_assessment_ar: summaryData.diagnosis_ar ?? null,
+          doctor_assessment_en: summaryData.diagnosis_en ?? null,
+          doctor_plan_ar: summaryData.treatment_plan_ar ?? null,
+          doctor_plan_en: summaryData.treatment_plan_en ?? null,
+          doctor_followup_ar: summaryData.follow_up_notes_ar ?? null,
         })
         .eq('session_id', typedBooking.session_id);
     }

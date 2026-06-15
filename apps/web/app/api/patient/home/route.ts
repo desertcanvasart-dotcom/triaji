@@ -33,19 +33,20 @@ export async function GET() {
       .from('bookings')
       .select(`
         id,
-        appointment_date,
-        appointment_time,
+        appointment_datetime,
         doctors!inner (
           name_ar,
           name_en,
-          specialty_name_ar,
-          specialty_name_en
+          specialties:specialty_id (
+            name_ar,
+            name_en
+          )
         )
       `)
       .eq('patient_id', patient.patientId)
       .eq('status', 'confirmed')
-      .gte('appointment_date', now.split('T')[0])
-      .order('appointment_date', { ascending: true })
+      .gte('appointment_datetime', now)
+      .order('appointment_datetime', { ascending: true })
       .limit(5),
 
     // Active medications
@@ -103,17 +104,25 @@ export async function GET() {
     }
   }
 
-  // Map upcoming bookings
+  // Map upcoming bookings.
+  // `bookings` stores a single appointment_datetime; split it into date/time for the UI.
   const upcomingBookings = (upcomingBookingsResult.data ?? []).map((b: Record<string, unknown>) => {
-    const doctor = b.doctors as { name_ar: string; name_en?: string; specialty_name_ar: string; specialty_name_en?: string } | null;
+    const doctor = b.doctors as {
+      name_ar: string;
+      name_en?: string;
+      specialties?: { name_ar: string; name_en?: string } | null;
+    } | null;
+    const specialty = doctor?.specialties ?? null;
+    const datetime = b.appointment_datetime as string | null;
+    const [datePart, timePart] = datetime ? datetime.split('T') : ['', ''];
     return {
       id: b.id as string,
       doctor_name_ar: doctor?.name_ar ?? '',
       doctor_name_en: doctor?.name_en ?? doctor?.name_ar ?? '',
-      specialty_ar: doctor?.specialty_name_ar ?? '',
-      specialty_en: doctor?.specialty_name_en ?? doctor?.specialty_name_ar ?? '',
-      appointment_date: b.appointment_date as string,
-      appointment_time: b.appointment_time as string,
+      specialty_ar: specialty?.name_ar ?? '',
+      specialty_en: specialty?.name_en ?? specialty?.name_ar ?? '',
+      appointment_date: datePart ?? '',
+      appointment_time: (timePart ?? '').slice(0, 5),
     };
   });
 

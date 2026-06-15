@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
             .from('bookings')
             .select(`
               id, slot_id, doctor_id,
-              doctors:doctor_id ( full_name_ar, full_name_en, tenant_id )
+              doctors:doctor_id ( name_ar, name_en, tenant_id )
             `)
             .eq('id', txn.payable_id)
             .single();
@@ -131,12 +131,13 @@ export async function POST(request: NextRequest) {
                 .eq('id', booking.slot_id);
             }
 
-            // Cancel the booking
+            // Cancel the booking.
+            // `bookings` has no cancelled_reason column; record the reason in notes_ar.
             await supabase
               .from('bookings')
               .update({
                 status: 'cancelled',
-                cancelled_reason: 'payment_expired',
+                notes_ar: 'تم الإلغاء — انتهت صلاحية الدفع',
               })
               .eq('id', booking.id);
 
@@ -147,8 +148,8 @@ export async function POST(request: NextRequest) {
               try {
                 const doctor = booking.doctors as unknown as Record<string, string> | null;
                 const doctorName = lang === 'en'
-                  ? (doctor?.full_name_en ?? doctor?.full_name_ar ?? '')
-                  : (doctor?.full_name_ar ?? '');
+                  ? (doctor?.name_en ?? doctor?.name_ar ?? '')
+                  : (doctor?.name_ar ?? '');
 
                 const newBookingLink = `${baseUrl}/${lang}/chat`;
 

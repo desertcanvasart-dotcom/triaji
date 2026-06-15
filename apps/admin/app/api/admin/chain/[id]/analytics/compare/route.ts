@@ -103,18 +103,8 @@ export async function GET(
         .eq('tenant_id', branch.id)
         .gte('created_at', startISO);
 
-      // Avg wait
-      const { data: waitData } = await supabase
-        .from('bookings')
-        .select('wait_minutes')
-        .eq('tenant_id', branch.id)
-        .gte('created_at', startISO)
-        .not('wait_minutes', 'is', null);
-
-      const waitValues = (waitData ?? []).map((w) => w.wait_minutes).filter(Boolean);
-      const avgWait = waitValues.length > 0
-        ? Math.round(waitValues.reduce((a, b) => a + b, 0) / waitValues.length)
-        : 0;
+      // Avg wait — `bookings` has no wait_minutes column (no source for this metric yet).
+      const avgWait = 0;
 
       const completionRate = totalBookings
         ? Math.round(((completed ?? 0) / (totalBookings ?? 1)) * 100)

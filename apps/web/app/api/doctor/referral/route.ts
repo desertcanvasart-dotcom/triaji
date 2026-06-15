@@ -103,19 +103,27 @@ export async function POST(request: NextRequest) {
     // Auto-detect tier
     const tier = body.referred_doctor_id ? 'tier_2' : 'tier_1';
 
-    // If tier_2, verify referred doctor exists
-    let referredDoctor: { id: string; name_ar: string; phone_number: string } | null = null;
+    // If tier_2, verify referred doctor exists.
+    // `doctors` has no phone column; phone (when present) lives on doctor_accounts.
+    let referredDoctor: { id: string; name_ar: string; phone: string | null } | null = null;
     if (body.referred_doctor_id) {
       const { data: doc } = await supabase
         .from('doctors')
-        .select('id, name_ar, phone_number')
+        .select('id, name_ar')
         .eq('id', body.referred_doctor_id)
         .single();
 
       if (!doc) {
         return NextResponse.json({ error: 'Referred doctor not found' }, { status: 404 });
       }
-      referredDoctor = doc;
+
+      const { data: docAccount } = await supabase
+        .from('doctor_accounts')
+        .select('phone')
+        .eq('doctor_id', doc.id)
+        .maybeSingle();
+
+      referredDoctor = { ...doc, phone: docAccount?.phone ?? null };
     }
 
     // Get specialty info for notifications
@@ -173,7 +181,7 @@ function notifyReferralCreated(
     patient_profiles: { preferred_language: string | null }[] | null;
   },
   doctor: DoctorAccount,
-  referredDoctor: { name_ar: string; phone_number: string } | null,
+  referredDoctor: { name_ar: string; phone: string | null } | null,
   specialty: { name_ar: string; name_en: string | null },
   body: ReferralBody
 ) {
@@ -188,9 +196,9 @@ function notifyReferralCreated(
       reasonAr: body.reason_ar,
     }).catch((err) => console.error('[referral] Patient notification failed:', err));
 
-    // Notify referred doctor (tier 2 only)
-    if (referredDoctor) {
-      sendReferralToDoctor(referredDoctor.phone_number, 'ar', {
+    // Notify referred doctor (tier 2 only). Skip if no phone on file.
+    if (referredDoctor && referredDoctor.phone) {
+      sendReferralToDoctor(referredDoctor.phone, 'ar', {
         referringDoctorName: doctor.name_ar,
         patientName: patient.name_ar,
         specialtyAr: specialty.name_ar,

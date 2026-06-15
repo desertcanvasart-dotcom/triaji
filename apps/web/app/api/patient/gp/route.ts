@@ -38,9 +38,7 @@ export async function GET() {
           id,
           name_ar,
           name_en,
-          specialty_ar,
-          phone_number,
-          clinic_name_ar
+          specialties:specialty_id ( name_ar, name_en )
         )
       `)
       .eq('patient_id', patient.patientId)
@@ -115,16 +113,20 @@ export async function DELETE() {
 function notifyGPEnded(patientId: string, doctorId: string) {
   const supabase = getServiceClient();
 
+  // `doctors` has no phone column; the doctor's phone (when present) lives on
+  // doctor_accounts (joined by doctor_id).
   Promise.all([
     supabase.from('patients').select('phone_number, name_ar, patient_profiles(preferred_language)').eq('id', patientId).single(),
-    supabase.from('doctors').select('phone_number, name_ar').eq('id', doctorId).single(),
+    supabase.from('doctors').select('name_ar').eq('id', doctorId).single(),
+    supabase.from('doctor_accounts').select('phone').eq('doctor_id', doctorId).maybeSingle(),
   ])
-    .then(async ([patientRes, doctorRes]) => {
+    .then(async ([patientRes, doctorRes, doctorAccountRes]) => {
       if (!patientRes.data || !doctorRes.data) return;
 
       const { sendGPEndedNotification } = await import('@/lib/gp/notifications');
       const doctorName = doctorRes.data.name_ar;
       const patientName = patientRes.data.name_ar;
+      const doctorPhone = doctorAccountRes.data?.phone ?? null;
       const patientLang =
         (patientRes.data.patient_profiles as { preferred_language: string | null }[] | null)?.[0]
           ?.preferred_language ?? 'ar';
@@ -136,12 +138,14 @@ function notifyGPEnded(patientId: string, doctorId: string) {
         { doctorName, patientName, endedBy: 'patient' }
       ).catch((err) => console.error('[gp] Patient notification failed:', err));
 
-      // Notify doctor (always Arabic)
-      await sendGPEndedNotification(
-        doctorRes.data.phone_number,
-        'ar',
-        { doctorName, patientName, endedBy: 'patient' }
-      ).catch((err) => console.error('[gp] Doctor notification failed:', err));
+      // Notify doctor (always Arabic) — skip if no phone on file
+      if (doctorPhone) {
+        await sendGPEndedNotification(
+          doctorPhone,
+          'ar',
+          { doctorName, patientName, endedBy: 'patient' }
+        ).catch((err) => console.error('[gp] Doctor notification failed:', err));
+      }
     })
     .catch((err) => console.error('[gp] Notification lookup failed:', err));
 }
