@@ -90,9 +90,9 @@ export async function GET(request: NextRequest) {
     const [enrollmentsResult, alertsResult, followUpsResult] = await Promise.all([
       supabase
         .from('patient_protocol_enrollment')
-        .select('patient_id, protocol_id, enrolled_at, status, disease_protocols(name_ar, name_en, condition_code)')
+        .select('patient_id, protocol_id, enrolled_at, is_active, disease_protocols(name_ar, name_en, condition_code)')
         .in('patient_id', patientIds)
-        .eq('status', 'active'),
+        .eq('is_active', true),
 
       supabase
         .from('protocol_alerts')
