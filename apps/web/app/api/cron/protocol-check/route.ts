@@ -186,11 +186,14 @@ export async function GET(request: NextRequest) {
           }
         }
 
-        // Update compliance percentage on enrollment
+        // Update compliance percentage + last-check timestamp on enrollment
         for (const enrollmentId of patientInfo.enrollmentIds) {
           await supabase
             .from('patient_protocol_enrollment')
-            .update({ overall_compliance_pct: compliance.compliancePct })
+            .update({
+              overall_compliance_pct: compliance.compliancePct,
+              last_compliance_check: now.toISOString(),
+            })
             .eq('id', enrollmentId);
         }
       } catch (err) {

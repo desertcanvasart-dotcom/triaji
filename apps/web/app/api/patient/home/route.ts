@@ -77,12 +77,16 @@ export async function GET() {
       .lt('follow_up_date', now.split('T')[0])
       .limit(5),
 
-    // Active protocol alerts
+    // Active protocol alerts. Protocol name comes from the enrollment → protocol
+    // embed (protocol_alerts has no denormalized name columns); active = unresolved.
     supabase
       .from('protocol_alerts')
-      .select('id, protocol_name_ar, protocol_name_en, message_ar, message_en, severity')
+      .select(`
+        id, message_ar, message_en, severity,
+        patient_protocol_enrollment(disease_protocols(name_ar, name_en))
+      `)
       .eq('patient_id', patient.patientId)
-      .eq('status', 'active')
+      .is('resolved_at', null)
       .order('created_at', { ascending: false })
       .limit(5),
   ]);
@@ -146,14 +150,24 @@ export async function GET() {
     frequency_en: (m.frequency_ar as string) ?? '',
   }));
 
-  // Map protocol alerts
-  const protocolAlerts = (protocolAlertsResult.data ?? []).map((pa: Record<string, unknown>) => ({
-    id: pa.id as string,
-    protocol_name_ar: pa.protocol_name_ar as string,
-    protocol_name_en: (pa.protocol_name_en as string) ?? (pa.protocol_name_ar as string),
-    message_ar: pa.message_ar as string,
-    message_en: (pa.message_en as string) ?? (pa.message_ar as string),
-  }));
+  // Map protocol alerts. Protocol name is nested under enrollment → disease_protocols.
+  const protocolAlerts = (protocolAlertsResult.data ?? []).map((pa: Record<string, unknown>) => {
+    const enrollment = Array.isArray(pa.patient_protocol_enrollment)
+      ? pa.patient_protocol_enrollment[0]
+      : pa.patient_protocol_enrollment;
+    const proto = enrollment?.disease_protocols
+      ? (Array.isArray(enrollment.disease_protocols) ? enrollment.disease_protocols[0] : enrollment.disease_protocols)
+      : null;
+    const nameAr = (proto?.name_ar as string) ?? '';
+    const nameEn = (proto?.name_en as string) ?? nameAr;
+    return {
+      id: pa.id as string,
+      protocol_name_ar: nameAr,
+      protocol_name_en: nameEn,
+      message_ar: pa.message_ar as string,
+      message_en: (pa.message_en as string) ?? (pa.message_ar as string),
+    };
+  });
 
   return NextResponse.json({
     alerts,

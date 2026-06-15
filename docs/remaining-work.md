@@ -83,10 +83,13 @@ for those lacking `default`.
     `tenants!inner(tenant_config!inner(...))`.
   - **Wrong-table (PGRST205):** patient/consent queried `access_grants` (doesn't exist) → real table
     is `record_access_grants` (and `doctor_account_id`→`granted_to_account`).
-  - **jsonb-shape mismatch:** `disease_protocols` schedule lives in `protocol_definition` (jsonb:
-    labs[]/vitals[]/targets[]), not flat columns. Compliance now derives lab cadence from
-    `labs[].frequencyMonths`; **follow-up + vital-threshold checks are skipped** (no data for them in
-    the jsonb) — TODO: wire `protocol_definition.vitals/targets` into `lib/protocols/check-compliance.ts`.
+  - **jsonb-shape mismatch — RESOLVED (2026-06-16).** `disease_protocols` schedule lives in
+    `protocol_definition` (jsonb: labs[]/vitals[]/warnings[]/targets[]/followUpFrequency), not flat
+    columns. `lib/protocols/check-compliance.ts` now derives ALL checks from it: lab cadence
+    (`labs[].frequencyMonths`), per-vital frequency (`vitals[].frequencyWeeks` vs vitals_history),
+    follow-up cadence (`followUpFrequency.months`), and clinical threshold alerts (`warnings[]`
+    {metric,condition,threshold,severity,message} matched against the latest vital OR lab value from
+    `health_records.lab_values`). All four data-layer queries verified 200 against live PostgREST.
   - **Response-shape note:** several admin endpoints previously returned phantom flat fields
     (e.g. `health_records.patient_name_ar`, `prescription_items.medication_name_ar`); patient/doctor
     now come from real joins (`patients:patient_id(...)`, `doctors:doctor_id(...)`) and items use real
@@ -104,9 +107,17 @@ for those lacking `default`.
 - **Verify-only (lower priority):** runtime-test telehealth/LiveKit, payments webhooks, the admin app
   UI, mobile, and the widget — none deeply exercised.
 
+## ✅ Protocol-compliance feature — DONE + APPLIED (2026-06-16)
+- `057_protocol_alerts.sql` **applied to the live DB** and verified end-to-end: table 200,
+  the `protocol_alerts → patient_protocol_enrollment → disease_protocols` embed resolves, and a
+  full insert→read(doctor-alerts query shape)→delete round-trip succeeded. The cron writer + all
+  5 reader endpoints (doctor/patients[, /[id], /[id]/alerts], patient/home) are now backed by a
+  real table. check-compliance.ts computes all four alert types from `protocol_definition`.
+
 ## DB state (already applied in earlier passes — don't repeat)
 - Migration `055_medical_record_shares.sql` applied.
 - Migration `056_tenant_location.sql` applied.
 - `clinical-documents` storage bucket created (private).
 - Seeded: doctors for empty specialties, fresh availability slots.
-- This pass added **no migrations** — all fixes were code-to-live-schema corrections.
+- Schema-drift passes (column + embedded-join) added **no migrations** — code-to-live-schema fixes.
+- Protocol-compliance pass added migration **057_protocol_alerts.sql** — APPLIED + verified.
