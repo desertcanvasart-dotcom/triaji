@@ -39,7 +39,7 @@ async function verifyRequestingDoctor(
   const { data: doctorAccount } = await supabase
     .from('doctor_accounts')
     .select('id')
-    .eq('user_id', userData.user.id)
+    .eq('id', userData.user.id)
     .single();
 
   if (!doctorAccount) {

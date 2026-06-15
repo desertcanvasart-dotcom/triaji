@@ -43,7 +43,6 @@ interface GpPatientInteraction {
 
 interface DoctorAccount {
   id: string;
-  user_id: string;
   doctor_id: string;
   verification_status: 'pending' | 'verified' | 'rejected';
 }
@@ -71,8 +70,8 @@ async function authenticateDoctor(request: NextRequest): Promise<DoctorAccount |
   const supabase = createServerClient();
   const { data: doctorAccount } = await supabase
     .from('doctor_accounts')
-    .select('id, user_id, doctor_id, verification_status')
-    .eq('user_id', user.id)
+    .select('id, doctor_id, verification_status')
+    .eq('id', user.id)
     .single();
 
   if (!doctorAccount || doctorAccount.verification_status !== 'verified') return null;

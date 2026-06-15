@@ -20,7 +20,6 @@ function getAnonClient() {
 
 interface DoctorAccount {
   id: string;
-  user_id: string;
   doctor_id: string;
   verification_status: 'pending' | 'verified' | 'rejected';
 }
@@ -51,7 +50,7 @@ export async function POST(request: NextRequest) {
         const { data: doctorAccount } = await supabase
           .from('doctor_accounts')
           .select('id, doctor_id, verification_status')
-          .eq('user_id', user.id)
+          .eq('id', user.id)
           .single();
 
         if (doctorAccount && doctorAccount.verification_status === 'verified') {

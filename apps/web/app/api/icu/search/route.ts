@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     const { data: doctorAccount, error: doctorError } = await supabase
       .from('doctor_accounts')
       .select('id')
-      .eq('user_id', userData.user.id)
+      .eq('id', userData.user.id)
       .single();
 
     if (doctorError || !doctorAccount) {

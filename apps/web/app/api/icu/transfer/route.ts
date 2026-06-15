@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     const { data: doctorAccount, error: doctorError } = await supabase
       .from('doctor_accounts')
       .select('id, doctor_id, full_name_ar, full_name_en, tenant_id')
-      .eq('user_id', userData.user.id)
+      .eq('id', userData.user.id)
       .single();
 
     if (doctorError || !doctorAccount) {

@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     const { data: doctorAccount, error: doctorError } = await serviceClient
       .from('doctor_accounts')
       .select('*')
-      .eq('user_id', authData.user.id)
+      .eq('id', authData.user.id)
       .single();
 
     if (doctorError || !doctorAccount) {
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     await serviceClient
       .from('doctor_accounts')
       .update({ last_login_at: new Date().toISOString() })
-      .eq('user_id', authData.user.id);
+      .eq('id', authData.user.id);
 
     const response = NextResponse.json({
       user: authData.user,

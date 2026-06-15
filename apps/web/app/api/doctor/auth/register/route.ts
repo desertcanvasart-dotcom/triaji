@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     const { data: doctorAccount, error: insertError } = await supabase
       .from('doctor_accounts')
       .insert({
-        user_id: userId,
+        id: userId,
         name_ar: body.name_ar.trim(),
         syndicate_number: body.syndicate_number,
         specialty_ar: body.specialty_ar?.trim() || null,
