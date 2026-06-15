@@ -109,13 +109,16 @@ export async function PUT(
     }
   }
 
-  // Send notification to provider (fire-and-forget)
+  // Send notification to provider (fire-and-forget).
+  // Provider phone lives on tenant_config (clinic_phone), not tenants.
   try {
-    const { data: providerTenant } = await supabase
-      .from('tenants')
-      .select('phone, name_ar')
-      .eq('id', existing.provider_tenant_id)
+    const { data: providerConfig } = await supabase
+      .from('tenant_config')
+      .select('clinic_phone, phone_number')
+      .eq('tenant_id', existing.provider_tenant_id)
       .single();
+
+    const providerPhone = providerConfig?.clinic_phone ?? providerConfig?.phone_number;
 
     const { data: patient } = await supabase
       .from('patients')
@@ -123,7 +126,7 @@ export async function PUT(
       .eq('id', existing.patient_id)
       .single();
 
-    if (providerTenant?.phone && patient) {
+    if (providerPhone && patient) {
       const whatsappUrl = process.env['WEB_APP_URL'] ?? process.env['NEXT_PUBLIC_WEB_URL'];
       if (whatsappUrl) {
         fetch(`${whatsappUrl}/api/internal/insurance-notification`, {
@@ -131,7 +134,7 @@ export async function PUT(
           headers: { 'Content-Type': 'application/json', 'x-internal-secret': process.env['INTERNAL_API_SECRET'] ?? '' },
           body: JSON.stringify({
             type: 'claim_decision',
-            phone: providerTenant.phone,
+            phone: providerPhone,
             lang: 'ar',
             data: {
               claimNumber: existing.claim_number,

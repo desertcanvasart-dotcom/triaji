@@ -100,13 +100,15 @@ export async function GET(request: NextRequest) {
     // Send notification to each provider tenant
     for (const [tenantId, claims] of byProvider.entries()) {
       try {
-        const { data: tenant } = await supabase
-          .from('tenants')
-          .select('phone, name_ar')
-          .eq('id', tenantId)
+        // Provider phone lives on tenant_config (clinic_phone), not tenants.
+        const { data: tenantConfig } = await supabase
+          .from('tenant_config')
+          .select('clinic_phone, phone_number')
+          .eq('tenant_id', tenantId)
           .single();
 
-        if (!tenant?.phone) continue;
+        const tenantPhone = tenantConfig?.clinic_phone ?? tenantConfig?.phone_number;
+        if (!tenantPhone) continue;
 
         const overdueClaims = claims.filter((c) => c.submission_deadline && c.submission_deadline < today);
         const approachingClaims = claims.filter((c) => c.submission_deadline && c.submission_deadline >= today);
@@ -141,7 +143,7 @@ export async function GET(request: NextRequest) {
         lines.push('من فضلك ارفع المطالبات المعلقة قبل انتهاء الموعد.');
         lines.push('ترياچي للرعاية الصحية');
 
-        const whatsappResult = await sendWhatsAppMessage(tenant.phone, lines.join('\n'));
+        const whatsappResult = await sendWhatsAppMessage(tenantPhone, lines.join('\n'));
 
         if (whatsappResult.success) {
           result.notified++;

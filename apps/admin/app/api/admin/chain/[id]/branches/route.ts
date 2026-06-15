@@ -20,10 +20,21 @@ export async function GET(
 
   const supabase = createAdminClient();
 
-  // Fetch branches (tenants with this chain_id)
+  // Fetch branches (tenants with this chain_id). Governorate/address/phone live
+  // on tenant_config (one row per tenant, joined by tenant_id) — embed it.
   const { data: branches, error } = await supabase
     .from('tenants')
-    .select('id, name_ar, name_en, governorate_id, phone, is_active, created_at, tier')
+    .select(`
+      id, name_ar, name_en, is_active, created_at, tier,
+      branch_name_ar, branch_name_en, branch_number,
+      tenant_config (
+        default_governorate_id,
+        address_ar,
+        address_en,
+        clinic_phone,
+        phone_number
+      )
+    `)
     .eq('chain_id', chainId)
     .order('created_at', { ascending: true });
 
@@ -39,6 +50,10 @@ export async function GET(
   const today = new Date().toISOString().split('T')[0];
   const branchesWithStats = await Promise.all(
     (branches ?? []).map(async (branch) => {
+      // tenant_config embed returns an array — read [0].
+      const cfg = Array.isArray(branch.tenant_config)
+        ? branch.tenant_config[0] ?? null
+        : (branch.tenant_config ?? null);
       // Patient count today
       const { count: todayPatients } = await supabase
         .from('bookings')
@@ -68,8 +83,14 @@ export async function GET(
         0
       );
 
+      const { tenant_config: _config, ...branchBase } = branch;
+
       return {
-        ...branch,
+        ...branchBase,
+        governorate_id: cfg?.default_governorate_id ?? null,
+        address_ar: cfg?.address_ar ?? null,
+        address_en: cfg?.address_en ?? null,
+        phone: cfg?.clinic_phone ?? cfg?.phone_number ?? null,
         today_patients: todayPatients ?? 0,
         doctor_count: doctorCount ?? 0,
         today_revenue: todayRevenue,
@@ -103,9 +124,14 @@ export async function POST(
     const {
       branch_name_ar,
       branch_name_en,
+      branch_number,
       address,
+      address_ar,
+      address_en,
       governorate_id,
       phone,
+      latitude,
+      longitude,
       copy_from_branch_id,
       doctor_ids,
     } = body;
@@ -140,16 +166,28 @@ export async function POST(
     };
     const tier = tierMap[chain.chain_type] ?? 'clinic';
 
-    // Create the tenant (branch)
+    // Generate a unique slug (tenants.slug is NOT NULL / unique).
+    const slugBase =
+      (branch_name_en || branch_name_ar)
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '') || 'branch';
+    const slug = `${slugBase}-${Date.now().toString(36)}`;
+
+    // Create the tenant (branch) with only real `tenants` columns.
+    // Location/contact (governorate/address/phone) belong on tenant_config.
     const { data: newTenant, error: tenantError } = await supabase
       .from('tenants')
       .insert({
         name_ar: branch_name_ar,
-        name_en: branch_name_en ?? null,
+        name_en: branch_name_en ?? branch_name_ar,
+        slug,
         chain_id: chainId,
-        address: address ?? null,
-        governorate_id: governorate_id ?? null,
-        phone: phone ?? null,
+        branch_name_ar: branch_name_ar,
+        branch_name_en: branch_name_en ?? null,
+        branch_number: branch_number ?? null,
         tier,
         is_active: true,
       })
@@ -164,7 +202,11 @@ export async function POST(
       );
     }
 
-    // Copy tenant_config from source branch if specified
+    // Persist location/contact on tenant_config. If copying from a source
+    // branch, start from its config; otherwise start fresh. Then overlay any
+    // governorate/address/phone/coords provided on this request.
+    let configToWrite: Record<string, unknown> = { tenant_id: newTenant.id };
+
     if (copy_from_branch_id) {
       const { data: sourceConfig } = await supabase
         .from('tenant_config')
@@ -174,12 +216,27 @@ export async function POST(
 
       if (sourceConfig) {
         const { id: _id, tenant_id: _tid, ...configToCopy } = sourceConfig;
-        await supabase
-          .from('tenant_config')
-          .upsert({
-            ...configToCopy,
-            tenant_id: newTenant.id,
-          });
+        configToWrite = { ...configToCopy, tenant_id: newTenant.id };
+      }
+    }
+
+    const resolvedAddressAr = address_ar ?? address ?? null;
+    if (governorate_id != null) configToWrite.default_governorate_id = governorate_id;
+    if (resolvedAddressAr != null) configToWrite.address_ar = resolvedAddressAr;
+    if (address_en != null) configToWrite.address_en = address_en;
+    if (phone != null) configToWrite.clinic_phone = phone;
+    if (latitude != null) configToWrite.latitude = latitude;
+    if (longitude != null) configToWrite.longitude = longitude;
+
+    // Only write a config row if we have something beyond the tenant_id, or if
+    // we copied from a source branch.
+    if (Object.keys(configToWrite).length > 1) {
+      const { error: configError } = await supabase
+        .from('tenant_config')
+        .upsert(configToWrite, { onConflict: 'tenant_id' });
+
+      if (configError) {
+        console.error('Error creating branch tenant_config:', configError);
       }
     }
 

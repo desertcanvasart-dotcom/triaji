@@ -169,18 +169,19 @@ export async function PUT(
         return NextResponse.json({ error: 'Failed to update' }, { status: 500 });
       }
 
-      // Notify receiving hospital
+      // Notify receiving hospital. ICU coordinator phone lives on
+      // tenant_config; there is no tenant language column — default to Arabic.
       try {
-        const { data: tenant } = await supabase
-          .from('tenants')
-          .select('icu_coordinator_phone, preferred_lang')
-          .eq('id', transfer.receiving_tenant_id)
+        const { data: tenantConfig } = await supabase
+          .from('tenant_config')
+          .select('icu_coordinator_phone')
+          .eq('tenant_id', transfer.receiving_tenant_id)
           .single();
 
-        if (tenant?.icu_coordinator_phone) {
-          const lang = tenant.preferred_lang === 'en' ? 'en' : 'ar';
+        if (tenantConfig?.icu_coordinator_phone) {
+          const lang: 'ar' | 'en' = 'ar';
           await sendTransferStatusNotification(
-            tenant.icu_coordinator_phone,
+            tenantConfig.icu_coordinator_phone,
             lang,
             { status: 'en_route', patientName: transfer.patient_name_ar }
           );

@@ -72,12 +72,24 @@ export async function POST(request: NextRequest) {
 
     const { data: doctorAccount, error: doctorError } = await supabase
       .from('doctor_accounts')
-      .select('id, doctor_id, full_name_ar, full_name_en, tenant_id')
+      .select('id, doctor_id, name_ar, name_en')
       .eq('id', userData.user.id)
       .single();
 
     if (doctorError || !doctorAccount) {
       return NextResponse.json({ error: 'Doctor account required' }, { status: 403 });
+    }
+
+    // doctor_accounts has no tenant_id — derive the requesting tenant from the
+    // linked doctors row (doctors.tenant_id).
+    let requestingTenantId: string | null = null;
+    if (doctorAccount.doctor_id) {
+      const { data: doctorRow } = await supabase
+        .from('doctors')
+        .select('tenant_id')
+        .eq('id', doctorAccount.doctor_id)
+        .single();
+      requestingTenantId = doctorRow?.tenant_id ?? null;
     }
 
     // ── Parse body ───────────────────────────────────────────────────────
@@ -118,19 +130,19 @@ export async function POST(request: NextRequest) {
     let estimatedEtaMinutes: number | null = null;
 
     if (body.current_location_lat && body.current_location_lng) {
-      // Get hospital location from tenants table
-      const { data: tenant } = await supabase
-        .from('tenants')
-        .select('lat, lng')
-        .eq('id', icuUnit.tenant_id)
+      // Hospital location lives on tenant_config (latitude/longitude), not tenants.
+      const { data: tenantConfig } = await supabase
+        .from('tenant_config')
+        .select('latitude, longitude')
+        .eq('tenant_id', icuUnit.tenant_id)
         .single();
 
-      if (tenant?.lat && tenant?.lng) {
+      if (tenantConfig?.latitude && tenantConfig?.longitude) {
         const distanceKm = haversineKm(
           body.current_location_lat,
           body.current_location_lng,
-          tenant.lat,
-          tenant.lng
+          tenantConfig.latitude,
+          tenantConfig.longitude
         );
         // 40 km/h average Cairo traffic speed
         estimatedEtaMinutes = Math.round((distanceKm / 40) * 60);
@@ -146,7 +158,7 @@ export async function POST(request: NextRequest) {
       .insert({
         requesting_doctor_id: doctorAccount.doctor_id,
         requesting_account_id: doctorAccount.id,
-        requesting_tenant_id: doctorAccount.tenant_id || null,
+        requesting_tenant_id: requestingTenantId,
         receiving_tenant_id: icuUnit.tenant_id,
         icu_unit_id: body.icu_unit_id,
         patient_name_ar: body.patient_name_ar,
@@ -173,22 +185,21 @@ export async function POST(request: NextRequest) {
 
     // ── Send WhatsApp notification to receiving hospital ─────────────────
     try {
-      // Get ICU coordinator phone from tenant
-      const { data: receivingTenant } = await supabase
-        .from('tenants')
-        .select('icu_coordinator_phone, preferred_lang, name_ar, name_en')
-        .eq('id', icuUnit.tenant_id)
+      // ICU coordinator phone lives on tenant_config. There is no tenant
+      // language column — default to Arabic.
+      const { data: receivingConfig } = await supabase
+        .from('tenant_config')
+        .select('icu_coordinator_phone')
+        .eq('tenant_id', icuUnit.tenant_id)
         .single();
 
-      if (receivingTenant?.icu_coordinator_phone) {
-        const lang = receivingTenant.preferred_lang === 'en' ? 'en' : 'ar';
+      if (receivingConfig?.icu_coordinator_phone) {
+        const lang: 'ar' | 'en' = 'ar';
         await sendTransferRequestNotification(
-          receivingTenant.icu_coordinator_phone,
+          receivingConfig.icu_coordinator_phone,
           lang,
           {
-            doctorName: lang === 'ar'
-              ? (doctorAccount.full_name_ar || doctorAccount.full_name_en)
-              : (doctorAccount.full_name_en || doctorAccount.full_name_ar),
+            doctorName: doctorAccount.name_ar || doctorAccount.name_en,
             patientName: body.patient_name_ar,
             patientAge: body.patient_age || undefined,
             diagnosis: body.diagnosis_ar,
