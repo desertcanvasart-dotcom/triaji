@@ -53,11 +53,41 @@ export default function PrescriptionDetail({ routingId }: { routingId: string })
       const res = await fetch(`/api/admin/pharmacy/prescriptions/${routingId}`, { headers });
       if (res.ok) {
         const data = await res.json();
-        setPrescription(data);
-        // Initialize stock statuses from existing data
+        // The API returns { prescription: <routing row with nested joins> }. Patient/doctor
+        // come from joins, items from health_records.prescription_items (real columns), and
+        // per-item stock state from the stock_confirmation jsonb on the routing.
+        const p = data.prescription ?? data;
+        const hr = Array.isArray(p.health_records) ? p.health_records[0] : p.health_records;
+        const stockConf: Array<Record<string, any>> = Array.isArray(p.stock_confirmation) ? p.stock_confirmation : [];
+        const stockByItem = new Map(stockConf.map((s) => [s.item_id, s]));
+        const normalized: PrescriptionData = {
+          id: p.id,
+          routing_id: p.id,
+          status: p.status,
+          patient_name: p.patients?.name_ar ?? '',
+          doctor_name: p.doctors?.name_ar ?? '',
+          doctor_note: p.routing_note_ar ?? null,
+          routed_at: p.routed_at,
+          items: (hr?.prescription_items ?? []).map((it: Record<string, any>) => {
+            const sc = stockByItem.get(it.id);
+            return {
+              id: it.id,
+              drug_name_ar: it.drug_name_ar,
+              drug_name_en: it.drug_name_en ?? null,
+              dose: it.dose ?? '',
+              frequency: it.frequency_ar ?? '',
+              duration: it.duration_ar ?? '',
+              stock_status: (sc?.stock_status as StockStatus) ?? null,
+              substitute_name: sc?.substitute_name ?? null,
+            };
+          }),
+        };
+        setPrescription(normalized);
+
+        // Initialize stock statuses from existing stock_confirmation
         const statuses: Record<string, StockStatus> = {};
         const subs: Record<string, string> = {};
-        (data.items ?? []).forEach((item: MedicationItem) => {
+        normalized.items.forEach((item) => {
           if (item.stock_status) statuses[item.id] = item.stock_status;
           if (item.substitute_name) subs[item.id] = item.substitute_name;
         });
@@ -85,7 +115,8 @@ export default function PrescriptionDetail({ routingId }: { routingId: string })
       const body: Record<string, unknown> = {};
 
       if (action === 'stock') {
-        body.items = Object.entries(stockStatuses).map(([itemId, status]) => ({
+        // The stock route expects { stock_confirmation: [...] } (stored as jsonb).
+        body.stock_confirmation = Object.entries(stockStatuses).map(([itemId, status]) => ({
           item_id: itemId,
           stock_status: status,
           substitute_name: status === 'substitute' ? substituteNames[itemId] ?? null : null,

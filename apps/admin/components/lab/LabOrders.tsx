@@ -70,7 +70,32 @@ export default function LabOrders({ tenantId }: { tenantId: string }) {
       const res = await fetch(`/api/admin/lab/orders?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
-        setOrders(data.orders ?? data ?? []);
+        // The API returns lab_order_routing rows with nested joins; map to the flat
+        // shape this table renders. Results live in lab_values (detail view only), so
+        // the list shows ordered tests without per-item result columns.
+        const normalized: LabOrder[] = (data.orders ?? []).map((o: Record<string, any>) => {
+          const hr = Array.isArray(o.health_records) ? o.health_records[0] : o.health_records;
+          return {
+            id: o.id,
+            routing_id: o.id,
+            order_date: o.created_at,
+            patient_name: o.patients?.name_ar ?? '',
+            patient_phone: o.patients?.phone_number ?? '',
+            doctor_name: o.doctors?.name_ar ?? '',
+            status: o.status,
+            urgency: o.is_urgent ? 'urgent' : 'routine',
+            items: (hr?.lab_order_items ?? []).map((it: Record<string, any>) => ({
+              id: it.id,
+              test_name: it.test_name_ar ?? it.test_name_en ?? '',
+              service_type: 'lab_test' as const,
+              status: o.status,
+              result_value: null,
+              unit: null,
+              reference_range: null,
+            })),
+          };
+        });
+        setOrders(normalized);
       }
     } catch {
       // Silently fail

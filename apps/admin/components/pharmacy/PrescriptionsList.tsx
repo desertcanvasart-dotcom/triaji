@@ -57,7 +57,22 @@ export default function PrescriptionsList({ tenantId }: { tenantId: string }) {
       const res = await fetch(`/api/admin/pharmacy/prescriptions?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
-        setPrescriptions(data.prescriptions ?? data ?? []);
+        // Map nested prescription_routing rows (patient/doctor joins + items under
+        // health_records) to this list's flat shape.
+        const normalized: PrescriptionItem[] = (data.prescriptions ?? []).map((p: Record<string, any>) => {
+          const hr = Array.isArray(p.health_records) ? p.health_records[0] : p.health_records;
+          return {
+            id: p.id,
+            routing_id: p.id,
+            patient_name: p.patients?.name_ar ?? '',
+            doctor_name: p.doctors?.name_ar ?? '',
+            medication_count: (hr?.prescription_items ?? []).length,
+            has_insurance: false,
+            status: p.status,
+            routed_at: p.routed_at,
+          };
+        });
+        setPrescriptions(normalized);
       }
     } catch {
       // Silently fail

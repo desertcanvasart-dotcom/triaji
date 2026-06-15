@@ -78,14 +78,37 @@ export default function ResultsUpload({ routingId }: { routingId: string }) {
       if (!res.ok) {
         throw new Error('Order not found');
       }
-      const data: OrderDetails = await res.json();
-      setOrder(data);
+      const data = await res.json();
+      // API returns { order: <routing row with nested joins> }. Ordered tests are under
+      // health_records.lab_order_items (all lab tests — radiology isn't modelled there);
+      // results are entered here and stored in health_records.lab_values.
+      const o = data.order ?? data;
+      const hr = Array.isArray(o.health_records) ? o.health_records[0] : o.health_records;
+      const normalized: OrderDetails = {
+        routing_id: o.id,
+        patient_name: o.patients?.name_ar ?? '',
+        patient_phone: o.patients?.phone_number ?? '',
+        doctor_name: o.doctors?.name_ar ?? '',
+        doctor_phone: null,
+        order_date: o.created_at,
+        items: (hr?.lab_order_items ?? []).map((it: Record<string, any>) => ({
+          id: it.id,
+          test_name: it.test_name_ar ?? it.test_name_en ?? '',
+          test_code: '',
+          service_type: 'lab_test' as const,
+          unit: null,
+          reference_range_min: null,
+          reference_range_max: null,
+          reference_range_text: null,
+        })),
+      };
+      setOrder(normalized);
 
       // Initialize result entries
       const labInit: Record<string, LabResultEntry> = {};
       const radioInit: Record<string, RadiologyResultEntry> = {};
 
-      for (const item of data.items) {
+      for (const item of normalized.items) {
         if (item.service_type === 'lab_test') {
           labInit[item.id] = {
             item_id: item.id,
@@ -198,27 +221,40 @@ export default function ResultsUpload({ routingId }: { routingId: string }) {
 
     setSubmitting(true);
     try {
-      const formData = new FormData();
-      formData.append('routing_id', routingId);
+      // POST JSON { routing_id, results } — the route stores results in the
+      // health_records.lab_values jsonb (item_id carried per entry). Radiology
+      // imaging files aren't persisted (not modelled in lab_order_items); any
+      // radiology report text is folded into results as a text value.
+      const results = Object.values(labResults)
+        .filter((r) => r.value.trim())
+        .map((r) => {
+          const item = order.items.find((i) => i.id === r.item_id);
+          return {
+            item_id: r.item_id,
+            test_name: item?.test_name ?? '',
+            value: r.value,
+            unit: r.unit,
+            abnormal: r.flag === 'abnormal_high' || r.flag === 'abnormal_low',
+          };
+        });
 
-      // Lab results
-      const labEntries = Object.values(labResults).filter((r) => r.value.trim());
-      formData.append('lab_results', JSON.stringify(labEntries));
-
-      // Radio results (without files)
-      const radioEntries = Object.values(radioResults).map(({ file, ...rest }) => rest);
-      formData.append('radio_results', JSON.stringify(radioEntries));
-
-      // Attach files
-      for (const [itemId, result] of Object.entries(radioResults)) {
-        if (result.file) {
-          formData.append(`file_${itemId}`, result.file);
-        }
-      }
+      const radioAsResults = Object.values(radioResults)
+        .filter((r) => r.report_text.trim())
+        .map((r) => {
+          const item = order.items.find((i) => i.id === r.item_id);
+          return {
+            item_id: r.item_id,
+            test_name: item?.test_name ?? '',
+            value: r.report_text,
+            unit: '',
+            abnormal: r.finding !== 'normal',
+          };
+        });
 
       const res = await fetch('/api/admin/lab/results', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ routing_id: routingId, results: [...results, ...radioAsResults] }),
       });
 
       if (!res.ok) {

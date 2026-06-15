@@ -30,7 +30,8 @@ export async function GET(request: NextRequest) {
     .select(`
       *,
       health_records!lab_order_routing_health_record_id_fkey!inner(record_type, lab_order_items(id, test_name_ar, test_name_en, urgency)),
-      patients:patient_id(name_ar, phone_number)
+      patients:patient_id(name_ar, phone_number),
+      doctors:doctor_id(name_ar)
     `, { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);

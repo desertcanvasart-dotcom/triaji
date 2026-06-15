@@ -90,10 +90,17 @@ for those lacking `default`.
     follow-up cadence (`followUpFrequency.months`), and clinical threshold alerts (`warnings[]`
     {metric,condition,threshold,severity,message} matched against the latest vital OR lab value from
     `health_records.lab_values`). All four data-layer queries verified 200 against live PostgREST.
-  - **Response-shape note:** several admin endpoints previously returned phantom flat fields
-    (e.g. `health_records.patient_name_ar`, `prescription_items.medication_name_ar`); patient/doctor
-    now come from real joins (`patients:patient_id(...)`, `doctors:doctor_id(...)`) and items use real
-    columns. The admin UI field access for lab/orders + pharmacy/prescriptions should be re-verified.
+  - **Response-shape note — UI RE-VERIFIED + FIXED (2026-06-16).** The lab/orders + pharmacy/
+    prescriptions endpoints now return nested joins (`patients:patient_id(...)`, `doctors:doctor_id(...)`,
+    items under `health_records`) instead of phantom flat fields. The 5 admin consumers
+    (LabOrders, ResultsUpload, lab/results page, PrescriptionsList, PrescriptionDetail) read the old
+    flat shape and would have rendered blank — fixed with a normalization layer at each fetch site.
+    Also fixed two latent integration bugs: PrescriptionDetail/ResultsUpload read `data` instead of
+    `data.prescription`/`data.order`; the stock action sent `body.items` (route wants
+    `stock_confirmation`); ResultsUpload posted FormData/`lab_results` (route wants JSON `{results}`).
+    Added a `doctors:doctor_id(name_ar)` join to the lab list so the doctor column populates. Admin
+    typecheck clean. (No admin lint config exists, so `any` in the mappers is harmless.) Not runtime-
+    clicked — needs an admin session + seeded lab/pharmacy data; shapes verified by construction.
 - **Degraded-but-safe behaviors introduced:** partial chain lab results are no longer persisted
   (poll until `completed`); chain appointment bookings are only persisted when tied to an existing
   `lab_order_routing` (lab_appointments.lab_tenant_id is NOT NULL); lab-chain-sync inserts new

@@ -27,7 +27,24 @@ export default function LabResultsPage() {
       const res = await fetch('/api/admin/lab/orders?status=received&status=processing');
       if (res.ok) {
         const data = await res.json();
-        setOrders(data.orders ?? data ?? []);
+        // Map the nested lab_order_routing rows to this list's flat shape.
+        const normalized: PendingOrder[] = (data.orders ?? []).map((o: Record<string, any>) => {
+          const hr = Array.isArray(o.health_records) ? o.health_records[0] : o.health_records;
+          const tests = (hr?.lab_order_items ?? []).map(
+            (it: Record<string, any>) => it.test_name_ar ?? it.test_name_en ?? ''
+          );
+          return {
+            id: o.id,
+            routing_id: o.id,
+            patient_name: o.patients?.name_ar ?? '',
+            doctor_name: o.doctors?.name_ar ?? '',
+            order_date: o.created_at,
+            status: o.status,
+            item_count: tests.length,
+            tests,
+          };
+        });
+        setOrders(normalized);
       }
     } catch {
       // Silently fail
