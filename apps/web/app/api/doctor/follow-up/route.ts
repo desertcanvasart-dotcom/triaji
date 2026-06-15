@@ -92,13 +92,17 @@ export async function POST(request: NextRequest) {
     // Check patient exists
     const { data: patient } = await supabase
       .from('patients')
-      .select('id, phone_number, preferred_language')
+      .select('id, phone_number, patient_profiles(preferred_language)')
       .eq('id', body.patient_id)
       .single();
 
     if (!patient) {
       return NextResponse.json({ error: 'Patient not found' }, { status: 404 });
     }
+
+    const patientLang =
+      (patient.patient_profiles as { preferred_language: string | null }[] | null)?.[0]
+        ?.preferred_language ?? 'ar';
 
     // Check for duplicate follow-up on same date by same doctor
     const { data: existing } = await supabase
@@ -143,7 +147,7 @@ export async function POST(request: NextRequest) {
     // Send WhatsApp notification asynchronously (don't block response)
     sendFollowUpNotificationAsync(
       patient.phone_number,
-      patient.preferred_language ?? 'ar',
+      patientLang,
       {
         doctorName: doctorAccount.name_ar,
         followUpDate: body.follow_up_date,

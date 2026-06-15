@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
     // Check patient exists
     const { data: patient } = await supabase
       .from('patients')
-      .select('id, phone_number, preferred_language, full_name_ar')
+      .select('id, phone_number, name_ar, patient_profiles(preferred_language)')
       .eq('id', body.patient_id)
       .single();
 
@@ -167,15 +167,20 @@ export async function POST(request: NextRequest) {
 }
 
 function notifyReferralCreated(
-  patient: { phone_number: string; preferred_language: string | null; full_name_ar: string },
+  patient: {
+    phone_number: string;
+    name_ar: string;
+    patient_profiles: { preferred_language: string | null }[] | null;
+  },
   doctor: DoctorAccount,
   referredDoctor: { name_ar: string; phone_number: string } | null,
   specialty: { name_ar: string; name_en: string | null },
   body: ReferralBody
 ) {
+  const preferredLanguage = patient.patient_profiles?.[0]?.preferred_language ?? 'ar';
   import('@/lib/referral/notifications').then(({ sendReferralSentToPatient, sendReferralToDoctor }) => {
     // Notify patient
-    sendReferralSentToPatient(patient.phone_number, patient.preferred_language ?? 'ar', {
+    sendReferralSentToPatient(patient.phone_number, preferredLanguage, {
       referringDoctorName: doctor.name_ar,
       specialtyAr: specialty.name_ar,
       specialtyEn: specialty.name_en ?? undefined,
@@ -187,7 +192,7 @@ function notifyReferralCreated(
     if (referredDoctor) {
       sendReferralToDoctor(referredDoctor.phone_number, 'ar', {
         referringDoctorName: doctor.name_ar,
-        patientName: patient.full_name_ar,
+        patientName: patient.name_ar,
         specialtyAr: specialty.name_ar,
         reasonAr: body.reason_ar,
         urgency: body.urgency,

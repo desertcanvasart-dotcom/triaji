@@ -139,14 +139,17 @@ export async function POST(request: NextRequest) {
     // Send WhatsApp notification to patient (fire-and-forget)
     const { data: patient } = await supabase
       .from('patients')
-      .select('phone_number, preferred_language')
+      .select('phone_number, patient_profiles(preferred_language)')
       .eq('id', body.patient_id)
       .single();
 
     if (patient?.phone_number) {
+      const patientLang =
+        (patient.patient_profiles as { preferred_language: string | null }[] | null)?.[0]
+          ?.preferred_language ?? 'ar';
       sendPreAuthSubmittedNotification(
         patient.phone_number,
-        patient.preferred_language ?? 'ar',
+        patientLang,
         {
           doctorNameAr: doctor.name_ar,
           doctorNameEn: doctor.name_en ?? undefined,

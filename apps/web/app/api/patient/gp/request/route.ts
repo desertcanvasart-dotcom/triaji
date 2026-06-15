@@ -99,7 +99,7 @@ async function notifyDoctorOfGPRequest(
   try {
     const { data: patientData } = await supabase
       .from('patients')
-      .select('full_name_ar')
+      .select('name_ar')
       .eq('id', patientId)
       .single();
 
@@ -110,7 +110,7 @@ async function notifyDoctorOfGPRequest(
 
     const { sendGPRequestNotification } = await import('@/lib/gp/notifications');
     await sendGPRequestNotification(doctor.phone_number, 'ar', {
-      requesterName: patientData.full_name_ar,
+      requesterName: patientData.name_ar,
       initiatedBy: 'patient',
       confirmUrl,
     });

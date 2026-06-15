@@ -213,11 +213,15 @@ async function loadRoutingContext(
   // Load patient
   const { data: patient } = await supabase
     .from('patients')
-    .select('id, display_name, phone_number, preferred_language')
+    .select('id, name_ar, phone_number, patient_profiles(preferred_language)')
     .eq('id', hr.patient_id)
     .single();
 
   if (!patient) return null;
+
+  const patientLang =
+    ((patient.patient_profiles as { preferred_language: string | null }[] | null)?.[0]
+      ?.preferred_language ?? 'ar') as Lang;
 
   // Load doctor if booking exists
   let doctorPhone: string | undefined;
@@ -245,8 +249,8 @@ async function loadRoutingContext(
     healthRecordId: routing.health_record_id as string,
     patientId: patient.id as string,
     patientPhone: patient.phone_number as string,
-    patientLang: (patient.preferred_language ?? 'ar') as Lang,
-    patientName: patient.display_name as string,
+    patientLang,
+    patientName: patient.name_ar as string,
     chainCode: routing.chain_code as LabChainCode,
     doctorPhone,
     doctorLang,

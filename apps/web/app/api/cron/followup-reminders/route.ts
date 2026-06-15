@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
     .select(`
       id, patient_id, follow_up_date, reason_ar,
       doctor_accounts!inner(name_ar),
-      patients!inner(phone_number, preferred_language)
+      patients!inner(phone_number, patient_profiles(preferred_language))
     `)
     .eq('follow_up_date', sevenDayTarget)
     .eq('status', 'scheduled')
@@ -67,13 +67,13 @@ export async function GET(request: NextRequest) {
 
   for (const fu of sevenDayFollowUps ?? []) {
     try {
-      const patient = (Array.isArray(fu.patients) ? fu.patients[0] : fu.patients) as { phone_number: string; preferred_language: string | null } | undefined;
+      const patient = (Array.isArray(fu.patients) ? fu.patients[0] : fu.patients) as { phone_number: string; patient_profiles: { preferred_language: string | null }[] | null } | undefined;
       const doctor = (Array.isArray(fu.doctor_accounts) ? fu.doctor_accounts[0] : fu.doctor_accounts) as { name_ar: string } | undefined;
       if (!patient?.phone_number) continue;
 
       const res = await sendFollowUpReminder(
         patient.phone_number,
-        patient.preferred_language ?? 'ar',
+        patient.patient_profiles?.[0]?.preferred_language ?? 'ar',
         '7days',
         {
           doctorName: doctor?.name_ar ?? '',
@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
     .select(`
       id, patient_id, follow_up_date, reason_ar,
       doctor_accounts!inner(name_ar),
-      patients!inner(phone_number, preferred_language)
+      patients!inner(phone_number, patient_profiles(preferred_language))
     `)
     .eq('follow_up_date', oneDayTarget)
     .eq('status', 'scheduled')
@@ -111,13 +111,13 @@ export async function GET(request: NextRequest) {
 
   for (const fu of oneDayFollowUps ?? []) {
     try {
-      const patient = (Array.isArray(fu.patients) ? fu.patients[0] : fu.patients) as { phone_number: string; preferred_language: string | null } | undefined;
+      const patient = (Array.isArray(fu.patients) ? fu.patients[0] : fu.patients) as { phone_number: string; patient_profiles: { preferred_language: string | null }[] | null } | undefined;
       const doctor = (Array.isArray(fu.doctor_accounts) ? fu.doctor_accounts[0] : fu.doctor_accounts) as { name_ar: string } | undefined;
       if (!patient?.phone_number) continue;
 
       const res = await sendFollowUpReminder(
         patient.phone_number,
-        patient.preferred_language ?? 'ar',
+        patient.patient_profiles?.[0]?.preferred_language ?? 'ar',
         '1day',
         {
           doctorName: doctor?.name_ar ?? '',

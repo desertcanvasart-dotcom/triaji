@@ -192,18 +192,22 @@ export async function GET(
     // Patient basic info
     const { data: patientInfo } = await supabase
       .from('patients')
-      .select('phone_number, name_ar, name_en, date_of_birth, preferred_language')
+      .select('phone_number, name_ar, patient_profiles(date_of_birth, preferred_language)')
       .eq('id', patientId)
       .single();
+
+    const patientProfile = (patientInfo?.patient_profiles as
+      | { date_of_birth: string | null; preferred_language: string | null }[]
+      | null)?.[0];
 
     return NextResponse.json({
       patient: {
         id: patientId,
         phone: patientInfo?.phone_number ?? '',
         nameAr: patientInfo?.name_ar ?? null,
-        nameEn: patientInfo?.name_en ?? null,
-        dateOfBirth: patientInfo?.date_of_birth ?? null,
-        preferredLanguage: patientInfo?.preferred_language ?? 'ar',
+        nameEn: null,
+        dateOfBirth: patientProfile?.date_of_birth ?? null,
+        preferredLanguage: patientProfile?.preferred_language ?? 'ar',
       },
       accessType: isGP ? 'gp' : 'grant',
       grantScope: grantCheck.data?.scope ?? null,

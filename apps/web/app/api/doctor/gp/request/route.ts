@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     // Verify patient exists
     const { data: patient } = await supabase
       .from('patients')
-      .select('id, phone_number, preferred_language, full_name_ar')
+      .select('id, phone_number, patient_profiles(preferred_language)')
       .eq('id', body.patient_id)
       .single();
 
@@ -125,16 +125,17 @@ export async function POST(request: NextRequest) {
 }
 
 function notifyPatientOfGPRequest(
-  patient: { phone_number: string; preferred_language: string | null },
+  patient: { phone_number: string; patient_profiles: { preferred_language: string | null }[] | null },
   doctor: DoctorAccount,
   requestId: string
 ) {
   const baseUrl = process.env['NEXT_PUBLIC_APP_URL'] ?? 'https://triajji.com';
   const confirmUrl = `${baseUrl}/api/gp/confirm/${requestId}`;
+  const preferredLanguage = patient.patient_profiles?.[0]?.preferred_language ?? 'ar';
 
   import('@/lib/gp/notifications')
     .then(({ sendGPRequestNotification }) => {
-      sendGPRequestNotification(patient.phone_number, patient.preferred_language ?? 'ar', {
+      sendGPRequestNotification(patient.phone_number, preferredLanguage, {
         requesterName: doctor.name_ar,
         initiatedBy: 'doctor',
         confirmUrl,

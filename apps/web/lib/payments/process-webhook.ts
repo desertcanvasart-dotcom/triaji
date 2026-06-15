@@ -215,12 +215,14 @@ export async function processPaymentCompletion(
   // 4. Look up patient for phone + language preference
   const { data: patient } = await supabase
     .from('patients')
-    .select('phone, preferred_language')
+    .select('phone_number, patient_profiles(preferred_language)')
     .eq('id', txn.patient_id)
     .single();
 
-  const patientPhone = patient?.phone ?? '';
-  const lang: Lang = (patient?.preferred_language as Lang) ?? 'ar';
+  const patientPhone = patient?.phone_number ?? '';
+  const lang: Lang =
+    ((patient?.patient_profiles as { preferred_language: string | null }[] | null)?.[0]
+      ?.preferred_language as Lang) ?? 'ar';
 
   // 5. Update the payable based on payable_type
   switch (txn.payable_type) {

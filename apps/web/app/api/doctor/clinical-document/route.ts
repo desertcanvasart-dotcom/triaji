@@ -44,7 +44,7 @@ interface Patient {
   id: string;
   phone_number: string;
   name_ar: string | null;
-  date_of_birth: string | null;
+  patient_profiles: { date_of_birth: string | null }[] | null;
 }
 
 // ─── Supabase Clients ───────────────────────────────────────────────────────
@@ -283,11 +283,12 @@ export async function POST(request: NextRequest) {
     // 5. Get patient info
     const { data: patient } = await supabase
       .from('patients')
-      .select('id, phone_number, name_ar, date_of_birth')
+      .select('id, phone_number, name_ar, patient_profiles(date_of_birth)')
       .eq('id', typedBooking.patient_id)
       .single();
 
     const typedPatient = patient as Patient | null;
+    const patientDob = typedPatient?.patient_profiles?.[0]?.date_of_birth ?? null;
 
     // 6. Build PDF assets
     const doctorAssets = buildDoctorAssets(doctorAccount);
@@ -295,7 +296,7 @@ export async function POST(request: NextRequest) {
       document_number: docNumber,
       date: new Date(),
       patient_name: typedPatient?.name_ar ?? null,
-      patient_age: typedPatient?.date_of_birth ? calculateAge(typedPatient.date_of_birth) : null,
+      patient_age: patientDob ? calculateAge(patientDob) : null,
     };
 
     // 7. Generate PDF

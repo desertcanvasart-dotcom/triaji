@@ -67,7 +67,7 @@ export async function POST(
     // Fetch the follow-up and verify ownership
     const { data: followUp, error: fuError } = await supabase
       .from('follow_up_schedule')
-      .select('*, patients!inner(phone_number, name_ar, preferred_language)')
+      .select('*, patients!inner(phone_number, name_ar, patient_profiles(preferred_language))')
       .eq('id', followUpId)
       .eq('doctor_account_id', doctorAccount.id)
       .single();
@@ -79,13 +79,14 @@ export async function POST(
     const patient = followUp.patients as {
       phone_number: string;
       name_ar: string;
-      preferred_language: string | null;
+      patient_profiles: { preferred_language: string | null }[] | null;
     };
+    const patientLang = patient.patient_profiles?.[0]?.preferred_language ?? 'ar';
 
     // Send WhatsApp reminder
     const result = await sendOverdueReminder(
       patient.phone_number,
-      patient.preferred_language ?? 'ar',
+      patientLang,
       {
         doctorName: doctorAccount.name_ar,
         followUpDate: followUp.follow_up_date,

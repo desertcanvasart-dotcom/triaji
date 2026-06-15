@@ -76,7 +76,7 @@ export async function PUT(
   try {
     const { data: patient } = await supabase
       .from('patients')
-      .select('phone_number, preferred_language')
+      .select('phone_number, patient_profiles(preferred_language)')
       .eq('id', existing.patient_id)
       .single();
 
@@ -87,6 +87,9 @@ export async function PUT(
       .single();
 
     if (patient?.phone_number && insurer) {
+      const patientLang =
+        (patient.patient_profiles as { preferred_language: string | null }[] | null)?.[0]
+          ?.preferred_language ?? 'ar';
       // Dynamic import to avoid cross-app dependency issues
       const whatsappUrl = process.env['WEB_APP_URL'] ?? process.env['NEXT_PUBLIC_WEB_URL'];
       if (whatsappUrl) {
@@ -96,7 +99,7 @@ export async function PUT(
           body: JSON.stringify({
             type: 'policy_verified',
             phone: patient.phone_number,
-            lang: patient.preferred_language ?? 'ar',
+            lang: patientLang,
             data: {
               insurerNameAr: insurer.name_ar,
               insurerNameEn: insurer.name_en,

@@ -76,7 +76,7 @@ async function lookupPayable(
         .from('clinic_invoices')
         .select(`
           total_egp, patient_id, invoice_number,
-          patients:patient_id ( full_name_ar, phone ),
+          patients:patient_id ( name_ar, phone_number ),
           tenants:tenant_id ( name_ar, name_en )
         `)
         .eq('id', payableId)
@@ -88,8 +88,8 @@ async function lookupPayable(
       return {
         amount_egp: data.total_egp,
         patient_id: data.patient_id,
-        patient_name: patient?.full_name_ar ?? '',
-        patient_phone: patient?.phone ?? '',
+        patient_name: patient?.name_ar ?? '',
+        patient_phone: patient?.phone_number ?? '',
         description_ar: `فاتورة عيادة — ${tenant?.name_ar ?? ''} #${data.invoice_number}`,
         description_en: `Clinic invoice — ${tenant?.name_en ?? ''} #${data.invoice_number}`,
       };
@@ -100,7 +100,7 @@ async function lookupPayable(
         .from('pharmacy_invoices')
         .select(`
           total_egp, patient_id, invoice_number,
-          patients:patient_id ( full_name_ar, phone )
+          patients:patient_id ( name_ar, phone_number )
         `)
         .eq('id', payableId)
         .single();
@@ -110,8 +110,8 @@ async function lookupPayable(
       return {
         amount_egp: data.total_egp,
         patient_id: data.patient_id,
-        patient_name: patient?.full_name_ar ?? '',
-        patient_phone: patient?.phone ?? '',
+        patient_name: patient?.name_ar ?? '',
+        patient_phone: patient?.phone_number ?? '',
         description_ar: `فاتورة صيدلية #${data.invoice_number}`,
         description_en: `Pharmacy invoice #${data.invoice_number}`,
       };
@@ -122,7 +122,7 @@ async function lookupPayable(
         .from('lab_order_routing')
         .select(`
           total_egp, patient_id, order_number,
-          patients:patient_id ( full_name_ar, phone )
+          patients:patient_id ( name_ar, phone_number )
         `)
         .eq('id', payableId)
         .single();
@@ -132,8 +132,8 @@ async function lookupPayable(
       return {
         amount_egp: data.total_egp,
         patient_id: data.patient_id,
-        patient_name: patient?.full_name_ar ?? '',
-        patient_phone: patient?.phone ?? '',
+        patient_name: patient?.name_ar ?? '',
+        patient_phone: patient?.phone_number ?? '',
         description_ar: `فاتورة تحاليل #${data.order_number}`,
         description_en: `Lab invoice #${data.order_number}`,
       };
@@ -144,7 +144,7 @@ async function lookupPayable(
         .from('insurance_claims')
         .select(`
           copay_amount_egp, patient_id,
-          patients:patient_id ( full_name_ar, phone )
+          patients:patient_id ( name_ar, phone_number )
         `)
         .eq('id', payableId)
         .single();
@@ -154,8 +154,8 @@ async function lookupPayable(
       return {
         amount_egp: data.copay_amount_egp,
         patient_id: data.patient_id,
-        patient_name: patient?.full_name_ar ?? '',
-        patient_phone: patient?.phone ?? '',
+        patient_name: patient?.name_ar ?? '',
+        patient_phone: patient?.phone_number ?? '',
         description_ar: 'مشاركة تأمين',
         description_en: 'Insurance copay',
       };

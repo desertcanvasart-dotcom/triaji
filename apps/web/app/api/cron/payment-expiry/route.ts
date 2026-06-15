@@ -100,15 +100,15 @@ export async function POST(request: NextRequest) {
         // 2. Look up patient for phone + language preference
         const { data: patient } = await supabase
           .from('patients')
-          .select('phone, preferred_language, full_name_ar, full_name_en')
+          .select('phone_number, name_ar, patient_profiles(preferred_language)')
           .eq('id', txn.patient_id)
           .single();
 
-        const patientPhone = patient?.phone ?? '';
-        const lang: Lang = (patient?.preferred_language as Lang) ?? 'ar';
-        const patientName = lang === 'en'
-          ? (patient?.full_name_en ?? patient?.full_name_ar ?? '')
-          : (patient?.full_name_ar ?? '');
+        const patientPhone = patient?.phone_number ?? '';
+        const lang: Lang =
+          ((patient?.patient_profiles as { preferred_language: string | null }[] | null)?.[0]
+            ?.preferred_language as Lang) ?? 'ar';
+        const patientName = patient?.name_ar ?? '';
 
         // 3. Handle based on payable_type
         if (txn.payable_type === 'booking') {

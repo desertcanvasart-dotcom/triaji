@@ -82,11 +82,14 @@ export async function PUT(
   try {
     const { data: patient } = await supabase
       .from('patients')
-      .select('phone_number, preferred_language')
+      .select('phone_number, patient_profiles(preferred_language)')
       .eq('id', existing.patient_id)
       .single();
 
     if (patient?.phone_number) {
+      const patientLang =
+        (patient.patient_profiles as { preferred_language: string | null }[] | null)?.[0]
+          ?.preferred_language ?? 'ar';
       const whatsappUrl = process.env['WEB_APP_URL'] ?? process.env['NEXT_PUBLIC_WEB_URL'];
       if (whatsappUrl) {
         fetch(`${whatsappUrl}/api/internal/insurance-notification`, {
@@ -95,7 +98,7 @@ export async function PUT(
           body: JSON.stringify({
             type: 'preauth_decision',
             phone: patient.phone_number,
-            lang: patient.preferred_language ?? 'ar',
+            lang: patientLang,
             data: {
               procedureDescriptionAr: existing.procedure_description_ar,
               procedureDescriptionEn: existing.procedure_description_en,

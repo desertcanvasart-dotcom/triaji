@@ -39,7 +39,7 @@ export async function GET(
   // Get child info
   const { data: childPatient } = await supabase
     .from('patients')
-    .select('display_name')
+    .select('name_ar')
     .eq('id', childId)
     .single();
 
@@ -114,7 +114,7 @@ export async function GET(
   y -= 25;
 
   // Child info
-  const childName = childPatient.display_name ?? 'Unknown';
+  const childName = childPatient.name_ar ?? 'Unknown';
   const dob = profile.date_of_birth ?? '';
   const sex = profile.biological_sex === 'male' ? 'Male' : 'Female';
 

@@ -20,7 +20,8 @@ export async function GET() {
       child_patient_id,
       child:patients!guardian_relationships_child_patient_id_fkey (
         id,
-        phone_number
+        phone_number,
+        name_ar
       ),
       child_profile:patient_profiles!guardian_relationships_child_patient_id_fkey (
         id,
@@ -50,7 +51,7 @@ export async function GET() {
 
       return {
         patientId: r.child_patient_id as string,
-        name: (child as Record<string, unknown>)?.display_name as string ?? '',
+        name: (child as Record<string, unknown>)?.name_ar as string ?? '',
         dateOfBirth: profile.date_of_birth as string,
         ageMonths,
         sex: profile.biological_sex as 'male' | 'female',
@@ -116,8 +117,7 @@ export async function POST(request: NextRequest) {
     .from('patients')
     .insert({
       phone_number: parentPatient.phone_number,
-      display_name: name,
-      is_child_account: true,
+      name_ar: name,
       created_at: new Date().toISOString(),
     })
     .select('id')

@@ -136,7 +136,7 @@ function notifyReferralDeclined(
 
   Promise.all([
     supabase.from('doctors').select('phone_number, name_ar').eq('id', referringDoctorId).single(),
-    supabase.from('patients').select('full_name_ar').eq('id', patientId).single(),
+    supabase.from('patients').select('name_ar').eq('id', patientId).single(),
     supabase.from('specialties').select('name_ar').eq('id', specialtyId).single(),
   ])
     .then(async ([referrerRes, patientRes, specialtyRes]) => {
@@ -145,7 +145,7 @@ function notifyReferralDeclined(
       const { sendReferralDeclinedToReferrer } = await import('@/lib/referral/notifications');
       await sendReferralDeclinedToReferrer(referrerRes.data.phone_number, 'ar', {
         decliningDoctorName: decliningDoctor.name_ar,
-        patientName: patientRes.data.full_name_ar,
+        patientName: patientRes.data.name_ar,
         specialtyAr: specialtyRes.data.name_ar,
         reasonAr,
       }).catch((err) => console.error('[referral] Decline notification failed:', err));

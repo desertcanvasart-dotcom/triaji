@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
         guardian_patient_id,
         guardian:patients!guardian_relationships_guardian_patient_id_fkey (
           phone_number,
-          preferred_language
+          patient_profiles ( preferred_language )
         )
       `)
       .eq('child_patient_id', vacc.patient_id)
@@ -69,7 +69,9 @@ export async function GET(request: NextRequest) {
     const guardian = guardianRel.guardian as unknown as Record<string, string> | null;
     if (!guardian?.phone_number) continue;
 
-    const guardianLang = guardian.preferred_language ?? 'ar';
+    const guardianLang =
+      (guardian.patient_profiles as unknown as { preferred_language: string | null }[] | null)?.[0]
+        ?.preferred_language ?? 'ar';
     const vaccine = vacc.vaccine as unknown as Record<string, string> | null;
     const vaccineName = guardianLang === 'ar'
       ? (vaccine?.name_ar ?? vacc.vaccine_code)
@@ -78,11 +80,11 @@ export async function GET(request: NextRequest) {
     // Get child name
     const { data: childPatient } = await supabase
       .from('patients')
-      .select('display_name')
+      .select('name_ar')
       .eq('id', vacc.patient_id)
       .single();
 
-    const childName = childPatient?.display_name ?? '';
+    const childName = childPatient?.name_ar ?? '';
 
     const message = guardianLang === 'ar'
       ? `تذكير تطعيم من ترياچي:\n${childName} عنده تطعيم ${vaccineName} (جرعة ${vacc.dose_number}) يوم ${vacc.due_date}.\nاحجز موعد مع طبيب الأطفال.`
@@ -140,7 +142,7 @@ export async function GET(request: NextRequest) {
         guardian_patient_id,
         guardian:patients!guardian_relationships_guardian_patient_id_fkey (
           phone_number,
-          preferred_language
+          patient_profiles ( preferred_language )
         )
       `)
       .eq('child_patient_id', patientId)
@@ -152,15 +154,17 @@ export async function GET(request: NextRequest) {
     const guardian = guardianRel.guardian as unknown as Record<string, string> | null;
     if (!guardian?.phone_number) continue;
 
-    const guardianLang = guardian.preferred_language ?? 'ar';
+    const guardianLang =
+      (guardian.patient_profiles as unknown as { preferred_language: string | null }[] | null)?.[0]
+        ?.preferred_language ?? 'ar';
 
     const { data: childPatient } = await supabase
       .from('patients')
-      .select('display_name')
+      .select('name_ar')
       .eq('id', patientId)
       .single();
 
-    const childName = childPatient?.display_name ?? '';
+    const childName = childPatient?.name_ar ?? '';
     const count = vaccs.length;
 
     const message = guardianLang === 'ar'
@@ -193,7 +197,7 @@ export async function GET(request: NextRequest) {
         guardian_patient_id,
         guardian:patients!guardian_relationships_guardian_patient_id_fkey (
           phone_number,
-          preferred_language
+          patient_profiles ( preferred_language )
         )
       `)
       .eq('child_patient_id', profile.patient_id)
@@ -205,15 +209,17 @@ export async function GET(request: NextRequest) {
     const guardian = guardianRel.guardian as unknown as Record<string, string> | null;
     if (!guardian?.phone_number) continue;
 
-    const guardianLang = guardian.preferred_language ?? 'ar';
+    const guardianLang =
+      (guardian.patient_profiles as unknown as { preferred_language: string | null }[] | null)?.[0]
+        ?.preferred_language ?? 'ar';
 
     const { data: childPatient } = await supabase
       .from('patients')
-      .select('display_name')
+      .select('name_ar')
       .eq('id', profile.patient_id)
       .single();
 
-    const childName = childPatient?.display_name ?? '';
+    const childName = childPatient?.name_ar ?? '';
 
     const message = guardianLang === 'ar'
       ? `ترياچي — إشعار مهم:\nطفلك ${childName} على وشك بلوغ 18 سنة. سجله الطبي سينتقل قريباً لحساب مستقل. تواصل معنا لتفاصيل الانتقال.`

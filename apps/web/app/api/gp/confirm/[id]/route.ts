@@ -105,7 +105,7 @@ function notifyGPAccepted(patientId: string, doctorId: string) {
   const supabase = getServiceClient();
 
   Promise.all([
-    supabase.from('patients').select('phone_number, preferred_language, full_name_ar').eq('id', patientId).single(),
+    supabase.from('patients').select('phone_number, name_ar, patient_profiles(preferred_language)').eq('id', patientId).single(),
     supabase.from('doctors').select('phone_number, name_ar').eq('id', doctorId).single(),
   ])
     .then(async ([patientRes, doctorRes]) => {
@@ -113,12 +113,15 @@ function notifyGPAccepted(patientId: string, doctorId: string) {
 
       const { sendGPAcceptedNotification } = await import('@/lib/gp/notifications');
       const doctorName = doctorRes.data.name_ar;
-      const patientName = patientRes.data.full_name_ar;
+      const patientName = patientRes.data.name_ar;
+      const patientLang =
+        (patientRes.data.patient_profiles as { preferred_language: string | null }[] | null)?.[0]
+          ?.preferred_language ?? 'ar';
 
       // Notify patient
       await sendGPAcceptedNotification(
         patientRes.data.phone_number,
-        patientRes.data.preferred_language ?? 'ar',
+        patientLang,
         { doctorName, patientName }
       ).catch((err) => console.error('[gp] Patient accept notification failed:', err));
 

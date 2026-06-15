@@ -119,16 +119,20 @@ function notifyReferralAccepted(
   const supabase = getServiceClient();
 
   Promise.all([
-    supabase.from('patients').select('phone_number, preferred_language').eq('id', patientId).single(),
+    supabase.from('patients').select('phone_number, patient_profiles(preferred_language)').eq('id', patientId).single(),
     supabase.from('specialties').select('name_ar, name_en').eq('id', specialtyId).single(),
   ])
     .then(async ([patientRes, specialtyRes]) => {
       if (!patientRes.data || !specialtyRes.data) return;
 
+      const patientLang =
+        (patientRes.data.patient_profiles as { preferred_language: string | null }[] | null)?.[0]
+          ?.preferred_language ?? 'ar';
+
       const { sendReferralAcceptedToPatient } = await import('@/lib/referral/notifications');
       await sendReferralAcceptedToPatient(
         patientRes.data.phone_number,
-        patientRes.data.preferred_language ?? 'ar',
+        patientLang,
         {
           acceptingDoctorName: doctor.name_ar,
           specialtyAr: specialtyRes.data.name_ar,

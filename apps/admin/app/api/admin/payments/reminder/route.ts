@@ -80,15 +80,17 @@ export async function POST(request: NextRequest) {
   // 2. Look up patient
   const { data: patient } = await supabase
     .from('patients')
-    .select('phone, preferred_language, full_name_ar')
+    .select('phone_number, patient_profiles(preferred_language)')
     .eq('id', txn.patient_id)
     .single();
 
-  if (!patient?.phone) {
+  if (!patient?.phone_number) {
     return NextResponse.json({ error: 'Patient phone not found' }, { status: 400 });
   }
 
-  const lang = (patient.preferred_language ?? 'ar') as 'ar' | 'en';
+  const lang =
+    ((patient.patient_profiles as { preferred_language: string | null }[] | null)?.[0]
+      ?.preferred_language ?? 'ar') as 'ar' | 'en';
 
   // 3. Look up tenant name for the reminder message
   let providerName = '';
@@ -114,7 +116,7 @@ export async function POST(request: NextRequest) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      phone: patient.phone,
+      phone: patient.phone_number,
       lang,
       providerName,
       invoiceNumber: txn.triaji_reference,
@@ -155,7 +157,7 @@ Triajji 🏥`;
       const waRes = await fetch(`${baseUrl}/api/whatsapp/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: patient.phone, message }),
+        body: JSON.stringify({ phone: patient.phone_number, message }),
       });
 
       if (!waRes.ok) {
@@ -174,5 +176,5 @@ Triajji 🏥`;
     channel: 'whatsapp',
   }).then(() => {}, () => {});
 
-  return NextResponse.json({ success: true, sent_to: patient.phone });
+  return NextResponse.json({ success: true, sent_to: patient.phone_number });
 }

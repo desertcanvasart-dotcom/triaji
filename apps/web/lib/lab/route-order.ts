@@ -120,12 +120,11 @@ async function routeViaChainApi(
       notes,
       patient:patients!health_records_patient_id_fkey (
         id,
-        display_name,
+        name_ar,
         phone_number,
         national_id,
-        date_of_birth,
         gender,
-        preferred_language
+        patient_profiles ( date_of_birth, preferred_language )
       )
     `)
     .eq('id', healthRecordId)
@@ -145,11 +144,14 @@ async function routeViaChainApi(
   const chainTests = await mapTestCodes(supabase, chainCode, testCodes);
 
   // Build chain order
+  const patientProfile = (patient.patient_profiles as unknown as
+    | { date_of_birth: string | null; preferred_language: string | null }[]
+    | null)?.[0];
   const chainPatient: LabChainPatient = {
-    name: patient.display_name ?? '',
+    name: patient.name_ar ?? '',
     phone: patient.phone_number ?? '',
     nationalId: patient.national_id,
-    dateOfBirth: patient.date_of_birth,
+    dateOfBirth: patientProfile?.date_of_birth ?? undefined,
     gender: patient.gender as 'male' | 'female' | undefined,
   };
 

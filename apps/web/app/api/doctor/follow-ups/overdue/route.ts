@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
         status,
         overdue_alert_sent,
         created_at,
-        patients!inner(name_ar, phone_number, preferred_language)
+        patients!inner(name_ar, phone_number, patient_profiles(preferred_language))
       `)
       .eq('doctor_account_id', doctorAccount.id)
       .eq('status', 'overdue')
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
     }
 
     const results = (overdueFollowUps ?? []).map((fu: Record<string, unknown>) => {
-      const patients = fu.patients as { name_ar: string; phone_number: string; preferred_language: string | null } | null;
+      const patients = fu.patients as { name_ar: string; phone_number: string; patient_profiles: { preferred_language: string | null }[] | null } | null;
       const followUpDate = fu.follow_up_date as string;
       const daysOverdue = Math.floor(
         (Date.now() - new Date(followUpDate).getTime()) / 86400000

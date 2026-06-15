@@ -136,7 +136,7 @@ function notifyReferralOutcome(
 
   Promise.all([
     supabase.from('doctors').select('phone_number').eq('id', referringDoctorId).single(),
-    supabase.from('patients').select('full_name_ar').eq('id', patientId).single(),
+    supabase.from('patients').select('name_ar').eq('id', patientId).single(),
   ])
     .then(async ([referrerRes, patientRes]) => {
       if (!referrerRes.data || !patientRes.data) return;
@@ -144,7 +144,7 @@ function notifyReferralOutcome(
       const { sendReferralOutcomeToReferrer } = await import('@/lib/referral/notifications');
       await sendReferralOutcomeToReferrer(referrerRes.data.phone_number, 'ar', {
         specialistName: specialist.name_ar,
-        patientName: patientRes.data.full_name_ar,
+        patientName: patientRes.data.name_ar,
         outcomeSummaryAr,
       }).catch((err) => console.error('[referral] Outcome notification failed:', err));
     })
