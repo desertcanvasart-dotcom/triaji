@@ -110,7 +110,13 @@ for those lacking `default`.
 - **Signed-URL retrieval for clinical-doc PDFs** (chip `task_13be5b51`): the `clinical-documents`
   bucket is private (correct), but the route stores a public URL via `getPublicUrl` → won't open.
   Switch to storing the storage path + on-demand `createSignedUrl` behind an authorized endpoint.
-- **Rotate the Supabase service-role JWT** hardcoded in `.claude/settings.local.json`.
+- **Rotate the Supabase service-role JWT.** The literal key was redacted from the 5 stale
+  permission rules in `.claude/settings.local.json` (gitignored; replaced with
+  `SERVICE_ROLE_KEY_REDACTED_ROTATE_IN_SUPABASE`). ⚠️ The key VALUE is still live — **rotate it in
+  Supabase** (Dashboard → project `vzhdlodupxxudwgdyoay` → Settings → API → roll `service_role`;
+  for legacy JWT keys this regenerates the JWT secret + `anon` key too) and update root `.env.local`
+  (`SUPABASE_SERVICE_ROLE_KEY`, and `NEXT_PUBLIC_SUPABASE_ANON_KEY` if it rolled). The JWT is
+  long-lived (exp ~2036) so it stays valid until rolled.
 - **Verify-only (lower priority):** runtime-test telehealth/LiveKit, payments webhooks, the admin app
   UI, mobile, and the widget — none deeply exercised.
 
