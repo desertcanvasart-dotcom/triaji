@@ -96,7 +96,7 @@ async function getTenantBookingMode(tenantId: string): Promise<BookingMode> {
     .from('his_integrations')
     .select('id, vendor, booking_mode')
     .eq('tenant_id', tenantId)
-    .eq('is_active', true)
+    .eq('sync_enabled', true)
     .single();
 
   if (!integration) return 'native';
@@ -116,7 +116,7 @@ async function getAdapterForTenant(tenantId: string) {
     .from('his_integrations')
     .select('*')
     .eq('tenant_id', tenantId)
-    .eq('is_active', true)
+    .eq('sync_enabled', true)
     .single();
 
   if (!integration) {

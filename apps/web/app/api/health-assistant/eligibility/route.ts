@@ -53,10 +53,10 @@ export async function GET() {
         // Latest lab result → drives lastLabDate + counts toward health_records
         supabase
           .from('health_records')
-          .select('created_at')
+          .select('uploaded_at')
           .eq('patient_id', patient.patientId)
           .eq('record_type', 'lab_result')
-          .order('created_at', { ascending: false })
+          .order('uploaded_at', { ascending: false })
           .limit(1)
           .maybeSingle(),
 
@@ -93,7 +93,7 @@ export async function GET() {
           .eq('patient_id', patient.patientId),
       ]);
 
-    const lastLabDate = (labResult.data?.created_at as string | null | undefined) ?? null;
+    const lastLabDate = (labResult.data?.uploaded_at as string | null | undefined) ?? null;
     const lastVisitDate =
       (visitResult.data?.appointment_datetime as string | null | undefined) ?? null;
     const activeMedsCount = medsResult.count ?? 0;

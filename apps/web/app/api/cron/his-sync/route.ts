@@ -51,8 +51,7 @@ export async function GET(request: NextRequest) {
   const { data: integrations, error } = await supabase
     .from('his_integrations')
     .select('*')
-    .eq('sync_enabled', true)
-    .eq('is_active', true);
+    .eq('sync_enabled', true);
 
   if (error) {
     console.error('[HIS Cron] Failed to load integrations:', error.message);

@@ -136,15 +136,15 @@ export async function GET(request: NextRequest, context: RouteContext) {
       .single();
 
     // Fetch health records only if consent exists
-    let healthRecords: { id: string; record_type: string; title_ar: string; created_at: string }[] = [];
+    let healthRecords: { id: string; record_type: string; title_ar: string; uploaded_at: string }[] = [];
     if (consent) {
       const { data: records } = await supabase
         .from('health_records')
-        .select('id, record_type, title_ar, created_at')
+        .select('id, record_type, title_ar, uploaded_at')
         .eq('patient_id', booking.patient_id)
-        .order('created_at', { ascending: false });
+        .order('uploaded_at', { ascending: false });
 
-      healthRecords = (records ?? []) as { id: string; record_type: string; title_ar: string; created_at: string }[];
+      healthRecords = (records ?? []) as { id: string; record_type: string; title_ar: string; uploaded_at: string }[];
     }
 
     return NextResponse.json({

@@ -12,7 +12,7 @@ interface HealthRecord {
   pdf_url: string | null;
   whatsapp_sent: boolean | null;
   whatsapp_sent_at: string | null;
-  created_at: string;
+  uploaded_at: string;
   authored_by: string | null;
   patient_id: string;
 }
@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
     .from('health_records')
     .select('*', { count: 'exact' })
     .eq('doctor_authored', true)
-    .order('created_at', { ascending: false })
+    .order('uploaded_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
   if (documentType && documentType !== 'all') {
@@ -154,7 +154,7 @@ export async function GET(request: NextRequest) {
       pdfUrl: record.pdf_url,
       whatsappSent: record.whatsapp_sent ?? false,
       whatsappSentAt: record.whatsapp_sent_at,
-      createdAt: record.created_at,
+      createdAt: record.uploaded_at,
       doctorName: doctor?.name_ar ?? '\u2014',
       patientName: patient?.name_ar ?? '\u2014',
     };

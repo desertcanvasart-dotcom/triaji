@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     .from('his_integrations')
     .select('*')
     .eq('tenant_id', admin.tenant_id)
-    .eq('is_active', true)
+    .eq('sync_enabled', true)
     .single();
 
   if (!integration) {

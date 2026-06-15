@@ -1,6 +1,6 @@
 /**
  * DELETE /api/admin/his/disconnect — Remove HIS integration
- * Soft-deletes by setting is_active = false.
+ * Soft-deletes by setting sync_enabled = false.
  * Does NOT delete doctor mappings — those remain for reference.
  */
 
@@ -28,12 +28,11 @@ export async function DELETE(request: NextRequest) {
   const { error } = await supabase
     .from('his_integrations')
     .update({
-      is_active: false,
       sync_enabled: false,
       updated_at: new Date().toISOString(),
     })
     .eq('tenant_id', admin.tenant_id)
-    .eq('is_active', true);
+    .eq('sync_enabled', true);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

@@ -158,9 +158,9 @@ export async function GET(
       // 6. Protocol enrollments
       supabase
         .from('patient_protocol_enrollment')
-        .select('id, protocol_id, enrolled_at, status, compliance_pct, disease_protocols(name_ar, name_en, condition_code)')
+        .select('id, protocol_id, enrolled_at, is_active, compliance_pct, disease_protocols(name_ar, name_en, condition_code)')
         .eq('patient_id', patientId)
-        .eq('status', 'active'),
+        .eq('is_active', true),
 
       // 7. Protocol alerts
       supabase

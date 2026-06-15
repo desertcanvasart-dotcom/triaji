@@ -76,7 +76,7 @@ export async function checkPatientCompliance(patientId: string): Promise<Complia
       disease_protocols!inner(id, condition_code, name_ar, name_en, lab_frequency_days, followup_frequency_days, vital_thresholds)
     `)
     .eq('patient_id', patientId)
-    .eq('status', 'active');
+    .eq('is_active', true);
 
   if (!enrollments || enrollments.length === 0) {
     return { compliancePct: 100, alerts: [], checksPerformed: 0, checksPassed: 0 };

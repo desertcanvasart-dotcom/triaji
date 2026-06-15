@@ -28,7 +28,6 @@ interface HisIntegrationRow {
   auth_type: string;
   credentials_encrypted: string;
   sync_enabled: boolean;
-  is_active: boolean;
 }
 
 interface IcuUnitRow {
@@ -62,8 +61,7 @@ export async function GET(request: NextRequest) {
   const { data: integrations, error: intError } = await supabase
     .from('his_integrations')
     .select('*')
-    .eq('sync_enabled', true)
-    .eq('is_active', true);
+    .eq('sync_enabled', true);
 
   if (intError) {
     console.error('[ICU HIS Sync] Failed to load integrations:', intError.message);

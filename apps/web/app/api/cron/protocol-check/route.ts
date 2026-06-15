@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
         patients!inner(phone_number, preferred_language, name_ar),
         disease_protocols!inner(name_ar, name_en, condition_code, lab_frequency_days, followup_frequency_days, vital_thresholds)
       `)
-      .eq('status', 'active');
+      .eq('is_active', true);
 
     if (enrollError) {
       return NextResponse.json({
