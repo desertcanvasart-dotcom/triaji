@@ -61,16 +61,13 @@ export async function POST(
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Also update individual prescription_items availability
-  for (const item of stock_confirmation) {
-    if (item.item_id) {
-      await supabase
-        .from('prescription_items')
-        .update({ is_available: item.is_available ?? false })
-        .eq('id', item.item_id)
-        .eq('prescription_routing_id', id);
-    }
-  }
+  // NOTE: per-item availability is NOT persisted on prescription_items — that
+  // table has no `is_available` column and no `prescription_routing_id`
+  // (items link to the routing only indirectly via health_record_id). The
+  // authoritative per-item stock state is the stock_confirmation JSONB array
+  // we just saved on prescription_routing above, which is what the read path
+  // consumes. If a normalized prescription_items.is_available is ever needed,
+  // join via prescription_routing.health_record_id → prescription_items.
 
   return NextResponse.json({ prescription: data });
 }

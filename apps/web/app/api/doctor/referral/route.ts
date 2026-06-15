@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
       .insert({
         patient_id: body.patient_id,
         referring_doctor_id: doctorAccount.doctor_id,
-        referring_doctor_account_id: doctorAccount.id,
+        referring_account_id: doctorAccount.id,
         referred_specialty_id: body.referred_specialty_id,
         referred_doctor_id: body.referred_doctor_id ?? null,
         reason_ar: body.reason_ar,
@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
         clinical_summary_en: body.clinical_summary_en ?? null,
         urgency: body.urgency,
         tier,
-        booking_id: body.booking_id ?? null,
+        referring_booking_id: body.booking_id ?? null,
         status: 'sent',
         sent_at: new Date().toISOString(),
       })

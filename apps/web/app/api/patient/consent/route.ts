@@ -32,7 +32,7 @@ export async function GET() {
     supabase
       .from('gp_relationships')
       .select(`
-        id, status, assigned_at,
+        id, status, confirmed_at, requested_at,
         doctor_accounts(id, name_ar, name_en, specialty_name_ar, specialty_name_en, clinic_name_ar, clinic_name_en)
       `)
       .eq('patient_id', pid)
@@ -82,7 +82,7 @@ export async function GET() {
       ? {
           id: gpResult.data.id,
           status: gpResult.data.status,
-          assignedAt: gpResult.data.assigned_at,
+          assignedAt: gpResult.data.confirmed_at ?? gpResult.data.requested_at,
           doctor: Array.isArray(gpResult.data.doctor_accounts)
             ? gpResult.data.doctor_accounts[0]
             : gpResult.data.doctor_accounts,

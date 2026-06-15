@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
       .insert({
         tenant_id: tenantId,
         patient_name_ar,
-        prescription_routing_id: prescription_routing_id ?? null,
+        routing_id: prescription_routing_id ?? null,
         invoice_number: fallbackNumber,
         line_items,
         subtotal_egp: subtotal,
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
     .insert({
       tenant_id: tenantId,
       patient_name_ar,
-      prescription_routing_id: prescription_routing_id ?? null,
+      routing_id: prescription_routing_id ?? null,
       invoice_number: invoiceNumber,
       line_items,
       subtotal_egp: subtotal,

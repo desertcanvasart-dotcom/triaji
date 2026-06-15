@@ -50,6 +50,18 @@ export async function POST(request: NextRequest) {
     .eq('tenant_id', admin.tenant_id)
     .single();
 
+  // booking_mode lives on tenant_config, not his_integrations.
+  const { error: configError } = await supabase
+    .from('tenant_config')
+    .upsert(
+      { tenant_id: admin.tenant_id, booking_mode: bookingMode },
+      { onConflict: 'tenant_id' }
+    );
+
+  if (configError) {
+    return NextResponse.json({ error: configError.message }, { status: 500 });
+  }
+
   if (existing) {
     // Update existing integration
     const { error } = await supabase
@@ -59,10 +71,7 @@ export async function POST(request: NextRequest) {
         base_url: baseUrl,
         auth_type: authType,
         credentials_encrypted: encrypted,
-        booking_mode: bookingMode,
-        is_active: true,
         sync_enabled: true,
-        updated_at: new Date().toISOString(),
       })
       .eq('id', existing.id);
 
@@ -85,8 +94,6 @@ export async function POST(request: NextRequest) {
       base_url: baseUrl,
       auth_type: authType,
       credentials_encrypted: encrypted,
-      booking_mode: bookingMode,
-      is_active: true,
       sync_enabled: true,
     })
     .select('id')

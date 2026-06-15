@@ -156,11 +156,12 @@ async function updateInsuranceCopay(
   supabase: ReturnType<typeof createServerClient>,
   payableId: string,
 ) {
+  // insurance_claims has no copay_paid/copay_paid_at columns; record the
+  // copay payment timestamp via the real paid_at column instead.
   const { error } = await supabase
     .from('insurance_claims')
     .update({
-      copay_paid: true,
-      copay_paid_at: new Date().toISOString(),
+      paid_at: new Date().toISOString(),
     })
     .eq('id', payableId);
 

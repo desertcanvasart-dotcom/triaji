@@ -67,7 +67,7 @@ export async function PUT(
     .from('icu_units')
     .update({
       available_beds,
-      last_updated_by: admin.id,
+      update_source: 'manual',
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)

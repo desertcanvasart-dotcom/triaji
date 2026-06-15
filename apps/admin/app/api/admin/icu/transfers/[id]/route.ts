@@ -54,7 +54,6 @@ export async function PUT(
       .update({
         status: 'acknowledged',
         acknowledged_at: now,
-        acknowledged_by: admin.id,
         updated_at: now,
       })
       .eq('id', id)
@@ -113,7 +112,7 @@ export async function PUT(
           .from('icu_units')
           .update({
             available_beds: newAvailable,
-            last_updated_by: admin.id,
+            update_source: 'manual',
             updated_at: now,
           })
           .eq('id', unitId);

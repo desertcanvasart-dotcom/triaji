@@ -21,6 +21,15 @@ export async function GET() {
   const supabase = createServerClient();
   const now = new Date().toISOString();
 
+  // patient_medications is keyed by patient_profile_id (not patient_id);
+  // resolve the profile id first so the medications query can scope to it.
+  const { data: profileRow } = await supabase
+    .from('patient_profiles')
+    .select('id')
+    .eq('patient_id', patient.patientId)
+    .single();
+  const profileId = (profileRow as { id: string } | null)?.id ?? null;
+
   // Run all queries in parallel
   const [
     upcomingBookingsResult,
@@ -49,13 +58,15 @@ export async function GET() {
       .order('appointment_datetime', { ascending: true })
       .limit(5),
 
-    // Active medications
-    supabase
-      .from('patient_medications')
-      .select('id, medication_name, dosage, frequency_ar, frequency_en')
-      .eq('patient_id', patient.patientId)
-      .eq('status', 'active')
-      .limit(10),
+    // Current medications (keyed by patient_profile_id)
+    profileId
+      ? supabase
+          .from('patient_medications')
+          .select('id, drug_name_ar, drug_name_en, dose, frequency_ar')
+          .eq('patient_profile_id', profileId)
+          .order('sort_order', { ascending: true })
+          .limit(10)
+      : Promise.resolve({ data: [] as Record<string, unknown>[] }),
 
     // Overdue follow-ups
     supabase
@@ -129,10 +140,10 @@ export async function GET() {
   // Map medications
   const medications = (medicationsResult.data ?? []).map((m: Record<string, unknown>) => ({
     id: m.id as string,
-    name: m.medication_name as string,
-    dosage: m.dosage as string,
+    name: (m.drug_name_ar as string) ?? (m.drug_name_en as string) ?? '',
+    dosage: (m.dose as string) ?? '',
     frequency_ar: (m.frequency_ar as string) ?? '',
-    frequency_en: (m.frequency_en as string) ?? (m.frequency_ar as string) ?? '',
+    frequency_en: (m.frequency_ar as string) ?? '',
   }));
 
   // Map protocol alerts

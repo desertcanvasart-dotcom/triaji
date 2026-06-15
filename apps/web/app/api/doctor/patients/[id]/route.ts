@@ -158,7 +158,7 @@ export async function GET(
       // 6. Protocol enrollments
       supabase
         .from('patient_protocol_enrollment')
-        .select('id, protocol_id, enrolled_at, is_active, compliance_pct, disease_protocols(name_ar, name_en, condition_code)')
+        .select('id, protocol_id, enrolled_at, is_active, overall_compliance_pct, disease_protocols(name_ar, name_en, condition_code)')
         .eq('patient_id', patientId)
         .eq('is_active', true),
 
@@ -181,7 +181,7 @@ export async function GET(
       // 9. Referrals
       supabase
         .from('referrals')
-        .select('id, referred_to_specialty_ar, referred_to_specialty_en, reason_ar, reason_en, status, created_at')
+        .select('id, referred_specialty_id, reason_ar, reason_en, status, created_at, specialties:referred_specialty_id(name_ar, name_en)')
         .eq('patient_id', patientId)
         .order('created_at', { ascending: false })
         .limit(20),
@@ -253,7 +253,7 @@ export async function GET(
           id: e.id,
           protocolId: e.protocol_id,
           enrolledAt: e.enrolled_at,
-          compliancePct: e.compliance_pct,
+          compliancePct: e.overall_compliance_pct,
           nameAr: proto?.name_ar ?? null,
           nameEn: proto?.name_en ?? null,
           conditionCode: proto?.condition_code ?? null,
@@ -269,7 +269,19 @@ export async function GET(
         resolvedAt: a.resolved_at,
       })),
       gpNotes: gpNotesResult.data ?? [],
-      referrals: referralsResult.data ?? [],
+      referrals: (referralsResult.data ?? []).map((r: Record<string, unknown>) => {
+        const spec = Array.isArray(r.specialties) ? r.specialties[0] : r.specialties;
+        const specialty = spec as { name_ar?: string; name_en?: string } | null;
+        return {
+          id: r.id,
+          referred_to_specialty_ar: specialty?.name_ar ?? null,
+          referred_to_specialty_en: specialty?.name_en ?? null,
+          reason_ar: r.reason_ar,
+          reason_en: r.reason_en,
+          status: r.status,
+          created_at: r.created_at,
+        };
+      }),
     });
   } catch (err) {
     console.error('[doctor/patients/[id]] Error:', err);

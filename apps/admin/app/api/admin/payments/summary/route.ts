@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
 
   let invoiceQuery = supabase
     .from('clinic_invoices')
-    .select('id, patient_pays, status, payment_method, created_at');
+    .select('id, patient_pays_egp, status, payment_method, created_at');
 
   if (tenantId) {
     invoiceQuery = invoiceQuery.eq('tenant_id', tenantId);
@@ -137,7 +137,7 @@ export async function GET(request: NextRequest) {
   let paidCash = 0;
   let unpaidInvoice = 0;
   for (const inv of invs) {
-    const amount = Number(inv.patient_pays) || 0;
+    const amount = Number(inv.patient_pays_egp) || 0;
     if (inv.status === 'paid') {
       if (inv.payment_method === 'cash' || inv.payment_method === 'card') {
         paidCash += amount;

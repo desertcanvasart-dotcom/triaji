@@ -92,7 +92,6 @@ export async function POST(request: NextRequest) {
       content_en: body['content_en'] ?? null,
       metadata,
       is_active: body['is_active'] ?? true,
-      language: 'ar',
     })
     .select()
     .single();

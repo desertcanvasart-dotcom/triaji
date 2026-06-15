@@ -190,7 +190,7 @@ export async function GET(request: NextRequest) {
         for (const enrollmentId of patientInfo.enrollmentIds) {
           await supabase
             .from('patient_protocol_enrollment')
-            .update({ compliance_pct: compliance.compliancePct })
+            .update({ overall_compliance_pct: compliance.compliancePct })
             .eq('id', enrollmentId);
         }
       } catch (err) {

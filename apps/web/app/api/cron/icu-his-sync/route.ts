@@ -175,13 +175,12 @@ export async function GET(request: NextRequest) {
 
         // Insert availability log
         await supabase.from('icu_availability_log').insert({
-          unit_id: unit.id,
+          icu_unit_id: unit.id,
           tenant_id: integration.tenant_id,
-          available_beds: hisData.availableBeds,
-          total_beds: hisData.totalBeds,
-          previous_available_beds: previousBeds,
+          new_available: hisData.availableBeds,
+          previous_available: previousBeds,
           change_reason: 'his_sync',
-          recorded_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         });
 
         synced++;

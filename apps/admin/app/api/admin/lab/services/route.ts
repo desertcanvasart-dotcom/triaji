@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { catalog_test_id, name_ar, name_en, price, turnaround_hours, sample_type, category } = body;
+  const { name_ar, name_en, price, sample_type, category } = body;
 
   if (!name_ar) {
     return NextResponse.json({ error: 'name_ar is required' }, { status: 400 });
@@ -61,13 +61,11 @@ export async function POST(request: NextRequest) {
     .from('lab_services')
     .insert({
       tenant_id: tenantId,
-      catalog_test_id: catalog_test_id ?? null,
       name_ar,
       name_en: name_en ?? null,
-      price: price ?? null,
-      turnaround_hours: turnaround_hours ?? null,
-      sample_type: sample_type ?? null,
-      category: category ?? null,
+      price_egp: price ?? null,
+      sample_type_ar: sample_type ?? null,
+      category_ar: category ?? null,
       is_active: true,
     })
     .select()

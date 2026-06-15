@@ -78,7 +78,7 @@ async function lookupPayable(
       const { data } = await supabase
         .from('clinic_invoices')
         .select(`
-          total_egp, patient_id, invoice_number,
+          patient_pays_egp, patient_id, invoice_number,
           patients:patient_id ( name_ar, phone_number ),
           tenants:tenant_id ( name_ar, name_en )
         `)
@@ -89,7 +89,7 @@ async function lookupPayable(
       const patient = data.patients as unknown as Record<string, string> | null;
       const tenant = data.tenants as unknown as Record<string, string> | null;
       return {
-        amount_egp: data.total_egp,
+        amount_egp: data.patient_pays_egp,
         patient_id: data.patient_id,
         patient_name: patient?.name_ar ?? '',
         patient_phone: patient?.phone_number ?? '',
@@ -102,7 +102,7 @@ async function lookupPayable(
       const { data } = await supabase
         .from('pharmacy_invoices')
         .select(`
-          total_egp, patient_id, invoice_number,
+          patient_pays_egp, patient_id, invoice_number,
           patients:patient_id ( name_ar, phone_number )
         `)
         .eq('id', payableId)
@@ -111,7 +111,7 @@ async function lookupPayable(
       if (!data) return null;
       const patient = data.patients as unknown as Record<string, string> | null;
       return {
-        amount_egp: data.total_egp,
+        amount_egp: data.patient_pays_egp,
         patient_id: data.patient_id,
         patient_name: patient?.name_ar ?? '',
         patient_phone: patient?.phone_number ?? '',
@@ -146,7 +146,7 @@ async function lookupPayable(
       const { data } = await supabase
         .from('insurance_claims')
         .select(`
-          copay_amount_egp, patient_id,
+          patient_copay_egp, patient_id,
           patients:patient_id ( name_ar, phone_number )
         `)
         .eq('id', payableId)
@@ -155,7 +155,7 @@ async function lookupPayable(
       if (!data) return null;
       const patient = data.patients as unknown as Record<string, string> | null;
       return {
-        amount_egp: data.copay_amount_egp,
+        amount_egp: data.patient_copay_egp,
         patient_id: data.patient_id,
         patient_name: patient?.name_ar ?? '',
         patient_phone: patient?.phone_number ?? '',

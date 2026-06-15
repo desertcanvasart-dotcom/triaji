@@ -20,12 +20,22 @@ export async function PUT(
   const { id } = await params;
   const body = await request.json();
 
-  const allowedFields = ['name_ar', 'name_en', 'price', 'turnaround_hours', 'sample_type', 'category', 'is_active'];
-  const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  // Map accepted client field names to the real lab_services columns.
+  // (price→price_egp, sample_type→sample_type_ar, category→category_ar;
+  //  turnaround_hours has no column on lab_services and is dropped.)
+  const fieldToColumn: Record<string, string> = {
+    name_ar: 'name_ar',
+    name_en: 'name_en',
+    price: 'price_egp',
+    sample_type: 'sample_type_ar',
+    category: 'category_ar',
+    is_active: 'is_active',
+  };
+  const update: Record<string, unknown> = {};
 
-  for (const field of allowedFields) {
+  for (const [field, column] of Object.entries(fieldToColumn)) {
     if (body[field] !== undefined) {
-      update[field] = body[field];
+      update[column] = body[field];
     }
   }
 
@@ -62,7 +72,7 @@ export async function DELETE(
 
   let query = supabase
     .from('lab_services')
-    .update({ is_active: false, updated_at: new Date().toISOString() })
+    .update({ is_active: false })
     .eq('id', id);
 
   if (tenant) query = query.eq('tenant_id', tenant);

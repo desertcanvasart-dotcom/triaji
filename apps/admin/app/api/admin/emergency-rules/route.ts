@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
   const { data, error } = await supabase
     .from('emergency_triggers')
     .insert({
-      rule_name: body['rule_name'],
+      name: body['rule_name'],
       description_ar: body['description_ar'] ?? '',
       symptom_conditions: symptomConditions,
       profile_conditions: profileConditions,

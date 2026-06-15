@@ -61,30 +61,30 @@ export async function enrollPatientInProtocols(
     const protocolIds = protocols.map(p => p.id);
     const { data: existingEnrollments } = await supabase
       .from('patient_protocol_enrollment')
-      .select('protocol_id, status')
+      .select('protocol_id, is_active')
       .eq('patient_id', patientId)
       .in('protocol_id', protocolIds);
 
-    const existingMap = new Map<string, string>();
+    const existingMap = new Map<string, boolean>();
     for (const e of existingEnrollments ?? []) {
-      existingMap.set(e.protocol_id, e.status);
+      existingMap.set(e.protocol_id, e.is_active);
     }
 
     // 3. Enroll in new protocols
     const now = new Date().toISOString();
     for (const protocol of protocols) {
-      const existingStatus = existingMap.get(protocol.id);
+      const existingActive = existingMap.get(protocol.id);
 
-      if (existingStatus === 'active') {
+      if (existingActive === true) {
         result.existing.push(protocol.id);
         continue;
       }
 
       // If previously deactivated, reactivate
-      if (existingStatus) {
+      if (existingMap.has(protocol.id)) {
         const { error: updateError } = await supabase
           .from('patient_protocol_enrollment')
-          .update({ status: 'active', enrolled_at: now, compliance_pct: 100 })
+          .update({ is_active: true, enrolled_at: now, overall_compliance_pct: 100 })
           .eq('patient_id', patientId)
           .eq('protocol_id', protocol.id);
 
@@ -103,8 +103,8 @@ export async function enrollPatientInProtocols(
           patient_id: patientId,
           protocol_id: protocol.id,
           enrolled_at: now,
-          status: 'active',
-          compliance_pct: 100,
+          is_active: true,
+          overall_compliance_pct: 100,
         });
 
       if (insertError) {

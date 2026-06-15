@@ -21,10 +21,9 @@ export async function GET(request: NextRequest) {
   let query = supabase
     .from('lab_test_catalog')
     .select('*')
-    .eq('is_active', true)
     .order('name_ar', { ascending: true });
 
-  if (category) query = query.eq('category', category);
+  if (category) query = query.eq('category_ar', category);
   if (search) query = query.or(`name_ar.ilike.%${search}%,name_en.ilike.%${search}%,code.ilike.%${search}%`);
 
   const { data, error } = await query;

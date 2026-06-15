@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { getAuthenticatedPatient } from '@/lib/auth/get-patient';
 
 const supabase = createClient(
   process.env['NEXT_PUBLIC_SUPABASE_URL']!,
@@ -8,19 +9,11 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   try {
-    const patientToken = req.cookies.get('patient-token')?.value;
-    if (!patientToken) {
-      return NextResponse.json({ error: 'غير مسجل' }, { status: 401 });
-    }
-
-    const { data: patient } = await supabase
-      .from('patients')
-      .select('id')
-      .eq('auth_token', patientToken)
-      .single();
-
+    // Resolve the patient from the signed patient-token cookie.
+    // (patients has no auth_token column; the token is a verified JWT.)
+    const patient = await getAuthenticatedPatient();
     if (!patient) {
-      return NextResponse.json({ error: 'مريض غير موجود' }, { status: 404 });
+      return NextResponse.json({ error: 'غير مسجل' }, { status: 401 });
     }
 
     const body = (await req.json()) as { expoPushToken?: string };
@@ -33,7 +26,7 @@ export async function POST(req: NextRequest) {
     await supabase
       .from('patients')
       .update({ expo_push_token: expoPushToken })
-      .eq('id', patient.id);
+      .eq('id', patient.patientId);
 
     return NextResponse.json({ success: true });
   } catch (err) {

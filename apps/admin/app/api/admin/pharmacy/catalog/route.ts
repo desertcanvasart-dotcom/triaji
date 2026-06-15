@@ -17,17 +17,14 @@ export async function GET(request: NextRequest) {
 
   const category = searchParams.get('category');
   const search = searchParams.get('search');
-  const form = searchParams.get('form');
 
   let query = supabase
     .from('medication_catalog')
     .select('*')
-    .eq('is_active', true)
-    .order('name_ar', { ascending: true });
+    .order('drug_name_ar', { ascending: true });
 
-  if (category) query = query.eq('category', category);
-  if (form) query = query.eq('form', form);
-  if (search) query = query.or(`name_ar.ilike.%${search}%,name_en.ilike.%${search}%,generic_name.ilike.%${search}%`);
+  if (category) query = query.eq('category_ar', category);
+  if (search) query = query.or(`drug_name_ar.ilike.%${search}%,drug_name_en.ilike.%${search}%,generic_name_en.ilike.%${search}%`);
 
   const { data, error } = await query;
 
