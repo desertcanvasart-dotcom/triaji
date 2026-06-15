@@ -128,8 +128,15 @@ for those lacking `default`.
     confirmed visually). Note: the chat panel couldn't be opened via automation (closed shadow root +
     0×0 fixed-position host = unreachable by selector/JS/coord-click); needs a manual click to
     exercise the chat/session flow. Build artifacts/test harness were not committed.
-  - **admin lab/pharmacy UI:** API data contract verified (queries resolve 200; embeds valid), but
-    `lab_order_routing`/`prescription_routing` are empty, so the pages couldn't be rendered with data.
+  - **admin lab/pharmacy UI — RENDER-VERIFIED (2026-06-16).** Seeded a temp fixture (1 lab order +
+    2 tests, 1 prescription + 2 meds against patient `c1237352`/doctor `d48aeece`/tenant `1838ea15`),
+    created a temp `platform_admin`, logged into the admin app (auth is a single non-httpOnly
+    `sb-access-token` cookie; pages gate on `admin.tenant_id`, `tenantScope` returns null for
+    platform_admin → sees all) and confirmed all three components render the normalized data:
+    LabOrders (patient/doctor/tests/status/urgency), PrescriptionsList (patient/doctor/med-count/
+    status/timeAgo), and PrescriptionDetail (doctor note from `routing_note_ar`, 2 meds with
+    dose/frequency_ar/duration_ar, stock controls). Fixture + temp admin fully torn down afterward.
+    The normalization fixes (commit `7306e1f`) are proven end-to-end in the browser.
 
 ## ✅ Protocol-compliance feature — DONE + APPLIED (2026-06-16)
 - `057_protocol_alerts.sql` **applied to the live DB** and verified end-to-end: table 200,
