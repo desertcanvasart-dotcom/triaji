@@ -117,17 +117,17 @@ for those lacking `default`.
   step:** in Supabase → Settings → API → Legacy tab → "Disable JWT-based API keys" to kill the old
   leaked legacy `service_role` key (safe now that the app runs on new keys). Also update production
   hosting env vars with the new keys before disabling, if deployed.
-- 🔴 **RLS hardening — migration `058_rls_hardening.sql` written, NOT yet applied.** The
+- ✅ **RLS hardening — migration `058_rls_hardening.sql` APPLIED + verified (2026-06-16).** The
   key-rotation review found the **publishable (browser) key could read PII**: `patients` (52),
   `triage_sessions` (51), `session_messages` (74 chat msgs) — because their SELECT policies allowed
-  `OR tenant_id IS NULL` and all rows have null tenant. Also `admin_users` RLS has **infinite
-  recursion (42P17)** — self-referential policies; harmless only because admin auth uses the
-  service role (BYPASSRLS). `058` drops the anon-facing SELECT policies on
-  patients/patient_profiles/triage_sessions/session_messages/bookings (all access is server-side via
-  service role; no client reads them with the anon key — verified) and replaces the recursive
-  admin_users policies with a service-role policy. **NOTE: rotating keys does NOT fix this** — the
-  publishable key is meant to be public; protection is RLS. Apply `058` via the Dashboard SQL editor
-  (same as 057). The intended-public reference/catalog/KB/doctor-directory tables are left readable.
+  `OR tenant_id IS NULL` and all rows have null tenant; plus `admin_users` RLS **infinite recursion
+  (42P17)** from self-referential policies. `058` dropped the anon-facing SELECT policies on
+  patients/patient_profiles/triage_sessions/session_messages/bookings and replaced the recursive
+  admin_users policies with a service-role policy. Post-apply verified against live: those tables
+  now return **0 rows** to the publishable key, `admin_users` no longer errors, the app still works
+  via the service role (patients 52 rows), and intended-public tables (doctors 55, specialties 18)
+  remain readable. (Rotating keys did NOT fix this — the publishable key is public by design;
+  protection is RLS.)
 - **Verify-only (lower priority):** runtime-test telehealth/LiveKit, payments webhooks, the admin app
   UI, and mobile — none deeply exercised.
   - **Widget — RUNTIME-VERIFIED (2026-06-16).** Built clean (Vite, 39 modules, 167 KB), served from
