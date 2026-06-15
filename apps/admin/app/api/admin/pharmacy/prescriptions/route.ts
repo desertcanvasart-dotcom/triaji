@@ -22,12 +22,15 @@ export async function GET(request: NextRequest) {
   const limit = parseInt(searchParams.get('limit') ?? '20', 10);
   const offset = (page - 1) * limit;
 
+  // patient/doctor come from the routing's own FKs; prescription items are nested under
+  // health_records (no direct routing→items relationship).
   let query = supabase
     .from('prescription_routing')
     .select(`
       *,
-      health_records!inner(patient_name_ar, patient_phone, doctor_name_ar, record_type),
-      prescription_items(id, medication_name_ar, medication_name_en, dosage, frequency, duration, quantity, notes)
+      health_records!inner(record_type, prescription_items(id, drug_name_ar, drug_name_en, dose, frequency_ar, duration_ar, instructions_ar)),
+      patients:patient_id(name_ar, phone_number),
+      doctors:doctor_id(name_ar)
     `, { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);

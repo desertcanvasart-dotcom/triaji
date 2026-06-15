@@ -41,11 +41,13 @@ export async function GET(request: NextRequest) {
         total_beds,
         available_beds,
         is_active,
-        tenant_config!inner (
-          governorate_id,
-          governorates!inner (
-            region,
-            name_en
+        tenants!inner (
+          tenant_config!inner (
+            default_governorate_id,
+            governorates!inner (
+              region,
+              name_en
+            )
           )
         )
       `)
@@ -72,8 +74,10 @@ export async function GET(request: NextRequest) {
       totalBeds += rowTotalBeds;
       availableBeds += rowAvailableBeds;
 
-      // tenant_config may be object or array depending on Supabase version
-      const tc = Array.isArray(row.tenant_config) ? row.tenant_config[0] : row.tenant_config;
+      // icu_units has no direct FK to tenant_config; the path is icu_units → tenants →
+      // tenant_config → governorates. Each level may be object or array per Supabase version.
+      const tn = Array.isArray(row.tenants) ? row.tenants[0] : row.tenants;
+      const tc = Array.isArray(tn?.tenant_config) ? tn.tenant_config[0] : tn?.tenant_config;
       const gov = tc?.governorates;
       const govObj = Array.isArray(gov) ? gov[0] : gov;
       const region = (govObj?.region as string) ?? 'unknown';

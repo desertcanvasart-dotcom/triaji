@@ -19,12 +19,15 @@ export async function GET(
   const supabase = createAdminClient();
   const tenant = tenantScope(admin);
 
+  // patient/doctor come from the routing's own FKs; prescription items are nested under
+  // health_records (no direct routing→items relationship; no quantity/is_available cols).
   let query = supabase
     .from('prescription_routing')
     .select(`
       *,
-      health_records(patient_name_ar, patient_phone, doctor_name_ar, record_type, created_at),
-      prescription_items(id, medication_name_ar, medication_name_en, dosage, frequency, duration, quantity, notes, is_available)
+      health_records(record_type, uploaded_at, prescription_items(id, drug_name_ar, drug_name_en, dose, frequency_ar, duration_ar, instructions_ar)),
+      patients:patient_id(name_ar, phone_number),
+      doctors:doctor_id(name_ar)
     `)
     .eq('id', id);
 

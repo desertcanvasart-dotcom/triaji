@@ -19,10 +19,10 @@ export async function GET() {
   const [grantsResult, gpResult, treatingResult] = await Promise.all([
     // 1. Temporary access grants
     supabase
-      .from('access_grants')
+      .from('record_access_grants')
       .select(`
-        id, doctor_account_id, scope, conditions_filter, granted_at, expires_at, is_active,
-        doctor_accounts(name_ar, name_en, specialty_name_ar, specialty_name_en)
+        id, granted_to_account, scope, conditions_filter, granted_at, expires_at, is_active,
+        doctor_accounts(name_ar, name_en, specialty_ar)
       `)
       .eq('patient_id', pid)
       .eq('is_active', true)
@@ -33,7 +33,7 @@ export async function GET() {
       .from('gp_relationships')
       .select(`
         id, status, confirmed_at, requested_at,
-        doctor_accounts(id, name_ar, name_en, specialty_name_ar, specialty_name_en, clinic_name_ar, clinic_name_en)
+        doctor_accounts(id, name_ar, name_en, specialty_ar, clinic_name_ar, clinic_name_en)
       `)
       .eq('patient_id', pid)
       .eq('status', 'active')
@@ -44,7 +44,7 @@ export async function GET() {
       .from('bookings')
       .select(`
         id, appointment_datetime, status,
-        doctors!inner(id, name_ar, name_en, specialty_name_ar, specialty_name_en)
+        doctors!inner(id, name_ar, name_en, specialties:specialty_id(name_ar, name_en))
       `)
       .eq('patient_id', pid)
       .in('status', ['confirmed', 'completed'])
@@ -57,7 +57,7 @@ export async function GET() {
   const treatingDoctors = (treatingResult.data ?? [])
     .map((b: Record<string, unknown>) => {
       const doc = Array.isArray(b.doctors) ? b.doctors[0] : b.doctors;
-      return doc as { id: string; name_ar: string; name_en: string; specialty_name_ar: string; specialty_name_en: string } | null;
+      return doc as { id: string; name_ar: string; name_en: string; specialties?: { name_ar: string; name_en: string } } | null;
     })
     .filter((d): d is NonNullable<typeof d> => {
       if (!d || seenDoctors.has(d.id)) return false;
@@ -70,7 +70,7 @@ export async function GET() {
       const doc = Array.isArray(g.doctor_accounts) ? g.doctor_accounts[0] : g.doctor_accounts;
       return {
         id: g.id,
-        doctorAccountId: g.doctor_account_id,
+        doctorAccountId: g.granted_to_account,
         scope: g.scope,
         conditionsFilter: g.conditions_filter,
         grantedAt: g.granted_at,

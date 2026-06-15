@@ -22,12 +22,15 @@ export async function GET(request: NextRequest) {
   const limit = parseInt(searchParams.get('limit') ?? '20', 10);
   const offset = (page - 1) * limit;
 
+  // patient/doctor come from the routing's own FKs; ordered tests live in lab_order_items
+  // (nested under health_records — there is no direct routing→items relationship); results
+  // live in health_records.lab_values, not on lab_order_items.
   let query = supabase
     .from('lab_order_routing')
     .select(`
       *,
-      health_records!inner(patient_name_ar, patient_phone, record_type),
-      lab_order_items(id, test_code, test_name_ar, test_name_en, status, result_value, unit)
+      health_records!lab_order_routing_health_record_id_fkey!inner(record_type, lab_order_items(id, test_name_ar, test_name_en, urgency)),
+      patients:patient_id(name_ar, phone_number)
     `, { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);

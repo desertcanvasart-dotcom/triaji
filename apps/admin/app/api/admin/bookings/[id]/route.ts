@@ -19,11 +19,11 @@ export async function GET(
     .from('bookings')
     .select(`
       *,
-      doctors!inner(id, name_ar, name_en, title_ar, title_en, photo_url, specialty_id, specialties!inner(name_en, name_ar)),
-      triage_sessions(
-        id, chief_complaint, determined_specialty, urgency_level,
-        extracted_symptoms, created_at,
-        session_messages(id, role, content, image_urls, created_at)
+      doctors!inner(id, name_ar, name_en, title_ar, photo_url, specialty_id, specialties!inner(name_en, name_ar)),
+      triage_sessions!fk_session_booking(
+        id, chief_complaint_ar, determined_specialty_id, urgency_level,
+        extracted_symptoms, session_start,
+        session_messages(id, role, content_ar, image_urls, created_at)
       )
     `)
     .eq('id', id)

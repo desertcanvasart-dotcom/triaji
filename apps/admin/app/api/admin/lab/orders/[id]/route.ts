@@ -19,12 +19,15 @@ export async function GET(
   const tenant = tenantScope(admin);
   const { id } = await params;
 
+  // patient/doctor come from the routing's own FKs; ordered tests are nested under
+  // health_records (no direct routing→items relationship); results are in lab_values.
   let query = supabase
     .from('lab_order_routing')
     .select(`
       *,
-      health_records(patient_name_ar, patient_phone, record_type, doctor_name_ar),
-      lab_order_items(id, test_code, test_name_ar, test_name_en, status, result_value, unit, reference_range, notes)
+      health_records!lab_order_routing_health_record_id_fkey(record_type, lab_values, lab_order_items(id, test_name_ar, test_name_en, urgency, notes_ar)),
+      patients:patient_id(name_ar, phone_number),
+      doctors:doctor_id(name_ar)
     `)
     .eq('id', id);
 
@@ -66,8 +69,9 @@ export async function PUT(
     return NextResponse.json({ error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` }, { status: 400 });
   }
 
+  // lab_order_routing stores notes in routing_note_ar (no `notes` column).
   const update: Record<string, unknown> = { status, updated_at: new Date().toISOString() };
-  if (notes !== undefined) update.notes = notes;
+  if (notes !== undefined) update.routing_note_ar = notes;
 
   let query = supabase
     .from('lab_order_routing')

@@ -231,20 +231,23 @@ async function loadRoutingContext(
   let doctorLang: Lang | undefined;
 
   if (hr.booking_id) {
+    // doctors has no phone/preferred_language; the contactable number lives on
+    // doctor_accounts (keyed by doctor_id). No doctor language pref exists → default 'ar'.
     const { data: booking } = await supabase
       .from('bookings')
-      .select(`
-        doctor:doctors!bookings_doctor_id_fkey (
-          phone_number,
-          preferred_language
-        )
-      `)
+      .select('doctor_id')
       .eq('id', hr.booking_id)
       .single();
 
-    const doctor = booking?.doctor as unknown as Record<string, string> | null;
-    doctorPhone = doctor?.phone_number;
-    doctorLang = (doctor?.preferred_language ?? 'ar') as Lang;
+    if (booking?.doctor_id) {
+      const { data: account } = await supabase
+        .from('doctor_accounts')
+        .select('phone')
+        .eq('doctor_id', booking.doctor_id)
+        .maybeSingle();
+      doctorPhone = (account?.phone as string | null) ?? undefined;
+    }
+    doctorLang = 'ar';
   }
 
   return {

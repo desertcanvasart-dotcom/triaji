@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     .select(`
       *,
       doctors!inner(id, name_ar, name_en, specialty_id, specialties!inner(name_en, name_ar)),
-      triage_sessions(id, chief_complaint, determined_specialty, urgency_level)
+      triage_sessions!fk_session_booking(id, chief_complaint_ar, determined_specialty_id, urgency_level)
     `, { count: 'exact' })
     .order(sortBy === 'created_at' ? 'created_at' : 'appointment_datetime', { ascending: false })
     .range(offset, offset + limit - 1);

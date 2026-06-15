@@ -109,9 +109,7 @@ async function routeViaChainApi(
         id,
         name_ar,
         phone_number,
-        national_id,
-        gender,
-        patient_profiles ( date_of_birth, preferred_language )
+        patient_profiles ( date_of_birth, preferred_language, biological_sex )
       )
     `)
     .eq('id', healthRecordId)
@@ -134,14 +132,14 @@ async function routeViaChainApi(
 
   // Build chain order
   const patientProfile = (patient.patient_profiles as unknown as
-    | { date_of_birth: string | null; preferred_language: string | null }[]
+    | { date_of_birth: string | null; preferred_language: string | null; biological_sex: string | null }[]
     | null)?.[0];
   const chainPatient: LabChainPatient = {
     name: patient.name_ar ?? '',
     phone: patient.phone_number ?? '',
-    nationalId: patient.national_id,
+    // national_id is not stored in this schema (neither patients nor patient_profiles).
     dateOfBirth: patientProfile?.date_of_birth ?? undefined,
-    gender: patient.gender as 'male' | 'female' | undefined,
+    gender: (patientProfile?.biological_sex as 'male' | 'female' | undefined) ?? undefined,
   };
 
   const chainOrder: LabChainOrder = {

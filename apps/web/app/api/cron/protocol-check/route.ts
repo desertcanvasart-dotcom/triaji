@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
       .select(`
         id, patient_id, protocol_id, enrolled_at,
         patients!inner(phone_number, name_ar, patient_profiles(preferred_language)),
-        disease_protocols!inner(name_ar, name_en, condition_code, lab_frequency_days, followup_frequency_days, vital_thresholds)
+        disease_protocols!inner(condition_code)
       `)
       .eq('is_active', true);
 

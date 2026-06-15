@@ -46,13 +46,13 @@ export async function GET() {
           id,
           name_ar,
           name_en,
-          specialty_ar
+          specialties:specialty_id ( name_ar, name_en )
         ),
         referred_doctor:referred_doctor_id (
           id,
           name_ar,
           name_en,
-          specialty_ar
+          specialties:specialty_id ( name_ar, name_en )
         ),
         specialty:referred_specialty_id (
           id,

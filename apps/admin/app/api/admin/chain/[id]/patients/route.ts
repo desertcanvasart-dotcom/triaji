@@ -41,11 +41,9 @@ export async function GET(
       last_visit_at,
       patients (
         id,
-        name,
-        phone,
-        national_id,
-        date_of_birth,
-        gender
+        name_ar,
+        phone_number,
+        patient_profiles ( date_of_birth, biological_sex )
       )
     `,
       { count: 'exact' }
@@ -69,14 +67,18 @@ export async function GET(
   // Flatten and apply client-side search if term provided
   let patients = (registryData ?? []).map((entry) => {
     const patient = (entry as Record<string, unknown>).patients as Record<string, unknown> | null;
+    // dob/sex live on patient_profiles (reverse embed → array); patients has neither,
+    // and national_id is not stored anywhere in this schema.
+    const profile = Array.isArray(patient?.patient_profiles)
+      ? (patient!.patient_profiles[0] as Record<string, unknown> | undefined)
+      : (patient?.patient_profiles as Record<string, unknown> | undefined);
     return {
       registry_id: entry.id,
       patient_id: entry.patient_id,
-      name: patient?.name ?? null,
-      phone: patient?.phone ?? null,
-      national_id: patient?.national_id ?? null,
-      date_of_birth: patient?.date_of_birth ?? null,
-      gender: patient?.gender ?? null,
+      name: patient?.name_ar ?? null,
+      phone: patient?.phone_number ?? null,
+      date_of_birth: profile?.date_of_birth ?? null,
+      gender: profile?.biological_sex ?? null,
       first_seen_at: entry.first_seen_at,
       first_branch_id: entry.first_branch_id,
       total_visits: entry.total_visits,
@@ -90,8 +92,7 @@ export async function GET(
     patients = patients.filter(
       (p) =>
         (p.name && String(p.name).toLowerCase().includes(searchLower)) ||
-        (p.phone && String(p.phone).includes(search)) ||
-        (p.national_id && String(p.national_id).includes(search))
+        (p.phone && String(p.phone).includes(search))
     );
   }
 

@@ -63,21 +63,24 @@ export async function notifyDoctorApiFallback(
 
   const { data: booking } = await supabase
     .from('bookings')
-    .select(`
-      doctor_id,
-      doctor:doctors!bookings_doctor_id_fkey (
-        phone_number,
-        preferred_language,
-        display_name
-      )
-    `)
+    .select('doctor_id')
     .eq('id', hr.booking_id)
     .single();
 
-  const doctor = booking?.doctor as unknown as Record<string, string> | null;
-  if (!doctor?.phone_number) return null;
+  if (!booking?.doctor_id) return null;
 
-  const lang = (doctor.preferred_language ?? 'ar') as Lang;
+  // doctors has no phone/preferred_language; the contactable number is on
+  // doctor_accounts (keyed by doctor_id). No doctor language pref exists → default 'ar'.
+  const { data: account } = await supabase
+    .from('doctor_accounts')
+    .select('phone')
+    .eq('doctor_id', booking.doctor_id)
+    .maybeSingle();
+
+  const doctorPhone = (account?.phone as string | null) ?? null;
+  if (!doctorPhone) return null;
+
+  const lang: Lang = 'ar';
   const chain = chainName(chainCode, lang);
 
   const message =
@@ -85,7 +88,7 @@ export async function notifyDoctorApiFallback(
       ? `تنبيه من ترياچي:\nلم نتمكن من إرسال طلب التحاليل إلى ${chain} عبر النظام الإلكتروني.\nالطلب يتم إرساله يدوياً الآن.\nرقم التوجيه: ${routingId}`
       : `Triajji Alert:\nCould not send order to ${chain} via API. Proceeding manually.\nRouting ID: ${routingId}`;
 
-  return sendWhatsAppMessage(doctor.phone_number, message);
+  return sendWhatsAppMessage(doctorPhone, message);
 }
 
 // ─── Patient: Chain Booking Confirmation ────────────────────────────────────────

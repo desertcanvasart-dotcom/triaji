@@ -70,11 +70,27 @@ for those lacking `default`.
   `amount_egp` (lookup returns 0), `payments/[reference]` shows the chain_order_id, and the webhook
   `updateLabInvoice` is a no-op (payment_transactions is the source of truth). If lab payment becomes
   a real feature, add a migration (lab_invoices, or total_egp/payment_status/paid_at on routing).
-- **Embedded-join drift is NOT covered by the scanner.** `scan-drift.py` skips embedded selects
-  (tokens containing `(` / `:`). Confirmed one live break already fixed in passing
-  (pharmacy/prescription/[id]/status read `tenants(phone, address_ar)` — neither is on `tenants`;
-  contact lives on `tenant_config`). **A follow-up sweep for `.select('… embed:other(col) …')`
-  drift is warranted** — could surface more runtime-only 400s.
+- **Embedded-join drift — SWEPT (2026-06-15), now 0.** Built `docs/scan-embeds.py` (recurses into
+  `alias:fk(col)` selects, resolves each embed to its real table via the OpenAPI FK graph). Fixed
+  68 embed-inner column refs across 15 files (lab/orders, pharmacy/prescriptions, bookings, consent,
+  referrals, chain/patients, icu/overview, protocols, lab chain libs). Re-run with
+  `python3 docs/scan-embeds.py` (expect 0). Runtime-verified every changed endpoint against live
+  PostgREST. Key live-only fixes the scanner could NOT catch (found via curl verification):
+  - **Relationship-ambiguity (PGRST201):** `lab_order_routing→health_records` has TWO FKs
+    (health_record_id + result_health_record_id) → hint `!lab_order_routing_health_record_id_fkey`.
+    `bookings→triage_sessions` is circular → hint `!fk_session_booking`.
+  - **Missing-relationship (PGRST200):** `icu_units` has no FK to `tenant_config`; route via
+    `tenants!inner(tenant_config!inner(...))`.
+  - **Wrong-table (PGRST205):** patient/consent queried `access_grants` (doesn't exist) → real table
+    is `record_access_grants` (and `doctor_account_id`→`granted_to_account`).
+  - **jsonb-shape mismatch:** `disease_protocols` schedule lives in `protocol_definition` (jsonb:
+    labs[]/vitals[]/targets[]), not flat columns. Compliance now derives lab cadence from
+    `labs[].frequencyMonths`; **follow-up + vital-threshold checks are skipped** (no data for them in
+    the jsonb) — TODO: wire `protocol_definition.vitals/targets` into `lib/protocols/check-compliance.ts`.
+  - **Response-shape note:** several admin endpoints previously returned phantom flat fields
+    (e.g. `health_records.patient_name_ar`, `prescription_items.medication_name_ar`); patient/doctor
+    now come from real joins (`patients:patient_id(...)`, `doctors:doctor_id(...)`) and items use real
+    columns. The admin UI field access for lab/orders + pharmacy/prescriptions should be re-verified.
 - **Degraded-but-safe behaviors introduced:** partial chain lab results are no longer persisted
   (poll until `completed`); chain appointment bookings are only persisted when tied to an existing
   `lab_order_routing` (lab_appointments.lab_tenant_id is NOT NULL); lab-chain-sync inserts new

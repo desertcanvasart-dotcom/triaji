@@ -73,7 +73,7 @@ export async function checkPatientCompliance(patientId: string): Promise<Complia
     .from('patient_protocol_enrollment')
     .select(`
       id, protocol_id, enrolled_at,
-      disease_protocols!inner(id, condition_code, name_ar, name_en, lab_frequency_days, followup_frequency_days, vital_thresholds)
+      disease_protocols!inner(id, condition_code, name_ar, name_en, protocol_definition)
     `)
     .eq('patient_id', patientId)
     .eq('is_active', true);
@@ -85,15 +85,26 @@ export async function checkPatientCompliance(patientId: string): Promise<Complia
   // Build protocol list
   const protocols: ProtocolRecord[] = enrollments.map((e: Record<string, unknown>) => {
     const proto = Array.isArray(e.disease_protocols) ? e.disease_protocols[0] : e.disease_protocols;
+    // disease_protocols stores its schedule inside protocol_definition (jsonb), not as
+    // flat columns. Derive the lab cadence from the most-frequent lab. Follow-up cadence
+    // and vital min/max thresholds aren't represented in protocol_definition, so those
+    // checks are skipped (TODO: wire protocol_definition.vitals/targets into compliance).
+    const def = (proto.protocol_definition ?? {}) as {
+      labs?: Array<{ frequencyMonths?: number }>;
+    };
+    const labMonths = (def.labs ?? [])
+      .map((l) => l.frequencyMonths)
+      .filter((m): m is number => typeof m === 'number' && m > 0);
+    const labFrequencyDays = labMonths.length ? Math.min(...labMonths) * 30 : null;
     return {
       id: proto.id,
       enrollment_id: e.id as string,
       condition_code: proto.condition_code,
       name_ar: proto.name_ar,
       name_en: proto.name_en,
-      lab_frequency_days: proto.lab_frequency_days,
-      followup_frequency_days: proto.followup_frequency_days,
-      vital_thresholds: proto.vital_thresholds,
+      lab_frequency_days: labFrequencyDays,
+      followup_frequency_days: null,
+      vital_thresholds: null,
     };
   });
 
