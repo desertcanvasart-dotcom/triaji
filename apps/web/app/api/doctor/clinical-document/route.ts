@@ -331,10 +331,10 @@ export async function POST(request: NextRequest) {
       .insert({
         patient_id: typedBooking.patient_id,
         record_type: documentType,
-        title_ar: documentType === 'prescription' ? 'روشتة طبية'
-          : documentType === 'lab_order' ? 'طلب تحاليل'
-          : documentType === 'imaging_order' ? 'طلب أشعة'
-          : 'ملخص الكشف',
+        // file_* are NOT NULL on health_records; the generated PDF is the file.
+        file_url: pdfUrl,
+        file_name: `${docNumber}.pdf`,
+        mime_type: 'application/pdf',
         doctor_authored: true,
         authored_by: doctorAccount.id,
         booking_id: bookingId,
