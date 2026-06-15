@@ -110,13 +110,24 @@ for those lacking `default`.
 - **Signed-URL retrieval for clinical-doc PDFs** (chip `task_13be5b51`): the `clinical-documents`
   bucket is private (correct), but the route stores a public URL via `getPublicUrl` → won't open.
   Switch to storing the storage path + on-demand `createSignedUrl` behind an authorized endpoint.
-- **Rotate the Supabase service-role JWT.** The literal key was redacted from the 5 stale
-  permission rules in `.claude/settings.local.json` (gitignored; replaced with
-  `SERVICE_ROLE_KEY_REDACTED_ROTATE_IN_SUPABASE`). ⚠️ The key VALUE is still live — **rotate it in
-  Supabase** (Dashboard → project `vzhdlodupxxudwgdyoay` → Settings → API → roll `service_role`;
-  for legacy JWT keys this regenerates the JWT secret + `anon` key too) and update root `.env.local`
-  (`SUPABASE_SERVICE_ROLE_KEY`, and `NEXT_PUBLIC_SUPABASE_ANON_KEY` if it rolled). The JWT is
-  long-lived (exp ~2036) so it stays valid until rolled.
+- **Rotate the Supabase service-role JWT — DONE (2026-06-16).** Migrated to the new key system:
+  `SUPABASE_SERVICE_ROLE_KEY` = `sb_secret_…`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` = `sb_publishable_…`
+  in root `.env.local`; verified server (service-role) + browser (publishable) both work end-to-end.
+  Legacy literal key also redacted from gitignored `.claude/settings.local.json`. **Remaining user
+  step:** in Supabase → Settings → API → Legacy tab → "Disable JWT-based API keys" to kill the old
+  leaked legacy `service_role` key (safe now that the app runs on new keys). Also update production
+  hosting env vars with the new keys before disabling, if deployed.
+- 🔴 **RLS hardening — migration `058_rls_hardening.sql` written, NOT yet applied.** The
+  key-rotation review found the **publishable (browser) key could read PII**: `patients` (52),
+  `triage_sessions` (51), `session_messages` (74 chat msgs) — because their SELECT policies allowed
+  `OR tenant_id IS NULL` and all rows have null tenant. Also `admin_users` RLS has **infinite
+  recursion (42P17)** — self-referential policies; harmless only because admin auth uses the
+  service role (BYPASSRLS). `058` drops the anon-facing SELECT policies on
+  patients/patient_profiles/triage_sessions/session_messages/bookings (all access is server-side via
+  service role; no client reads them with the anon key — verified) and replaces the recursive
+  admin_users policies with a service-role policy. **NOTE: rotating keys does NOT fix this** — the
+  publishable key is meant to be public; protection is RLS. Apply `058` via the Dashboard SQL editor
+  (same as 057). The intended-public reference/catalog/KB/doctor-directory tables are left readable.
 - **Verify-only (lower priority):** runtime-test telehealth/LiveKit, payments webhooks, the admin app
   UI, and mobile — none deeply exercised.
   - **Widget — RUNTIME-VERIFIED (2026-06-16).** Built clean (Vite, 39 modules, 167 KB), served from
