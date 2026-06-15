@@ -62,15 +62,15 @@ export async function GET(request: NextRequest) {
     const { data: relationships, error: relError } = await supabase
       .from('gp_relationships')
       .select(`
-        id, patient_id, status, assigned_at,
+        id, patient_id, status, requested_at, confirmed_at,
         patients!inner(
-          id, phone_number, name_ar, name_en, date_of_birth, biological_sex,
-          patient_profiles(age, bmi, blood_pressure, diabetes_type, risk_level, background_risk_score)
+          id, phone_number, name_ar,
+          patient_profiles(age, bmi, date_of_birth, biological_sex, blood_pressure, diabetes_type, risk_level, background_risk_score)
         )
       `)
       .eq('doctor_account_id', doctorAccount.id)
       .eq('status', 'active')
-      .order('assigned_at', { ascending: false });
+      .order('requested_at', { ascending: false });
 
     if (relError) {
       console.error('[doctor/patients] Query error:', relError.message);
@@ -150,12 +150,12 @@ export async function GET(request: NextRequest) {
       return {
         id: pid,
         relationshipId: rel.id,
-        assignedAt: rel.assigned_at,
+        assignedAt: rel.confirmed_at ?? rel.requested_at,
         nameAr: pat?.name_ar ?? null,
-        nameEn: pat?.name_en ?? null,
+        nameEn: null,
         phone: pat?.phone_number ?? '',
-        dateOfBirth: pat?.date_of_birth ?? null,
-        biologicalSex: pat?.biological_sex ?? null,
+        dateOfBirth: profile?.date_of_birth ?? null,
+        biologicalSex: profile?.biological_sex ?? null,
         profile: profile
           ? {
               age: profile.age,
