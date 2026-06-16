@@ -128,6 +128,21 @@ for those lacking `default`.
   via the service role (patients 52 rows), and intended-public tables (doctors 55, specialties 18)
   remain readable. (Rotating keys did NOT fix this — the publishable key is public by design;
   protection is RLS.)
+- **Phone call center (inbound AI voice triage) — WS transport WIRED (2026-06-16); not yet live.**
+  The full pipeline exists and is drift-clean (`lib/phone/*`: Twilio, Deepgram STT, ElevenLabs TTS,
+  DTMF, language/turn detection, handoff, transcript; `app/api/phone/*`; admin call log + callbacks;
+  uses `triage_sessions` + the existing `callback_queue`). The one real code gap was that Twilio
+  Media Streams need a WebSocket at `wss://…/api/phone/stream`, but Next App Router can't serve WS
+  upgrades and the handler (`ws-server.ts` → `globalThis.__triaji_phone_ws_handler`, set by
+  `instrumentation.ts`) was never attached to an HTTP server. **Fixed:** added a custom server
+  `apps/web/server.js` that forwards `upgrade` events on `/api/phone/stream` to that handler and
+  delegates everything else (HMR) to Next; `start` now runs `node server.js`, plus a `dev:phone`
+  script for local testing. Verified locally: GET → 426, WS upgrade → 101 (`[Phone WS] New Twilio
+  Media Stream connection`). **Remaining to go live (not code):** (1) set `TWILIO_*`, `DEEPGRAM_API_KEY`,
+  `ELEVENLABS_API_KEY[/_EN]`, `TWILIO_WEBHOOK_BASE_URL` in env; (2) Twilio number → Voice webhook
+  `POST /api/phone/incoming`; (3) per-tenant `tenant_config.phone_number` + `phone_number_active`;
+  (4) DEPLOY via the new `start` (`node server.js`) on a host that allows WS (NOT a serverless/edge
+  platform — needs a long-lived Node process); (5) place a real test call.
 - **Verify-only (lower priority):** runtime-test telehealth/LiveKit, payments webhooks, the admin app
   UI, and mobile — none deeply exercised.
   - **Widget — RUNTIME-VERIFIED (2026-06-16).** Built clean (Vite, 39 modules, 167 KB), served from
