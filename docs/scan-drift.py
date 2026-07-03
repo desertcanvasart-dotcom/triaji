@@ -87,3 +87,7 @@ print(f"\ntotal drift refs: {len(hits)}")
 cnt = collections.Counter(t for t, *_ in hits)
 for t, n in cnt.most_common():
     print(f"  {n:3d}  {t}")
+
+# --ci: exit non-zero when any drift is found (for GitHub Actions)
+if '--ci' in sys.argv:
+    sys.exit(1 if hits else 0)

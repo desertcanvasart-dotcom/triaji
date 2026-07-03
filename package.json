@@ -13,6 +13,7 @@
     "test": "pnpm -r test",
     "test:rules": "pnpm --filter @triaji/rules-engine test",
     "test:normalization": "pnpm --filter @triaji/normalization test",
+    "test:smoke": "pnpm --filter @triaji/web test:smoke",
     "typecheck": "pnpm -r typecheck",
     "seed:kb": "npx tsx supabase/seed/run-kb-seed.ts",
     "seed:slots": "npx tsx supabase/seed/refresh-availability.ts",

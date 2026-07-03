@@ -1,0 +1,36 @@
+name: Schema drift (live DB)
+
+# The dominant historical bug class in this repo: code referencing DB
+# columns/tables that don't exist in the LIVE Supabase. Typecheck can't catch
+# it (queries are loosely typed); these scanners can. Runs nightly and on
+# demand. Requires two repo secrets: NEXT_PUBLIC_SUPABASE_URL and
+# SUPABASE_SERVICE_ROLE_KEY.
+
+on:
+  schedule:
+    - cron: '0 3 * * *' # nightly, 03:00 UTC (05:00 Cairo)
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch live PostgREST schema
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SERVICE_KEY" ]; then
+            echo "::error::Set the NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY repo secrets."
+            exit 1
+          fi
+          curl -sf -H "apikey: $SERVICE_KEY" -H "Authorization: Bearer $SERVICE_KEY" \
+            "$SUPABASE_URL/rest/v1/" -o /tmp/schema.json
+
+      - name: Column drift (expect 0)
+        run: python3 docs/scan-drift.py --files --ci
+
+      - name: Embedded-join drift (expect 0)
+        run: python3 docs/scan-embeds.py --files --ci
