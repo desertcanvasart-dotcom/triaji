@@ -58,7 +58,6 @@ export async function GET(request: NextRequest) {
     }
 
     // Supabase returns !inner joins as nested objects; cast through unknown
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rows = (units ?? []) as unknown as Array<Record<string, any>>;
 
     // ── Aggregate totals ──

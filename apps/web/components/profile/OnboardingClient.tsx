@@ -293,7 +293,6 @@ export default function OnboardingClient({ lang }: OnboardingClientProps) {
     dispatch({ type: 'UPDATE_DATA', partial });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function updateClinical(incoming: any) {
     // Normalize null → '' for string fields to match OnboardingFormData shape
     const partial: Partial<OnboardingFormData> = {};

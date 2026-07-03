@@ -189,7 +189,6 @@ export async function transcribeGpCall(callId: string): Promise<void> {
 // ─── Download Recording ─────────────────────────────────────────────────────
 
 async function downloadRecording(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
   recordingUrl: string
 ): Promise<Buffer> {
@@ -284,7 +283,6 @@ function formatTimestamp(seconds: number): string {
 // ─── Load Patient Context (Chronic Conditions + Medications) ────────────────
 
 async function loadPatientContext(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
   patientId: string
 ): Promise<string> {

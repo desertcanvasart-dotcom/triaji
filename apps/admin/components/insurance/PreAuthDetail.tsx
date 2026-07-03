@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { getSupabaseBrowser } from '@/lib/supabase/browser';
 import type { PreauthStatus } from '@triaji/shared/types';
 
@@ -183,12 +184,12 @@ export default function PreAuthDetail({ requestId }: { requestId: string }) {
     <div className="space-y-6" dir="rtl">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <a
+        <Link
           href="/insurance/pre-auth"
           className="text-sm text-gray-500 hover:text-gray-700"
         >
           ← العودة للقائمة
-        </a>
+        </Link>
         <span className={`px-3 py-1 rounded-full text-sm font-medium ${badge.className}`}>
           {badge.label}
         </span>

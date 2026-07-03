@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { getSupabaseBrowser } from '@/lib/supabase/browser';
 import type { ClaimStatus, ClaimType, ClaimLineItem } from '@triaji/shared/types';
 
@@ -177,12 +178,12 @@ export default function ClaimDetail({ claimId }: { claimId: string }) {
     <div className="space-y-6" dir="rtl">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <a
+        <Link
           href="/insurance/claims"
           className="text-sm text-gray-500 hover:text-gray-700"
         >
           ← العودة للقائمة
-        </a>
+        </Link>
         <div className="flex items-center gap-3">
           <span className="font-mono text-sm text-gray-500">{detail.claim_number}</span>
           <span className={`px-3 py-1 rounded-full text-sm font-medium ${badge.className}`}>

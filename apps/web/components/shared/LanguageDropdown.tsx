@@ -33,6 +33,9 @@ export default function LanguageDropdown({ lang }: { lang: Lang }) {
 
       {open && (
         <div className="absolute top-full mt-1 bg-white rounded-xl shadow-lg border border-gray-100 py-1 min-w-[140px] z-50 end-0">
+          {/* Full-page navigation on purpose: the middleware sets the lang
+              cookie on /?lang= and the whole tree must re-render RTL/LTR. */}
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
             href="/?lang=ar"
             className={`flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 transition-colors ${lang === 'ar' ? 'text-teal-600 font-medium' : 'text-gray-600'}`}
@@ -41,6 +44,7 @@ export default function LanguageDropdown({ lang }: { lang: Lang }) {
             <span>{'\u0627\u0644\u0639\u0631\u0628\u064a\u0629'}</span>
             {lang === 'ar' && <span className="text-teal-500 text-xs ms-auto">&#10003;</span>}
           </a>
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
             href="/?lang=en"
             className={`flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 transition-colors ${lang === 'en' ? 'text-teal-600 font-medium' : 'text-gray-600'}`}
