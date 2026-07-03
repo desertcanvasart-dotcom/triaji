@@ -20,7 +20,8 @@
         "NSMicrophoneUsageDescription": "Triajji needs microphone access for voice input and telehealth calls.",
         "NSCameraUsageDescription": "Triajji needs camera access for telehealth video calls.",
         "NSLocationWhenInUseUsageDescription": "Triajji uses your location to find nearby ICU beds and hospitals.",
-        "NSFaceIDUsageDescription": "Use Face ID to securely sign in to Triajji."
+        "NSFaceIDUsageDescription": "Use Face ID to securely sign in to Triajji.",
+        "NSPhotoLibraryUsageDescription": "Triajji needs photo library access so you can attach medical records and lab results."
       }
     },
     "android": {
@@ -59,7 +60,14 @@
           "locationWhenInUsePermission": "Triajji uses your location to find nearby ICU beds and hospitals."
         }
       ],
-      "expo-local-authentication"
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Triajji needs photo library access so you can attach medical records and lab results."
+        }
+      ],
+      "expo-local-authentication",
+      "@livekit/react-native-expo-plugin"
     ],
     "experiments": {
       "typedRoutes": true
