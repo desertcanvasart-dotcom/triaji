@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { checkEmergency } from '../src/emergency.js';
+import { checkEmergency, EMERGENCY_RULES } from '../src/emergency.js';
 import { checkEmergencyWithICU } from '../src/emergency-icu.js';
 import type { RulesInput, IcuBedInfo } from '../src/types.js';
 
@@ -72,7 +72,7 @@ describe('Emergency Rules', () => {
       expect(result.triggered).toBe(true);
       expect(result.ruleName).toBe('stroke_signs');
       expect(result.escalationType).toBe('call_ambulance');
-      expect(result.priority).toBe(2);
+      expect(result.priority).toBe(3);
       expect(result.responseAr).toContain('جلطة');
     });
 
@@ -124,7 +124,7 @@ describe('Emergency Rules', () => {
       expect(result.triggered).toBe(true);
       expect(result.ruleName).toBe('chest_pain_with_sob');
       expect(result.escalationType).toBe('call_ambulance');
-      expect(result.priority).toBe(3);
+      expect(result.priority).toBe(6);
       expect(result.responseAr).toContain('أزمة قلبية');
     });
 
@@ -151,7 +151,7 @@ describe('Emergency Rules', () => {
       expect(result.triggered).toBe(true);
       expect(result.ruleName).toBe('severe_allergic_reaction');
       expect(result.escalationType).toBe('call_ambulance');
-      expect(result.priority).toBe(4);
+      expect(result.priority).toBe(7);
       expect(result.responseAr).toContain('حساسية شديدة');
     });
 
@@ -179,7 +179,7 @@ describe('Emergency Rules', () => {
       expect(result.triggered).toBe(true);
       expect(result.ruleName).toBe('sob_preventing_speech');
       expect(result.escalationType).toBe('call_ambulance');
-      expect(result.priority).toBe(5);
+      expect(result.priority).toBe(9);
     });
 
     it('should trigger on shortness_of_breath + cannot_speak', () => {
@@ -203,7 +203,7 @@ describe('Emergency Rules', () => {
       expect(result.triggered).toBe(true);
       expect(result.ruleName).toBe('febrile_seizure');
       expect(result.escalationType).toBe('call_ambulance');
-      expect(result.priority).toBe(6);
+      expect(result.priority).toBe(11);
       expect(result.responseAr).toContain('تشنج حراري');
     });
 
@@ -242,7 +242,7 @@ describe('Emergency Rules', () => {
       expect(result.triggered).toBe(true);
       expect(result.ruleName).toBe('infant_high_fever');
       expect(result.escalationType).toBe('emergency_room');
-      expect(result.priority).toBe(7);
+      expect(result.priority).toBe(12);
       expect(result.responseAr).toContain('رضيع');
     });
 
@@ -277,7 +277,7 @@ describe('Emergency Rules', () => {
       expect(result.triggered).toBe(true);
       expect(result.ruleName).toBe('loss_of_consciousness');
       expect(result.escalationType).toBe('emergency_room');
-      expect(result.priority).toBe(8);
+      expect(result.priority).toBe(13);
       expect(result.responseAr).toContain('فقدان وعي');
     });
 
@@ -314,7 +314,7 @@ describe('Emergency Rules', () => {
       expect(result.triggered).toBe(true);
       expect(result.ruleName).toBe('meningism_signs');
       expect(result.escalationType).toBe('emergency_room');
-      expect(result.priority).toBe(9);
+      expect(result.priority).toBe(14);
       expect(result.responseAr).toContain('التهاب سحائي');
     });
 
@@ -355,7 +355,7 @@ describe('Emergency Rules', () => {
       expect(result.triggered).toBe(true);
       expect(result.ruleName).toBe('severe_bleeding');
       expect(result.escalationType).toBe('emergency_room');
-      expect(result.priority).toBe(10);
+      expect(result.priority).toBe(15);
       expect(result.responseAr).toContain('نزيف');
     });
 
@@ -384,7 +384,7 @@ describe('Emergency Rules', () => {
       expect(result.triggered).toBe(true);
       expect(result.ruleName).toBe('thunderclap_headache');
       expect(result.escalationType).toBe('emergency_room');
-      expect(result.priority).toBe(11);
+      expect(result.priority).toBe(16);
       expect(result.responseAr).toContain('صداع');
     });
 
@@ -431,7 +431,7 @@ describe('Emergency Rules', () => {
       expect(result.triggered).toBe(true);
       expect(result.ruleName).toBe('diabetic_emergency');
       expect(result.escalationType).toBe('emergency_room');
-      expect(result.priority).toBe(12);
+      expect(result.priority).toBe(17);
       expect(result.responseAr).toContain('السكر');
     });
 
@@ -552,10 +552,10 @@ describe('Emergency Rules', () => {
         }),
       );
       expect(result.ruleName).toBe('stroke_signs');
-      expect(result.priority).toBe(2);
+      expect(result.priority).toBe(3);
     });
 
-    it('cardiac arrest (priority 1) should win over stroke (priority 2)', () => {
+    it('cardiac arrest (priority 1) should win over stroke (priority 3)', () => {
       const result = checkEmergency(
         baseInput({
           symptoms: [
@@ -580,7 +580,7 @@ describe('Emergency Rules', () => {
         }),
       );
       expect(result.ruleName).toBe('chest_pain_with_sob');
-      expect(result.priority).toBe(3);
+      expect(result.priority).toBe(6);
     });
 
     it('severe allergic reaction should win over loss_of_consciousness', () => {
@@ -590,7 +590,12 @@ describe('Emergency Rules', () => {
         }),
       );
       expect(result.ruleName).toBe('severe_allergic_reaction');
-      expect(result.priority).toBe(4);
+      expect(result.priority).toBe(7);
+    });
+
+    it('every rule has a unique priority (winner never depends on array order)', () => {
+      const priorities = EMERGENCY_RULES.map((r) => r.priority);
+      expect(new Set(priorities).size).toBe(priorities.length);
     });
   });
 
@@ -714,7 +719,7 @@ describe('checkEmergencyWithICU', () => {
     const result = await checkEmergencyWithICU(input, { lat: 30.0, lng: 31.2 }, mockFindBeds);
     expect(result.triggered).toBe(true);
     expect(result.nearbyIcuBeds).toHaveLength(2);
-    expect(result.nearbyIcuBeds![0].hospitalNameAr).toBe('مستشفى القاهرة');
+    expect(result.nearbyIcuBeds![0]!.hospitalNameAr).toBe('مستشفى القاهرة');
   });
 
   it('returns max 3 ICU beds', async () => {

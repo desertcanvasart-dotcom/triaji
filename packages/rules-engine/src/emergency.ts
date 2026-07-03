@@ -23,8 +23,13 @@ function hasAll(symptoms: string[], codes: string[]): boolean {
 /**
  * Emergency rules ordered by priority (lower number = higher priority).
  * All rules are checked and the highest-priority match wins.
+ *
+ * INVARIANT: priorities are unique across ALL rules (adult + paediatric),
+ * so the winner never depends on array order. The relative order of adult
+ * and paediatric rules is clinical — review before changing any priority.
+ * A test enforces uniqueness.
  */
-const EMERGENCY_RULES: EmergencyRule[] = [
+export const EMERGENCY_RULES: EmergencyRule[] = [
   // Priority 1: Cardiac arrest signs
   {
     name: 'cardiac_arrest',
@@ -41,10 +46,10 @@ const EMERGENCY_RULES: EmergencyRule[] = [
       ]),
   },
 
-  // Priority 2: Stroke signs
+  // Priority 3: Stroke signs
   {
     name: 'stroke_signs',
-    priority: 2,
+    priority: 3,
     escalationType: 'call_ambulance',
     responseAr:
       'اتصل بالإسعاف فوراً! في علامات جلطة في المخ. كل دقيقة بتفرق. متدّيش المريض أي أكل أو شرب.',
@@ -64,10 +69,10 @@ const EMERGENCY_RULES: EmergencyRule[] = [
     },
   },
 
-  // Priority 3: Chest pain + shortness of breath (possible heart attack)
+  // Priority 6: Chest pain + shortness of breath (possible heart attack)
   {
     name: 'chest_pain_with_sob',
-    priority: 3,
+    priority: 6,
     escalationType: 'call_ambulance',
     responseAr:
       'اتصل بالإسعاف فوراً! ألم في الصدر مع صعوبة في التنفس ممكن يكون أزمة قلبية. المريض يقعد ويستريح ومياخدش أي مجهود.',
@@ -76,10 +81,10 @@ const EMERGENCY_RULES: EmergencyRule[] = [
       hasSymptom(input.symptoms, 'shortness_of_breath'),
   },
 
-  // Priority 4: Severe allergic reaction (anaphylaxis)
+  // Priority 7: Severe allergic reaction (anaphylaxis)
   {
     name: 'severe_allergic_reaction',
-    priority: 4,
+    priority: 7,
     escalationType: 'call_ambulance',
     responseAr:
       'اتصل بالإسعاف فوراً! في علامات حساسية شديدة. لو في حقنة أدرينالين (EpiPen) استخدمها فوراً.',
@@ -91,10 +96,10 @@ const EMERGENCY_RULES: EmergencyRule[] = [
     },
   },
 
-  // Priority 5: SOB preventing speech
+  // Priority 9: SOB preventing speech
   {
     name: 'sob_preventing_speech',
-    priority: 5,
+    priority: 9,
     escalationType: 'call_ambulance',
     responseAr:
       'اتصل بالإسعاف فوراً! صعوبة التنفس شديدة لدرجة مش قادر يتكلم. المريض يقعد في وضع مستقيم.',
@@ -104,10 +109,10 @@ const EMERGENCY_RULES: EmergencyRule[] = [
         hasSymptom(input.symptoms, 'cannot_speak')),
   },
 
-  // Priority 6: Febrile seizure (child + fever + convulsion)
+  // Priority 11: Febrile seizure (child + fever + convulsion)
   {
     name: 'febrile_seizure',
-    priority: 6,
+    priority: 11,
     escalationType: 'call_ambulance',
     responseAr:
       'اتصل بالإسعاف فوراً! الطفل عنده تشنج حراري. حط الطفل على جنبه ومتحطش أي حاجة في بقه. لاحظ الوقت.',
@@ -122,10 +127,10 @@ const EMERGENCY_RULES: EmergencyRule[] = [
     },
   },
 
-  // Priority 7: Infant high fever (age < 3 months + any fever)
+  // Priority 12: Infant high fever (age < 3 months + any fever)
   {
     name: 'infant_high_fever',
-    priority: 7,
+    priority: 12,
     escalationType: 'emergency_room',
     responseAr:
       'روح أقرب طوارئ فوراً! رضيع أقل من ٣ شهور وعنده سخونية. ده محتاج فحص فوري.',
@@ -137,10 +142,10 @@ const EMERGENCY_RULES: EmergencyRule[] = [
     },
   },
 
-  // Priority 8: Loss of consciousness / syncope
+  // Priority 13: Loss of consciousness / syncope
   {
     name: 'loss_of_consciousness',
-    priority: 8,
+    priority: 13,
     escalationType: 'emergency_room',
     responseAr:
       'روح أقرب طوارئ فوراً! في فقدان وعي. حط المريض في وضع الإفاقة على جنبه وتأكد إنه بيتنفس.',
@@ -153,10 +158,10 @@ const EMERGENCY_RULES: EmergencyRule[] = [
       ]),
   },
 
-  // Priority 9: Meningism signs (fever + neck stiffness + photophobia)
+  // Priority 14: Meningism signs (fever + neck stiffness + photophobia)
   {
     name: 'meningism_signs',
-    priority: 9,
+    priority: 14,
     escalationType: 'emergency_room',
     responseAr:
       'روح أقرب طوارئ فوراً! في علامات التهاب سحائي. سخونية مع تيبس في الرقبة وحساسية من النور.',
@@ -166,10 +171,10 @@ const EMERGENCY_RULES: EmergencyRule[] = [
       hasSymptom(input.symptoms, 'photophobia'),
   },
 
-  // Priority 10: Active severe bleeding
+  // Priority 15: Active severe bleeding
   {
     name: 'severe_bleeding',
-    priority: 10,
+    priority: 15,
     escalationType: 'emergency_room',
     responseAr:
       'روح أقرب طوارئ فوراً! في نزيف شديد. اضغط على مكان النزيف بقماشة نضيفة ومترفعش الضغط.',
@@ -181,10 +186,10 @@ const EMERGENCY_RULES: EmergencyRule[] = [
       ]),
   },
 
-  // Priority 11: Thunderclap headache (worst-ever sudden-onset headache)
+  // Priority 16: Thunderclap headache (worst-ever sudden-onset headache)
   {
     name: 'thunderclap_headache',
-    priority: 11,
+    priority: 16,
     escalationType: 'emergency_room',
     responseAr:
       'روح أقرب طوارئ فوراً! صداع مفاجئ وشديد جداً ممكن يكون نزيف في المخ. محتاج أشعة فوراً.',
@@ -203,10 +208,10 @@ const EMERGENCY_RULES: EmergencyRule[] = [
     },
   },
 
-  // Priority 12: Diabetic emergency (very low blood sugar + diabetes)
+  // Priority 17: Diabetic emergency (very low blood sugar + diabetes)
   {
     name: 'diabetic_emergency',
-    priority: 12,
+    priority: 17,
     escalationType: 'emergency_room',
     responseAr:
       'روح أقرب طوارئ فوراً! في أعراض انخفاض شديد في السكر. لو المريض واعي، ادّيه عصير أو سكر فوراً.',
@@ -227,10 +232,10 @@ const EMERGENCY_RULES: EmergencyRule[] = [
 
   // ══ PAEDIATRIC EMERGENCY RULES ════════════════════════════
 
-  // Fever in infant under 3 months = emergency
+  // Priority 4: Fever in infant under 3 months = emergency
   {
     name: 'paediatric_fever_neonate',
-    priority: 2,
+    priority: 4,
     escalationType: 'emergency_room',
     responseAr:
       '🚨 حرارة في رضيع أقل من 3 شهور — حالة طوارئ.\n' +
@@ -243,10 +248,10 @@ const EMERGENCY_RULES: EmergencyRule[] = [
     },
   },
 
-  // Fever ≥38.5°C in 3–36 months = urgent
+  // Priority 10: Fever ≥38.5°C in 3–36 months = urgent
   {
     name: 'paediatric_fever_infant',
-    priority: 5,
+    priority: 10,
     escalationType: 'emergency_room',
     responseAr:
       '⚠️ حرارة مرتفعة في طفل صغير.\n' +
@@ -260,10 +265,10 @@ const EMERGENCY_RULES: EmergencyRule[] = [
     },
   },
 
-  // Any seizure in child = emergency
+  // Priority 2: Any seizure in child = emergency
   {
     name: 'paediatric_seizure',
-    priority: 1,
+    priority: 2,
     escalationType: 'call_ambulance',
     responseAr:
       '🚨 تشنج عند طفل — حالة طوارئ.\n' +
@@ -276,10 +281,10 @@ const EMERGENCY_RULES: EmergencyRule[] = [
     },
   },
 
-  // Breathing difficulty in child = emergency
+  // Priority 5: Breathing difficulty in child = emergency
   {
     name: 'paediatric_breathing',
-    priority: 2,
+    priority: 5,
     escalationType: 'emergency_room',
     responseAr:
       '🚨 صعوبة تنفس عند طفل — حالة طوارئ.\n' +
@@ -298,10 +303,10 @@ const EMERGENCY_RULES: EmergencyRule[] = [
     },
   },
 
-  // Rash + fever in child = urgent
+  // Priority 8: Rash + fever in child = urgent
   {
     name: 'paediatric_rash_fever',
-    priority: 4,
+    priority: 8,
     escalationType: 'emergency_room',
     responseAr:
       '⚠️ طفح جلدي مع حرارة عند طفل.\n' +

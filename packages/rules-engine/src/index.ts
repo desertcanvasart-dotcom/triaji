@@ -1,5 +1,5 @@
 export { evaluate } from './evaluator';
-export { checkEmergency } from './emergency';
+export { checkEmergency, EMERGENCY_RULES } from './emergency';
 export { checkEmergencyWithICU } from './emergency-icu';
 export { calculateBRS } from './brs';
 export { determineUrgency } from './urgency';

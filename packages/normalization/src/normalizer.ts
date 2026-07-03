@@ -27,6 +27,11 @@ function prepareText(text: string): string {
   return normalized.trim();
 }
 
+// Dialect phrases are static — prepare them once at module load instead of on every lookup.
+const preparedDialectEntries = Array.from(dialectMap, ([phrase, codes]) =>
+  [phrase, prepareText(phrase), codes] as const,
+);
+
 /**
  * Looks up symptom codes from the dialect map for the given input text.
  * Tries exact match first, then checks if any dialect phrase is contained in the input.
@@ -38,8 +43,7 @@ function lookupSymptoms(originalText: string, preparedText: string): { symptoms:
 
   // Check if any dialect phrase appears in the input text
   // Try both the original and prepared text for maximum matching
-  for (const [phrase, codes] of dialectMap) {
-    const preparedPhrase = prepareText(phrase);
+  for (const [phrase, preparedPhrase, codes] of preparedDialectEntries) {
 
     if (
       originalText.includes(phrase) ||
