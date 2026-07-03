@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@triaji/shared/supabase';
 import { getAuthenticatedPatient } from '@/lib/auth/get-patient';
+import { clinicalDocumentPdfUrl } from '@/lib/clinical-documents/storage';
 
 export const dynamic = 'force-dynamic';
 
@@ -254,7 +255,8 @@ export async function GET() {
       imaging_type_en: typeEn || item.modality,
       report_summary_ar: item.clinical_indication_ar ?? undefined,
       report_summary_en: item.clinical_indication_en ?? undefined,
-      pdf_url: hr.pdf_url ?? undefined,
+      // Private bucket — route through the authorized signing endpoint.
+      pdf_url: hr.pdf_url ? clinicalDocumentPdfUrl(hr.id) : undefined,
     });
   }
 

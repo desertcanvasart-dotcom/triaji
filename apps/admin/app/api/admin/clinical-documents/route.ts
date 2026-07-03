@@ -4,6 +4,16 @@ import { createAdminClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * Normalize a stored pdf_url value to a bucket-relative storage path.
+ * New rows store the bare path; legacy rows stored a full public URL.
+ */
+function toStoragePath(stored: string): string {
+  const marker = '/clinical-documents/';
+  const idx = stored.indexOf(marker);
+  return idx === -1 ? stored : stored.slice(idx + marker.length);
+}
+
 interface HealthRecord {
   id: string;
   document_number: string | null;
@@ -110,6 +120,27 @@ export async function GET(request: NextRequest) {
 
   const typedRecords = (records ?? []) as HealthRecord[];
 
+  // The clinical-documents bucket is private: pdf_url stores a storage path
+  // (legacy rows: a full public URL that never worked). Batch-mint signed
+  // URLs so the audit UI can open the PDFs directly.
+  const signedUrlByPath = new Map<string, string>();
+  const pdfPaths = [...new Set(
+    typedRecords
+      .map((r) => r.pdf_url)
+      .filter((u): u is string => Boolean(u))
+      .map(toStoragePath)
+  )];
+  if (pdfPaths.length > 0) {
+    const { data: signedList } = await supabase.storage
+      .from('clinical-documents')
+      .createSignedUrls(pdfPaths, 3600);
+    for (const entry of signedList ?? []) {
+      if (entry.signedUrl && entry.path) {
+        signedUrlByPath.set(entry.path, entry.signedUrl);
+      }
+    }
+  }
+
   // Collect unique authored_by IDs and patient_ids for batch lookups
   const authorIds = [...new Set(typedRecords.map((r) => r.authored_by).filter(Boolean))] as string[];
   const patientIds = [...new Set(typedRecords.map((r) => r.patient_id))];
@@ -151,7 +182,9 @@ export async function GET(request: NextRequest) {
       id: record.id,
       documentNumber: record.document_number ?? '\u2014',
       documentType: record.document_type ?? record.record_type,
-      pdfUrl: record.pdf_url,
+      pdfUrl: record.pdf_url
+        ? signedUrlByPath.get(toStoragePath(record.pdf_url)) ?? null
+        : null,
       whatsappSent: record.whatsapp_sent ?? false,
       whatsappSentAt: record.whatsapp_sent_at,
       createdAt: record.uploaded_at,

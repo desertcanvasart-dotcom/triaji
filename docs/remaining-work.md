@@ -107,9 +107,12 @@ for those lacking `default`.
   branch stubs only (won't clobber admin-maintained branch rows).
 
 ## Other open items (not schema-drift)
-- **Signed-URL retrieval for clinical-doc PDFs** (chip `task_13be5b51`): the `clinical-documents`
-  bucket is private (correct), but the route stores a public URL via `getPublicUrl` → won't open.
-  Switch to storing the storage path + on-demand `createSignedUrl` behind an authorized endpoint.
+- ✅ **Signed-URL retrieval for clinical-doc PDFs — DONE + E2E-verified (2026-07-03).** New rows
+  store the storage path; readers go through `GET /api/clinical-document/[id]/pdf` (patient-owner
+  or authoring/booking doctor → 302 to a 5-min signed URL; legacy full-URL rows handled). Patient
+  history + timeline routes emit the endpoint URL; the admin audit list batch-mints signed URLs
+  server-side. Verified against live with a temp fixture (anon 401, wrong patient 404, owner
+  302→200 application/pdf), fixture torn down.
 - **Rotate the Supabase service-role JWT — DONE (2026-06-16).** Migrated to the new key system:
   `SUPABASE_SERVICE_ROLE_KEY` = `sb_secret_…`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` = `sb_publishable_…`
   in root `.env.local`; verified server (service-role) + browser (publishable) both work end-to-end.

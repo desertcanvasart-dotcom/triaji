@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@triaji/shared/supabase';
 import { getAuthenticatedPatient } from '@/lib/auth/get-patient';
+import { clinicalDocumentPdfUrl } from '@/lib/clinical-documents/storage';
 
 // GET /api/patient/history — patient's session summaries + doctor-authored documents
 export async function GET() {
@@ -32,8 +33,15 @@ export async function GET() {
     return NextResponse.json({ error: summariesResult.error.message }, { status: 500 });
   }
 
+  // The bucket is private — expose the authorized signing endpoint, not the
+  // stored path (or legacy public URL, which never worked).
+  const clinicalDocuments = (documentsResult.data ?? []).map((doc) => ({
+    ...doc,
+    pdf_url: doc.pdf_url ? clinicalDocumentPdfUrl(doc.id as string) : null,
+  }));
+
   return NextResponse.json({
     summaries: summariesResult.data ?? [],
-    clinical_documents: documentsResult.data ?? [],
+    clinical_documents: clinicalDocuments,
   });
 }

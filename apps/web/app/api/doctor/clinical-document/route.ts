@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import type { DocumentType, DoctorAssets, DocumentMeta, DocumentData } from '@/lib/pdf/generator';
+import { clinicalDocumentPdfUrl } from '@/lib/clinical-documents/storage';
 import { checkDrugInteractions } from '@/lib/interactions/checker';
 import type { InteractionOverride, InteractionResult } from '@triaji/shared/types';
 
@@ -320,20 +321,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 9. Get public URL
-    const { data: publicUrlData } = supabase.storage
-      .from('clinical-documents')
-      .getPublicUrl(storagePath);
-    const pdfUrl = publicUrlData.publicUrl;
-
-    // 10. Create health_records entry
+    // 9-10. Create health_records entry. The bucket is private, so we store
+    // the STORAGE PATH (not a public URL); readers go through the authorized
+    // GET /api/clinical-document/[id]/pdf endpoint, which mints a signed URL.
     const { data: healthRecord, error: recordError } = await supabase
       .from('health_records')
       .insert({
         patient_id: typedBooking.patient_id,
         record_type: documentType,
         // file_* are NOT NULL on health_records; the generated PDF is the file.
-        file_url: pdfUrl,
+        file_url: storagePath,
         file_name: `${docNumber}.pdf`,
         mime_type: 'application/pdf',
         doctor_authored: true,
@@ -341,7 +338,7 @@ export async function POST(request: NextRequest) {
         booking_id: bookingId,
         document_type: documentType,
         document_number: docNumber,
-        pdf_url: pdfUrl,
+        pdf_url: storagePath,
       })
       .select('id')
       .single();
@@ -501,7 +498,7 @@ export async function POST(request: NextRequest) {
     // 13. Return success response
     return NextResponse.json({
       documentNumber: docNumber,
-      pdfUrl,
+      pdfUrl: clinicalDocumentPdfUrl(recordId),
       whatsappSent,
     });
   } catch (error) {

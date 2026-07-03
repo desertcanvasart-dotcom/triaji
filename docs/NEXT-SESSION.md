@@ -33,9 +33,7 @@ The inbound AI-voice triage pipeline is complete and the WebSocket transport is 
   `ws://localhost:3000/api/phone/stream` (expect 101).
 
 ## 2. I can do these on request — just say which
-- **Signed-URL for clinical-doc PDFs** (chip `task_13be5b51`): the `clinical-documents` bucket is
-  private (correct) but the route stores a public URL via `getPublicUrl`, so PDFs won't open.
-  Fix = store the storage path + mint an on-demand `createSignedUrl` behind an authorized endpoint.
+- ~~Signed-URL for clinical-doc PDFs~~ **DONE + E2E-verified (2026-07-03)** — see remaining-work.md.
 - **Lab payments** (product decision): unmodeled — no `lab_invoices` table; the `lab_invoice`
   payable degrades safely today. Decide: build it (needs a migration + wiring) or leave as-is.
 
