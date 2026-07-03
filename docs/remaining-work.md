@@ -128,6 +128,11 @@ for those lacking `default`.
   via the service role (patients 52 rows), and intended-public tables (doctors 55, specialties 18)
   remain readable. (Rotating keys did NOT fix this — the publishable key is public by design;
   protection is RLS.)
+- ✅ **Emergency-trigger priorities — migration `059_emergency_trigger_priorities.sql` APPLIED + verified (2026-07-03).**
+  The rules-engine now uses unique priorities 1–17 (adult + paediatric interleaved, order-preserving);
+  `059` renumbered the 12 mirrored rows in `emergency_triggers` to match. Post-apply verified against
+  live: all 12 rows carry the new numbers (1, 3, 6, 7, 9, 11–17), no duplicates. Gaps (2, 4, 5, 8, 10)
+  are the paediatric rules that exist only in code. Seed file updated for fresh environments.
 - **Phone call center (inbound AI voice triage) — WS transport WIRED (2026-06-16); not yet live.**
   The full pipeline exists and is drift-clean (`lib/phone/*`: Twilio, Deepgram STT, ElevenLabs TTS,
   DTMF, language/turn detection, handoff, transcript; `app/api/phone/*`; admin call log + callbacks;
