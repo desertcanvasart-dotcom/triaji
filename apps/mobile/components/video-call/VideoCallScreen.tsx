@@ -81,7 +81,8 @@ export default function VideoCallScreen({
 
     async function connectToRoom() {
       try {
-        const { Room, RoomEvent } = await import('@livekit/react-native');
+        // Room/RoomEvent live in livekit-client; @livekit/react-native provides the RN bindings
+        const { Room, RoomEvent } = await import('livekit-client');
 
         const room = new Room();
         roomRef.current = room;

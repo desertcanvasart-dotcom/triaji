@@ -70,7 +70,7 @@ export default function VitalsSheet({ visible, onClose, lang, isRtl }: VitalsShe
         return;
       }
 
-      await api.post('/api/patient/vitals', vitals);
+      await api.saveVitals(vitals);
 
       Alert.alert(s.mobileVitals.saved[lang]);
       setWeight('');

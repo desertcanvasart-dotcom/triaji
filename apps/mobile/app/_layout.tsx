@@ -165,7 +165,7 @@ export default function RootLayout() {
         token = storage.getString('doctor-token') ?? '';
       } else {
         const { getPatientToken } = await import('@/lib/storage');
-        token = getPatientToken();
+        token = getPatientToken() ?? '';
       }
 
       await fetch(`${API_BASE_URL}/api/telehealth/gp-call/${callId}`, {

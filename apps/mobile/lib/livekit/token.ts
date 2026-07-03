@@ -1,4 +1,4 @@
-import { getAuthToken } from '../auth/session';
+import { getPatientToken } from '../storage';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -10,7 +10,7 @@ export async function getVideoCallToken(
   participantName: string,
   role: 'doctor' | 'patient'
 ): Promise<string> {
-  const token = await getAuthToken();
+  const token = getPatientToken();
 
   const response = await fetch(`${API_BASE}/api/telehealth/gp-token`, {
     method: 'POST',

@@ -14,7 +14,12 @@
   "dependencies": {
     "@expo-google-fonts/cairo": "^0.2.0",
     "@expo/vector-icons": "^14.0.0",
+    "@livekit/react-native": "^2.11.1",
+    "@livekit/react-native-webrtc": "^144.1.1",
+    "@react-native-community/datetimepicker": "8.2.0",
+    "@supabase/supabase-js": "^2.45.0",
     "@triaji/shared": "workspace:*",
+    "livekit-client": "^2.19.0",
     "expo": "~52.0.0",
     "expo-av": "~14.0.0",
     "expo-constants": "~17.0.0",
@@ -44,6 +49,8 @@
   },
   "devDependencies": {
     "@types/react": "~18.3.0",
+    "eslint": "^8.57.0",
+    "eslint-config-expo": "~8.0.1",
     "typescript": "^5.5.0"
   }
 }

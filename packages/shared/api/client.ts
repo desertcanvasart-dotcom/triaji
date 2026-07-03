@@ -206,6 +206,34 @@ export class TriajjiApiClient {
     });
   }
 
+  // ─── Generic helpers ──────────────────────────────────────────────────────
+
+  async get<T = unknown>(path: string): Promise<T> {
+    return this.request<T>(path);
+  }
+
+  async post<T = unknown>(path: string, body?: unknown): Promise<T> {
+    return this.request<T>(path, {
+      method: 'POST',
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  }
+
+  // ─── Medical Record ───────────────────────────────────────────────────────
+
+  async getMedicalRecord<T = unknown>(): Promise<T> {
+    return this.request<T>('/api/patient/medical-record');
+  }
+
+  // ─── Vitals ───────────────────────────────────────────────────────────────
+
+  async saveVitals(vitals: Record<string, unknown>): Promise<{ success: boolean }> {
+    return this.request('/api/patient/vitals', {
+      method: 'POST',
+      body: JSON.stringify(vitals),
+    });
+  }
+
   // ─── Telehealth ───────────────────────────────────────────────────────────
 
   async getTelehealthToken(
