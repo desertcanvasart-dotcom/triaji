@@ -29,9 +29,9 @@ describe('NeuronAdapter.computeAvailableSlots', () => {
     expect(slots.length).toBe(16);
 
     // First slot at 09:00
-    expect(slots[0].datetime).toContain('T09:00:00');
+    expect(slots[0]!.datetime).toContain('T09:00:00');
     // Last slot at 16:30
-    expect(slots[slots.length - 1].datetime).toContain('T16:30:00');
+    expect(slots[slots.length - 1]!.datetime).toContain('T16:30:00');
   });
 
   it('excludes booked slots', () => {
@@ -129,7 +129,7 @@ describe('NeuronAdapter.computeAvailableSlots', () => {
     const slots2 = NeuronAdapter.computeAvailableSlots(schedule, [], from, to);
 
     expect(slots1.map((s) => s.hisSlotId)).toEqual(slots2.map((s) => s.hisSlotId));
-    expect(slots1[0].hisSlotId).toBe('neuron-101-16032026-0900');
+    expect(slots1[0]!.hisSlotId).toBe('neuron-101-16032026-0900');
   });
 
   it('carries clinicId from schedule', () => {
@@ -162,6 +162,6 @@ describe('NeuronAdapter.computeAvailableSlots', () => {
 
     const slots = NeuronAdapter.computeAvailableSlots(schedule, [], from, to);
     expect(slots.length).toBe(1);
-    expect(slots[0].datetime).toContain('T08:00:00');
+    expect(slots[0]!.datetime).toContain('T08:00:00');
   });
 });

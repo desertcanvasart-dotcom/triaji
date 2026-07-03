@@ -39,6 +39,9 @@ const TEST_CODE_MAP: Record<string, string> = {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+/** External API responses are unvalidated JSON — fields are coerced/defaulted at use sites. */
+type ApiResponse = Record<string, any>;
+
 function getEnv(key: string): string {
   return process.env[key] ?? '';
 }
@@ -129,7 +132,7 @@ export class AlBorgAdapter implements LabChainAdapter {
         return { success: false, error: `Al-Borg API error ${res.status}: ${err}` };
       }
 
-      const data = await res.json();
+      const data = (await res.json()) as ApiResponse;
       return {
         success: true,
         orderId: data.order_id ?? data.id,
@@ -167,7 +170,7 @@ export class AlBorgAdapter implements LabChainAdapter {
 
       if (!res.ok) return [];
 
-      const data = await res.json();
+      const data = (await res.json()) as ApiResponse;
       const slots: LabChainSlot[] = (data.slots ?? data ?? []).map(
         (s: Record<string, unknown>) => ({
           slotId: String(s.slot_id ?? s.id),
@@ -218,7 +221,7 @@ export class AlBorgAdapter implements LabChainAdapter {
         return { success: false, error: `Al-Borg booking error ${res.status}: ${err}` };
       }
 
-      const data = await res.json();
+      const data = (await res.json()) as ApiResponse;
       return {
         success: true,
         bookingId: data.booking_id ?? data.id,
@@ -246,7 +249,7 @@ export class AlBorgAdapter implements LabChainAdapter {
       if (res.status === 404 || res.status === 204) return null;
       if (!res.ok) return null;
 
-      const data = await res.json();
+      const data = (await res.json()) as ApiResponse;
 
       if (data.status === 'pending' && (!data.results || data.results.length === 0)) {
         return null;
@@ -301,7 +304,7 @@ export class AlBorgAdapter implements LabChainAdapter {
         return { success: false, error: `Al-Borg payment error ${res.status}: ${err}` };
       }
 
-      const data = await res.json();
+      const data = (await res.json()) as ApiResponse;
       return {
         success: true,
         paymentId: data.payment_id ?? data.id,
