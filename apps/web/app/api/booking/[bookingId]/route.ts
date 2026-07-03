@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@triaji/shared/supabase';
+import { getAuthenticatedPatient } from '@/lib/auth/get-patient';
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ bookingId: string }> }
 ) {
   const { bookingId } = await params;
+
+  const patient = await getAuthenticatedPatient();
+  if (!patient) {
+    return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+  }
+
   const supabase = createServerClient();
 
   const { data: booking } = await supabase
@@ -14,7 +21,7 @@ export async function GET(
     .eq('id', bookingId)
     .single();
 
-  if (!booking) {
+  if (!booking || booking.patient_id !== patient.patientId) {
     return NextResponse.json({ error: 'الحجز غير موجود' }, { status: 404 });
   }
 

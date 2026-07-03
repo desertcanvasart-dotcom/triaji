@@ -1,6 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@triaji/shared/supabase';
+import { getAuthenticatedPatient } from '@/lib/auth/get-patient';
 import { generateToken } from '@/lib/telehealth/room';
+
+function getAnonClient() {
+  const url = process.env['NEXT_PUBLIC_SUPABASE_URL'];
+  const key = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
+  if (!url || !key) throw new Error('Missing Supabase env vars');
+  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+}
+
+/** Resolve the verified doctor account for the request, or null. */
+async function authenticateDoctor(request: NextRequest): Promise<{ doctor_id: string } | null> {
+  const accessToken = request.cookies.get('sb-access-token')?.value
+    ?? request.headers.get('Authorization')?.replace('Bearer ', '');
+  if (!accessToken) return null;
+
+  const anonClient = getAnonClient();
+  const { data: { user }, error } = await anonClient.auth.getUser(accessToken);
+  if (error || !user) return null;
+
+  const supabase = createServerClient();
+  const { data: doctorAccount } = await supabase
+    .from('doctor_accounts')
+    .select('doctor_id, verification_status')
+    .eq('id', user.id)
+    .single();
+
+  if (!doctorAccount || doctorAccount.verification_status !== 'verified') return null;
+  return { doctor_id: doctorAccount.doctor_id as string };
+}
 
 // GET /api/telehealth/token?bookingId=xxx&role=patient|doctor
 export async function GET(request: NextRequest) {
@@ -23,6 +53,19 @@ export async function GET(request: NextRequest) {
 
   if (!booking) {
     return NextResponse.json({ error: 'الحجز غير موجود' }, { status: 404 });
+  }
+
+  // The caller must be the booking's own patient or its assigned (verified) doctor
+  if (role === 'patient') {
+    const patient = await getAuthenticatedPatient();
+    if (!patient || booking.patient_id !== patient.patientId) {
+      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+    }
+  } else {
+    const doctor = await authenticateDoctor(request);
+    if (!doctor || booking.doctor_id !== doctor.doctor_id) {
+      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+    }
   }
 
   if ((booking.appointment_type as string) !== 'telehealth') {
