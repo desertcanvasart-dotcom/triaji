@@ -236,7 +236,7 @@ export async function POST(request: NextRequest) {
   const triajiReference = refData as string;
 
   // Determine return and webhook URLs
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://triajji.com';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://triajji.com';
   const returnUrl = body.return_url ?? `${baseUrl}/ar/pay/success?reference=${triajiReference}`;
   const webhookUrl = `${baseUrl}/api/webhooks/${provider === 'vodafone_cash' ? 'vodafone' : provider}`;
 

@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
   }
 
   // 4. Build payment link
-  const baseUrl = process.env['NEXT_PUBLIC_BASE_URL'] ?? 'https://triajji.com';
+  const baseUrl = process.env['NEXT_PUBLIC_APP_URL'] ?? 'https://triajji.com';
   const paymentLink = `${baseUrl}/${lang}/pay/${txn.triaji_reference}`;
 
   // 5. Send WhatsApp reminder

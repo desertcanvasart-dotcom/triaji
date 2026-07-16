@@ -109,7 +109,7 @@ export interface InvoicePaymentTemplateData {
   paymentReference: string;
 }
 
-const PAYMENT_RETURN_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://triajji.com';
+const PAYMENT_RETURN_BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://triajji.com';
 
 /**
  * Clinic invoice with optional online payment link.

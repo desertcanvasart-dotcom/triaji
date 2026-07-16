@@ -519,7 +519,7 @@ export async function createBookingPaymentPending(
   }
 
   // 6. Initiate payment transaction via internal call
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://triajji.com';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://triajji.com';
   const paymentRes = await fetch(`${baseUrl}/api/payments/initiate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
