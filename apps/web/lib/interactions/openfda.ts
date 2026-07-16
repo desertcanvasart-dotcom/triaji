@@ -7,6 +7,7 @@
 
 import type { InteractionResult } from '@triaji/shared/types';
 import Anthropic from '@anthropic-ai/sdk';
+import { CLAUDE_MODEL_LIGHT } from '@triaji/shared/constants';
 
 // ─── Anthropic Client ────────────────────────────────────────────────────────
 
@@ -49,7 +50,7 @@ async function parseInteractionWithClaude(
 ): Promise<InteractionResult | null> {
   try {
     const response = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: CLAUDE_MODEL_LIGHT,
       max_tokens: 500,
       messages: [
         {

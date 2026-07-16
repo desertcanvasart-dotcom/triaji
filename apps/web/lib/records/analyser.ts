@@ -5,6 +5,7 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk';
+import { CLAUDE_MODEL } from '@triaji/shared/constants';
 import { createServerClient } from '@triaji/shared/supabase';
 import type {
   HealthRecord,
@@ -14,7 +15,7 @@ import type {
   LabValue,
 } from './types';
 
-const MODEL = 'claude-sonnet-5';
+const MODEL = CLAUDE_MODEL;
 
 // ─── Analysis Prompts ───────────────────────────────────────────────────────
 

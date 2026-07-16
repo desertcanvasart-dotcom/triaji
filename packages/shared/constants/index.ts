@@ -17,3 +17,5 @@ export {
   TRIAGE_SYSTEM_PROMPT_EN,
   SUMMARY_SYSTEM_PROMPT,
 } from './prompts';
+
+export { CLAUDE_MODEL, CLAUDE_MODEL_LIGHT } from './models';

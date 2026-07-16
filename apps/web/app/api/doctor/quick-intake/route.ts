@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
+import { CLAUDE_MODEL } from '@triaji/shared/constants';
 
 export const dynamic = 'force-dynamic';
 
@@ -132,7 +133,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-5',
+      model: CLAUDE_MODEL,
       max_tokens: 1024,
       system: QUICK_INTAKE_SYSTEM_PROMPT,
       messages: [

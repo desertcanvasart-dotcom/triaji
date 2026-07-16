@@ -13,6 +13,7 @@
 
 import { NextRequest } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { CLAUDE_MODEL } from '@triaji/shared/constants';
 import { createServerClient } from '@triaji/shared/supabase';
 import type { AssistantMessage } from '@triaji/shared/types';
 
@@ -27,7 +28,7 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-const MODEL = 'claude-sonnet-5';
+const MODEL = CLAUDE_MODEL;
 const MAX_TOKENS = 500;
 const MAX_MESSAGES_PER_SESSION = 50;
 

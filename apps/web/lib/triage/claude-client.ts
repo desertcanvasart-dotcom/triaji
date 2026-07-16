@@ -7,8 +7,9 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import type { MessageParam, ContentBlockParam, ImageBlockParam } from '@anthropic-ai/sdk/resources/messages';
+import { CLAUDE_MODEL } from '@triaji/shared/constants';
 
-const MODEL = 'claude-sonnet-5';
+const MODEL = CLAUDE_MODEL;
 const MAX_TOKENS = 1024;
 
 let client: Anthropic | null = null;

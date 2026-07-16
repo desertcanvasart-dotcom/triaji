@@ -7,6 +7,7 @@
 
 import { createServerClient } from '@triaji/shared/supabase';
 import Anthropic from '@anthropic-ai/sdk';
+import { CLAUDE_MODEL } from '@triaji/shared/constants';
 
 export interface FollowUpExtraction {
   hasFollowUp: boolean;
@@ -62,7 +63,7 @@ export async function extractFollowUp(
     const client = new Anthropic({ apiKey });
 
     const response = await client.messages.create({
-      model: 'claude-sonnet-5',
+      model: CLAUDE_MODEL,
       max_tokens: 256,
       system: EXTRACTION_PROMPT,
       messages: [

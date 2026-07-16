@@ -7,13 +7,14 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk';
+import { CLAUDE_MODEL } from '@triaji/shared/constants';
 import { createServerClient } from '@triaji/shared/supabase';
 import type { LabChainResult, LabChainCode, LabChainTestResult } from '@triaji/lab-chain-adapters';
 import { notifyPatientChainResults, notifyDoctorChainResults } from './chain-notifications';
 import { extractVitalsFromLabValues, insertVitalsFromLabResult } from '@/lib/vitals/extract-from-lab';
 import type { Lang } from '@triaji/shared/i18n/strings';
 
-const MODEL = 'claude-sonnet-5';
+const MODEL = CLAUDE_MODEL;
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 

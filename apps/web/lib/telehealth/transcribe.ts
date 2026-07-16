@@ -12,6 +12,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
+import { CLAUDE_MODEL } from '@triaji/shared/constants';
 import { sendPushNotification } from '@/lib/notifications/push';
 
 // ─── Config ─────────────────────────────────────────────────────────────────
@@ -393,7 +394,7 @@ ${patientContext}
 ضع في اعتبارك الأمراض المزمنة والأدوية الحالية للمريض عند تحليل المحادثة.`;
 
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-5',
+    model: CLAUDE_MODEL,
     max_tokens: 2000,
     messages: [
       {
