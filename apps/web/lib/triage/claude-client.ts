@@ -8,7 +8,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { MessageParam, ContentBlockParam, ImageBlockParam } from '@anthropic-ai/sdk/resources/messages';
 
-const MODEL = 'claude-sonnet-4-20250514';
+const MODEL = 'claude-sonnet-5';
 const MAX_TOKENS = 1024;
 
 let client: Anthropic | null = null;

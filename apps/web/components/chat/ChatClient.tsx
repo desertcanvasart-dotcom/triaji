@@ -95,6 +95,7 @@ export default function ChatClient({ lang }: ChatClientProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const sessionStartedRef = useRef(false);
 
   const isRtl = lang === 'ar';
 
@@ -125,11 +126,11 @@ export default function ChatClient({ lang }: ChatClientProps) {
         }
       },
       () => {
-        // Geolocation denied or timed out — add a subtle notice
-        setMessages((prev) => [
+        // Geolocation denied or timed out — add a subtle notice (once per conversation)
+        setMessages((prev) => prev.some((m) => m.id === 'sys-geo') ? prev : [
           ...prev,
           {
-            id: `sys-geo-${Date.now()}`,
+            id: 'sys-geo',
             role: 'ai' as const,
             content: lang === 'ar'
               ? '📍 لم نتمكن من تحديد موقعك — هنبحثلك عن أطباء في كل المناطق.'
@@ -189,6 +190,9 @@ export default function ChatClient({ lang }: ChatClientProps) {
   }, [lang, updateSessionLocation]);
 
   useEffect(() => {
+    // Guard against React StrictMode double-invocation creating two sessions
+    if (sessionStartedRef.current) return;
+    sessionStartedRef.current = true;
     startSession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -328,11 +332,11 @@ export default function ChatClient({ lang }: ChatClientProps) {
         setSessionStatus('completed');
       }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : s.common.error[lang];
+      console.error('Chat send failed:', err);
       setMessages((prev) => [...prev, {
         id: `err-${Date.now()}`,
         role: 'ai',
-        content: `${s.chat.sendError[lang]} ${errorMsg}`,
+        content: s.chat.sendError[lang],
       }]);
     } finally {
       setIsLoading(false);

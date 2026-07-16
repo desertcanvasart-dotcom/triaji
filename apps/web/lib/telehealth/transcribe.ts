@@ -393,7 +393,7 @@ ${patientContext}
 ضع في اعتبارك الأمراض المزمنة والأدوية الحالية للمريض عند تحليل المحادثة.`;
 
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-5',
     max_tokens: 2000,
     messages: [
       {

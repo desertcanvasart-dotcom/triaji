@@ -13,7 +13,7 @@ import { notifyPatientChainResults, notifyDoctorChainResults } from './chain-not
 import { extractVitalsFromLabValues, insertVitalsFromLabResult } from '@/lib/vitals/extract-from-lab';
 import type { Lang } from '@triaji/shared/i18n/strings';
 
-const MODEL = 'claude-sonnet-4-20250514';
+const MODEL = 'claude-sonnet-5';
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 

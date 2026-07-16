@@ -62,7 +62,7 @@ const UI_STRINGS = {
     uploading: { ar: 'جاري رفع الصورة...', en: 'Uploading image...' },
     newSession: { ar: 'بدء محادثة جديدة', en: 'Start new conversation' },
     welcome: {
-      ar: 'أهلًا بيك في ترياچي! أنا مرشد طبي ذكي هساعدك توصل للتخصص المناسب.\n\nقولي إيه اللي حاسس بيه أو إيه اللي بيوجعك؟\n\n📷 تقدر ترفع صور لو عندك أعراض ظاهرة.',
+      ar: 'أهلًا بيك في ترياچي! أنا مرشد طبي ذكي هساعدك توصل للتخصص المناسب.\n\nقولّي إيه اللي حاسس بيه أو إيه اللي بيوجعك؟\n\n📷 تقدر ترفع صور لو عندك أعراض ظاهرة.',
       en: "Welcome to Triajji! I'm Nour, your smart medical guide. I'll help you find the right specialist.\n\nTell me what you're feeling or what's bothering you.\n\n📷 You can upload photos if you have visible symptoms.",
     },
     sessionError: {

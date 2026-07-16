@@ -27,7 +27,7 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-const MODEL = 'claude-sonnet-4-20250514';
+const MODEL = 'claude-sonnet-5';
 const MAX_TOKENS = 500;
 const MAX_MESSAGES_PER_SESSION = 50;
 

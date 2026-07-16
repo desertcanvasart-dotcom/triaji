@@ -14,7 +14,7 @@ import type {
   LabValue,
 } from './types';
 
-const MODEL = 'claude-sonnet-4-20250514';
+const MODEL = 'claude-sonnet-5';
 
 // ─── Analysis Prompts ───────────────────────────────────────────────────────
 

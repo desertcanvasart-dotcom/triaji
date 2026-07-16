@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: message }, { status: 400 });
     }
 
-    return NextResponse.json({ error: message }, { status: 500 });
+    // Never surface internal error details (API errors, stack info) to patients
+    return NextResponse.json({ error: 'internal_error' }, { status: 500 });
   }
 }
