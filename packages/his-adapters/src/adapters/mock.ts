@@ -103,7 +103,6 @@ export class MockHisAdapter implements HisAdapter {
 
           // Skip past slots
           if (slotDt <= new Date()) {
-            current.setDate(current.getDate() + 1);
             continue;
           }
 
