@@ -131,7 +131,9 @@ export default function GpScreen() {
   // ─── Video Call ─────────────────────────────────────────────────────────
 
   const fetchCallHistory = useCallback(async () => {
-    if (!authenticated || !gp) return;
+    // Call history is independent of the GP profile — don't gate it on `gp`, so
+    // it loads in parallel with fetchGp instead of waiting a round-trip.
+    if (!authenticated) return;
 
     try {
       const { getPatientToken } = await import('@/lib/storage');
@@ -151,11 +153,11 @@ export default function GpScreen() {
     } catch {
       // Silent
     }
-  }, [authenticated, gp]);
+  }, [authenticated]);
 
   useEffect(() => {
-    if (gp) fetchCallHistory();
-  }, [gp, fetchCallHistory]);
+    fetchCallHistory();
+  }, [fetchCallHistory]);
 
   const handleVideoCall = async () => {
     if (!gp) return;

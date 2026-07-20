@@ -111,6 +111,17 @@ async function setupAndroidChannels(): Promise<void> {
     sound: 'default',
     bypassDnd: true,
   });
+
+  // Video-call channel: time-sensitive (incoming GP video calls). Previously
+  // only declared in a dead module, so it was never actually registered.
+  await Notifications.setNotificationChannelAsync('video-call', {
+    name: 'Video Calls',
+    importance: Notifications.AndroidImportance.MAX,
+    vibrationPattern: [0, 500, 500, 500],
+    lightColor: '#0D7A7A',
+    sound: 'default',
+    bypassDnd: true,
+  });
 }
 
 // ─── Registration ──────────────────────────────────────────────────────────

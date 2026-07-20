@@ -79,31 +79,27 @@ export default function PatientHomeScreen() {
     try {
       const { getPatientToken } = await import('@/lib/storage');
       const token = getPatientToken();
-      const res = await fetch(`${API_BASE_URL}/api/patient/home`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      };
+
+      // Home data and assistant eligibility are independent — fetch in parallel.
+      // Eligibility is non-critical, so its failure must not sink the home load.
+      const [res, eligRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/patient/home`, { headers }),
+        fetch(`${API_BASE_URL}/api/health-assistant/eligibility`, { headers }).catch(
+          () => null,
+        ),
+      ]);
+
       if (res.ok) {
-        const result = await res.json();
-        setData(result);
+        setData(await res.json());
       }
 
-      // Check health assistant eligibility
-      try {
-        const eligRes = await fetch(`${API_BASE_URL}/api/health-assistant/eligibility`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-        if (eligRes.ok) {
-          const eligData = (await eligRes.json()) as EligibilityResult;
-          setAssistantEligible(eligData.eligible);
-        }
-      } catch {
-        // Silent — assistant eligibility is non-critical
+      if (eligRes?.ok) {
+        const eligData = (await eligRes.json()) as EligibilityResult;
+        setAssistantEligible(eligData.eligible);
       }
     } catch {
       // Silently fail — show empty state

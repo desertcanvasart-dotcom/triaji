@@ -23,10 +23,12 @@ import {
   isDoctorMode,
   isDoctorAuthenticated,
   isBiometricEnabled,
+  clearPatientToken,
+  clearDoctorData,
 } from '@/lib/storage';
 import { authenticateWithBiometrics } from '@/lib/auth/biometric';
 import { getLang } from '@/lib/storage';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import IncomingCallScreen from '@/components/video-call/IncomingCallScreen';
 import type { Lang } from '@triaji/shared/i18n';
 
@@ -55,26 +57,36 @@ export default function RootLayout() {
   const notificationListenerRef = useRef<Notifications.Subscription | null>(null);
   const responseListenerRef = useRef<Notifications.Subscription | null>(null);
 
-  // Biometric gate on app open
+  // Biometric gate on app open — extracted so the lock screen can retry it.
+  const runBiometricCheck = useCallback(async () => {
+    setBiometricChecking(true);
+    const hasAuth = isAuthenticated() || isDoctorAuthenticated();
+    const biometricOn = isBiometricEnabled();
+
+    if (hasAuth && biometricOn) {
+      const lang = getLang();
+      const success = await authenticateWithBiometrics(lang);
+      setBiometricPassed(success);
+    } else {
+      setBiometricPassed(true);
+    }
+    setBiometricChecking(false);
+  }, []);
+
+  // Fallback when the user can't pass biometrics: sign out and return to auth,
+  // instead of dead-ending on a spinner.
+  const handleLockedSignOut = useCallback(() => {
+    clearPatientToken();
+    clearDoctorData();
+    setBiometricPassed(true);
+    router.replace('/(auth)');
+  }, []);
+
   useEffect(() => {
-    async function checkBiometric() {
-      const hasAuth = isAuthenticated() || isDoctorAuthenticated();
-      const biometricOn = isBiometricEnabled();
-
-      if (hasAuth && biometricOn) {
-        const lang = getLang();
-        const success = await authenticateWithBiometrics(lang);
-        setBiometricPassed(success);
-      } else {
-        setBiometricPassed(true);
-      }
-      setBiometricChecking(false);
-    }
-
     if (fontsLoaded) {
-      checkBiometric();
+      runBiometricCheck();
     }
-  }, [fontsLoaded]);
+  }, [fontsLoaded, runBiometricCheck]);
 
   useEffect(() => {
     if (fontsLoaded && !biometricChecking) {
@@ -189,11 +201,31 @@ export default function RootLayout() {
     return null;
   }
 
-  // If biometric failed, show a locked screen (splash stays hidden but we block)
+  // If biometric failed, offer a retry and a sign-out escape hatch (a single
+  // failed Face ID used to leave the app stuck on a spinner forever).
   if (!biometricPassed) {
+    const lockLang = getLang() ?? 'ar';
     return (
       <View style={lockStyles.container}>
-        <ActivityIndicator size="large" color="#0D7A7A" />
+        <Text style={lockStyles.icon}>🔒</Text>
+        <Text style={lockStyles.title}>
+          {lockLang === 'ar' ? 'مطلوب التحقق' : 'Verification required'}
+        </Text>
+        <Text style={lockStyles.subtitle}>
+          {lockLang === 'ar'
+            ? 'لم نتمكن من التحقق من هويتك. حاول تاني.'
+            : "We couldn't verify your identity. Please try again."}
+        </Text>
+        <TouchableOpacity style={lockStyles.primaryBtn} onPress={runBiometricCheck}>
+          <Text style={lockStyles.primaryBtnText}>
+            {lockLang === 'ar' ? 'حاول تاني' : 'Try again'}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={lockStyles.secondaryBtn} onPress={handleLockedSignOut}>
+          <Text style={lockStyles.secondaryBtnText}>
+            {lockLang === 'ar' ? 'تسجيل الخروج' : 'Sign out'}
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -243,5 +275,47 @@ const lockStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
+    paddingHorizontal: 32,
+  },
+  icon: {
+    fontSize: 44,
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1A2F4A',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 28,
+    textAlign: 'center',
+  },
+  primaryBtn: {
+    backgroundColor: '#0D7A7A',
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    width: '100%',
+    alignItems: 'center',
+  },
+  primaryBtnText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  secondaryBtn: {
+    marginTop: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+  },
+  secondaryBtnText: {
+    color: '#DC2626',
+    fontSize: 15,
+    fontWeight: '500',
   },
 });
