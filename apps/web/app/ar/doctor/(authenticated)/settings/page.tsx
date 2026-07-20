@@ -1,8 +1,15 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import SignaturePad from '@/components/doctor/SignaturePad';
+import dynamic from 'next/dynamic';
 import StampSetup from '@/components/doctor/StampSetup';
+
+// react-signature-canvas is heavy and only needed on this settings page — keep
+// it out of the initial bundle.
+const SignaturePad = dynamic(() => import('@/components/doctor/SignaturePad'), {
+  ssr: false,
+  loading: () => <div className="h-48 animate-pulse rounded-xl bg-gray-100" />,
+});
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 

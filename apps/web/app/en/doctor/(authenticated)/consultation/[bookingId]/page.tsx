@@ -7,13 +7,20 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
-import PrescriptionForm from '@/components/doctor/PrescriptionForm';
-import LabOrderForm from '@/components/doctor/LabOrderForm';
-import ImagingOrderForm from '@/components/doctor/ImagingOrderForm';
-import ConsultationSummaryForm from '@/components/doctor/ConsultationSummaryForm';
-import PDFPreviewModal from '@/components/doctor/PDFPreviewModal';
+
+// The documents workflow (and its PDF preview) is behind a non-default tab, so
+// these heavy forms are code-split out of the consultation route's initial JS.
+const formLoader = () => (
+  <div className="h-64 animate-pulse rounded-xl bg-gray-100" />
+);
+const PrescriptionForm = dynamic(() => import('@/components/doctor/PrescriptionForm'), { ssr: false, loading: formLoader });
+const LabOrderForm = dynamic(() => import('@/components/doctor/LabOrderForm'), { ssr: false, loading: formLoader });
+const ImagingOrderForm = dynamic(() => import('@/components/doctor/ImagingOrderForm'), { ssr: false, loading: formLoader });
+const ConsultationSummaryForm = dynamic(() => import('@/components/doctor/ConsultationSummaryForm'), { ssr: false, loading: formLoader });
+const PDFPreviewModal = dynamic(() => import('@/components/doctor/PDFPreviewModal'), { ssr: false });
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
