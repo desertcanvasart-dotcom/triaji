@@ -249,15 +249,15 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        // Log all interactions to interaction_check_log
-        for (const interaction of allInteractions) {
+        // Log all interactions to interaction_check_log in one insert.
+        const nowIso = new Date().toISOString();
+        const logRows = allInteractions.map((interaction) => {
           const overrideForThis = providedOverrides?.find(
             (o) =>
               (o.drugA === interaction.drugA && o.drugB === interaction.drugB) ||
               (o.drugA === interaction.drugB && o.drugB === interaction.drugA)
           );
-
-          await supabase.from('interaction_check_log').insert({
+          return {
             patient_id: typedBooking.patient_id,
             doctor_account_id: doctorAccount.id,
             new_drug_name_en: interaction.drugA,
@@ -265,28 +265,41 @@ export async function POST(request: NextRequest) {
             interactions_found: [interaction],
             highest_severity: interaction.severity,
             doctor_acknowledged: true,
-            acknowledgement_at: new Date().toISOString(),
+            acknowledgement_at: nowIso,
             override_reason_ar: overrideForThis?.overrideReasonAr ?? null,
             check_source: interaction.source,
-          });
-        }
+          };
+        });
+        await supabase.from('interaction_check_log').insert(logRows);
       }
     }
 
-    // 4. Generate document number
-    const { count } = await supabase
-      .from('health_records')
-      .select('id', { count: 'exact', head: true })
-      .eq('doctor_authored', true);
-    const seq = (count ?? 0) + 1;
-    const docNumber = `TRJ-${new Date().getFullYear()}-${String(seq).padStart(5, '0')}`;
+    // 4-5. Generate the document number and fetch patient info in parallel.
+    // The number comes from an atomic counter RPC (migration 063) so concurrent
+    // document creations can't collide; falls back to the legacy count+1 until
+    // the migration is applied.
+    const [{ data: rpcDocNumber, error: docNumberError }, { data: patient }] =
+      await Promise.all([
+        supabase.rpc('next_clinical_document_number'),
+        supabase
+          .from('patients')
+          .select('id, phone_number, name_ar, patient_profiles(date_of_birth)')
+          .eq('id', typedBooking.patient_id)
+          .single(),
+      ]);
 
-    // 5. Get patient info
-    const { data: patient } = await supabase
-      .from('patients')
-      .select('id, phone_number, name_ar, patient_profiles(date_of_birth)')
-      .eq('id', typedBooking.patient_id)
-      .single();
+    let docNumber: string;
+    if (!docNumberError && typeof rpcDocNumber === 'string') {
+      docNumber = rpcDocNumber;
+    } else {
+      console.warn('[clinical-document] next_clinical_document_number RPC unavailable, using legacy count:', docNumberError?.message);
+      const { count } = await supabase
+        .from('health_records')
+        .select('id', { count: 'exact', head: true })
+        .eq('doctor_authored', true);
+      const seq = (count ?? 0) + 1;
+      docNumber = `TRJ-${new Date().getFullYear()}-${String(seq).padStart(5, '0')}`;
+    }
 
     const typedPatient = patient as Patient | null;
     const patientDob = typedPatient?.patient_profiles?.[0]?.date_of_birth ?? null;
