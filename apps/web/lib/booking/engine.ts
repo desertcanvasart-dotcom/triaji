@@ -18,6 +18,8 @@ import {
 } from '@/lib/whatsapp/templates';
 import type { ConfirmChannel } from '@triaji/shared/types';
 import { getAdapter } from '@triaji/his-adapters';
+import type { PaymentProvider } from '@triaji/payment-adapters';
+import { initiatePayment, VALID_PROVIDERS } from '@/lib/payments/initiate';
 import type { HisAdapterConfig } from '@triaji/his-adapters';
 import { decryptCredentials } from '@/lib/his/crypto';
 import { getChainForTenant, upsertChainPatient } from '@/lib/chain/patient-recognition';
@@ -507,31 +509,28 @@ export async function createBookingPaymentPending(
     .eq('tenant_id', tenantId)
     .single();
 
-  // Pick first enabled provider, defaulting to fawry
-  let provider = 'fawry';
+  // Pick first enabled provider, defaulting to fawry. Unknown values in
+  // tenant_config.payment_providers fall back to fawry (the HTTP route used
+  // to reject them with a 400; the in-process call must not throw).
+  let provider: PaymentProvider = 'fawry';
   if (tenantConfig?.payment_providers) {
     const providers = tenantConfig.payment_providers as string[];
-    if (providers.length > 0) {
-      provider = providers[0]!;
+    if (providers.length > 0 && VALID_PROVIDERS.includes(providers[0] as PaymentProvider)) {
+      provider = providers[0] as PaymentProvider;
     }
   }
 
-  // 6. Initiate payment transaction via internal call
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://triajji.com';
-  const paymentRes = await fetch(`${baseUrl}/api/payments/initiate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      payable_type: 'booking',
-      payable_id: bookingId,
-      provider,
-      amount_egp: fee,
-    }),
+  // 6. Initiate payment transaction in-process (shared with /api/payments/initiate)
+  const payment = await initiatePayment({
+    payableType: 'booking',
+    payableId: bookingId,
+    provider,
+    amountEgp: fee,
   });
 
-  if (!paymentRes.ok) {
+  if (!payment.ok) {
     // Payment initiation failed — still return booking but without payment
-    console.error('[createBookingPaymentPending] Payment initiation failed');
+    console.error('[createBookingPaymentPending] Payment initiation failed:', payment.error);
     // Revert to confirmed status so booking is not stuck
     await supabase
       .from('bookings')
@@ -545,12 +544,10 @@ export async function createBookingPaymentPending(
     };
   }
 
-  const paymentData = await paymentRes.json();
-
   return {
     bookingId,
-    paymentReference: paymentData.reference as string,
-    paymentUrl: paymentData.paymentUrl ?? null,
+    paymentReference: payment.reference,
+    paymentUrl: payment.paymentUrl,
     status: 'payment_pending',
   };
 }
