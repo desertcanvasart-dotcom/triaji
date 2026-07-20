@@ -18,6 +18,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
+import { authenticateAdmin } from '@/lib/auth/api-auth';
 
 interface ChainPricingException {
   branch_id: string;
@@ -26,6 +27,9 @@ interface ChainPricingException {
 }
 
 export async function GET(request: NextRequest) {
+  const authResult = await authenticateAdmin(request);
+  if (authResult instanceof NextResponse) return authResult;
+
   const { searchParams } = request.nextUrl;
   const tenantId = searchParams.get('tenant_id');
   const serviceType = searchParams.get('service_type');

@@ -123,54 +123,56 @@ export async function GET(request: NextRequest) {
   // The clinical-documents bucket is private: pdf_url stores a storage path
   // (legacy rows: a full public URL that never worked). Batch-mint signed
   // URLs so the audit UI can open the PDFs directly.
-  const signedUrlByPath = new Map<string, string>();
   const pdfPaths = [...new Set(
     typedRecords
       .map((r) => r.pdf_url)
       .filter((u): u is string => Boolean(u))
       .map(toStoragePath)
   )];
-  if (pdfPaths.length > 0) {
-    const { data: signedList } = await supabase.storage
-      .from('clinical-documents')
-      .createSignedUrls(pdfPaths, 3600);
-    for (const entry of signedList ?? []) {
-      if (entry.signedUrl && entry.path) {
-        signedUrlByPath.set(entry.path, entry.signedUrl);
-      }
-    }
-  }
 
   // Collect unique authored_by IDs and patient_ids for batch lookups
   const authorIds = [...new Set(typedRecords.map((r) => r.authored_by).filter(Boolean))] as string[];
   const patientIds = [...new Set(typedRecords.map((r) => r.patient_id))];
 
-  // Fetch doctor accounts
-  const doctorMap = new Map<string, DoctorInfo>();
-  if (authorIds.length > 0) {
-    const { data: doctors } = await supabase
-      .from('doctor_accounts')
-      .select('id, name_ar, name_en, specialty_ar')
-      .in('id', authorIds);
-    if (doctors) {
-      for (const doc of doctors as DoctorInfo[]) {
-        doctorMap.set(doc.id, doc);
-      }
+  // Signed URLs, doctor accounts, and patients are independent — fetch in parallel.
+  const [signedList, doctors, patients] = await Promise.all([
+    pdfPaths.length > 0
+      ? supabase.storage
+          .from('clinical-documents')
+          .createSignedUrls(pdfPaths, 3600)
+          .then((r) => r.data)
+      : Promise.resolve(null),
+    authorIds.length > 0
+      ? supabase
+          .from('doctor_accounts')
+          .select('id, name_ar, name_en, specialty_ar')
+          .in('id', authorIds)
+          .then((r) => r.data)
+      : Promise.resolve(null),
+    patientIds.length > 0
+      ? supabase
+          .from('patients')
+          .select('id, phone_number, name_ar')
+          .in('id', patientIds)
+          .then((r) => r.data)
+      : Promise.resolve(null),
+  ]);
+
+  const signedUrlByPath = new Map<string, string>();
+  for (const entry of signedList ?? []) {
+    if (entry.signedUrl && entry.path) {
+      signedUrlByPath.set(entry.path, entry.signedUrl);
     }
   }
 
-  // Fetch patients
+  const doctorMap = new Map<string, DoctorInfo>();
+  for (const doc of (doctors ?? []) as DoctorInfo[]) {
+    doctorMap.set(doc.id, doc);
+  }
+
   const patientMap = new Map<string, PatientInfo>();
-  if (patientIds.length > 0) {
-    const { data: patients } = await supabase
-      .from('patients')
-      .select('id, phone_number, name_ar')
-      .in('id', patientIds);
-    if (patients) {
-      for (const pat of patients as PatientInfo[]) {
-        patientMap.set(pat.id, pat);
-      }
-    }
+  for (const pat of (patients ?? []) as PatientInfo[]) {
+    patientMap.set(pat.id, pat);
   }
 
   // Build response

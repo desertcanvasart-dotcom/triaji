@@ -17,10 +17,10 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const date = searchParams.get('date') ?? new Date().toISOString().split('T')[0];
 
-  // Fetch all invoices for the date
+  // Fetch all invoices for the date — only the three fields the summary uses
   let query = supabase
     .from('clinic_invoices')
-    .select('*')
+    .select('status, payment_method, patient_pays_egp')
     .eq('invoice_date', date);
 
   if (tenant) query = query.eq('tenant_id', tenant);

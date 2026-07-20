@@ -23,7 +23,6 @@ export async function GET(request: NextRequest) {
     .gte('created_at', `${today}T00:00:00`)
     .lte('created_at', `${today}T23:59:59`);
   if (tenant) prescriptionsTodayQuery = prescriptionsTodayQuery.eq('pharmacy_tenant_id', tenant);
-  const { count: prescriptionsToday } = await prescriptionsTodayQuery;
 
   // Pending (received but not ready)
   let pendingQuery = supabase
@@ -31,7 +30,6 @@ export async function GET(request: NextRequest) {
     .select('*', { count: 'exact', head: true })
     .in('status', ['pending', 'routed', 'received']);
   if (tenant) pendingQuery = pendingQuery.eq('pharmacy_tenant_id', tenant);
-  const { count: pendingCount } = await pendingQuery;
 
   // Ready for collection
   let readyQuery = supabase
@@ -39,7 +37,6 @@ export async function GET(request: NextRequest) {
     .select('*', { count: 'exact', head: true })
     .in('status', ['ready', 'partial_ready']);
   if (tenant) readyQuery = readyQuery.eq('pharmacy_tenant_id', tenant);
-  const { count: readyCount } = await readyQuery;
 
   // Collected today
   let collectedQuery = supabase
@@ -49,7 +46,6 @@ export async function GET(request: NextRequest) {
     .gte('collected_at', `${today}T00:00:00`)
     .lte('collected_at', `${today}T23:59:59`);
   if (tenant) collectedQuery = collectedQuery.eq('pharmacy_tenant_id', tenant);
-  const { count: collectedToday } = await collectedQuery;
 
   // Average preparation time (last 7 days — from received_at to ready_at)
   const weekAgo = new Date();
@@ -65,7 +61,21 @@ export async function GET(request: NextRequest) {
     .gte('ready_at', weekAgoStr)
     .limit(100);
   if (tenant) prepTimeQuery = prepTimeQuery.eq('pharmacy_tenant_id', tenant);
-  const { data: prepData } = await prepTimeQuery;
+
+  // All five are independent — run in parallel.
+  const [
+    { count: prescriptionsToday },
+    { count: pendingCount },
+    { count: readyCount },
+    { count: collectedToday },
+    { data: prepData },
+  ] = await Promise.all([
+    prescriptionsTodayQuery,
+    pendingQuery,
+    readyQuery,
+    collectedQuery,
+    prepTimeQuery,
+  ]);
 
   let avgPrepMinutes: number | null = null;
   if (prepData && prepData.length > 0) {

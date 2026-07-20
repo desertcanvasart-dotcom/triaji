@@ -32,16 +32,30 @@ export async function GET(request: NextRequest) {
     dateFrom = monthAgo.toISOString().split('T')[0];
   }
 
-  // Queue stats
+  // Queue stats (queue_date rides along for the daily breakdown below,
+  // which previously re-fetched the same rows in a third query)
   let queueQuery = supabase
     .from('clinic_queue')
-    .select('status, wait_minutes_actual')
+    .select('status, wait_minutes_actual, queue_date')
     .gte('queue_date', dateFrom)
     .lte('queue_date', today);
 
   if (tenant) queueQuery = queueQuery.eq('tenant_id', tenant);
 
-  const { data: queueData } = await queueQuery;
+  // Revenue stats
+  let revenueQuery = supabase
+    .from('clinic_invoices')
+    .select('patient_pays_egp, status')
+    .gte('invoice_date', dateFrom)
+    .lte('invoice_date', today);
+
+  if (tenant) revenueQuery = revenueQuery.eq('tenant_id', tenant);
+
+  // Independent — run in parallel.
+  const [{ data: queueData }, { data: invoiceData }] = await Promise.all([
+    queueQuery,
+    revenueQuery,
+  ]);
   const entries = queueData ?? [];
 
   const totalPatients = entries.length;
@@ -56,16 +70,6 @@ export async function GET(request: NextRequest) {
     ? Math.round(waitsWithData.reduce((a, b) => a + b, 0) / waitsWithData.length)
     : 0;
 
-  // Revenue stats
-  let revenueQuery = supabase
-    .from('clinic_invoices')
-    .select('patient_pays_egp, status')
-    .gte('invoice_date', dateFrom)
-    .lte('invoice_date', today);
-
-  if (tenant) revenueQuery = revenueQuery.eq('tenant_id', tenant);
-
-  const { data: invoiceData } = await revenueQuery;
   const invoices = invoiceData ?? [];
 
   const totalRevenue = invoices
@@ -74,19 +78,10 @@ export async function GET(request: NextRequest) {
 
   const totalInvoices = invoices.length;
 
-  // Daily breakdown (for charts)
-  let dailyQuery = supabase
-    .from('clinic_queue')
-    .select('queue_date, status')
-    .gte('queue_date', dateFrom)
-    .lte('queue_date', today);
-
-  if (tenant) dailyQuery = dailyQuery.eq('tenant_id', tenant);
-
-  const { data: dailyData } = await dailyQuery;
+  // Daily breakdown (for charts) — reuses the queue rows fetched above.
   const dailyBreakdown = new Map<string, { total: number; completed: number; noShow: number }>();
 
-  for (const entry of dailyData ?? []) {
+  for (const entry of entries) {
     const day = dailyBreakdown.get(entry.queue_date) ?? { total: 0, completed: 0, noShow: 0 };
     day.total++;
     if (entry.status === 'completed') day.completed++;

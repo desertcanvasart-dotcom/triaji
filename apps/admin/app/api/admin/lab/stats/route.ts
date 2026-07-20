@@ -23,7 +23,6 @@ export async function GET(request: NextRequest) {
     .gte('created_at', `${today}T00:00:00`)
     .lte('created_at', `${today}T23:59:59`);
   if (tenant) ordersQuery = ordersQuery.eq('lab_tenant_id', tenant);
-  const { count: ordersToday } = await ordersQuery;
 
   // Pending results
   let pendingQuery = supabase
@@ -31,7 +30,6 @@ export async function GET(request: NextRequest) {
     .select('*', { count: 'exact', head: true })
     .in('status', ['pending', 'accepted', 'sample_collected', 'processing']);
   if (tenant) pendingQuery = pendingQuery.eq('lab_tenant_id', tenant);
-  const { count: pendingResults } = await pendingQuery;
 
   // Completed today
   let completedQuery = supabase
@@ -41,7 +39,6 @@ export async function GET(request: NextRequest) {
     .gte('updated_at', `${today}T00:00:00`)
     .lte('updated_at', `${today}T23:59:59`);
   if (tenant) completedQuery = completedQuery.eq('lab_tenant_id', tenant);
-  const { count: completedToday } = await completedQuery;
 
   // Average turnaround (completed in last 7 days)
   const weekAgo = new Date();
@@ -55,7 +52,19 @@ export async function GET(request: NextRequest) {
     .gte('updated_at', weekAgoStr)
     .limit(100);
   if (tenant) turnaroundQuery = turnaroundQuery.eq('lab_tenant_id', tenant);
-  const { data: turnaroundData } = await turnaroundQuery;
+
+  // All four are independent — run in parallel.
+  const [
+    { count: ordersToday },
+    { count: pendingResults },
+    { count: completedToday },
+    { data: turnaroundData },
+  ] = await Promise.all([
+    ordersQuery,
+    pendingQuery,
+    completedQuery,
+    turnaroundQuery,
+  ]);
 
   let avgTurnaroundHours: number | null = null;
   if (turnaroundData && turnaroundData.length > 0) {

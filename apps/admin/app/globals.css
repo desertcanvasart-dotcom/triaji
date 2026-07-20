@@ -5,7 +5,7 @@
 @layer base {
   html {
     direction: ltr;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: var(--font-inter, 'Inter'), system-ui, sans-serif;
   }
 }
 

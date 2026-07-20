@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
 import { getSupabaseBrowser } from '@/lib/supabase/browser';
 
 interface IcuUnit {
@@ -155,9 +156,9 @@ export default function IcuBedManager({ tenantId }: { tenantId: string }) {
     return (
       <div className="text-center py-16">
         <p className="text-gray-500 mb-4">No ICU units configured yet.</p>
-        <a href="/icu/setup" className="btn-primary inline-block">
+        <Link href="/icu/setup" className="btn-primary inline-block">
           Set Up ICU Units
-        </a>
+        </Link>
       </div>
     );
   }
