@@ -8,10 +8,17 @@ export const dynamic = 'force-dynamic';
 // Query params: service_type (lab_test|radiology), governorate_id (optional),
 //               lat / lng (optional patient coordinates for distance sorting)
 //
+// Primary path: the find_labs_near PostGIS RPC (migration 060) — distance is
+// computed, sorted, and limited in the DB. Until that migration is applied to
+// the live database the route falls back to the legacy query + app-side
+// haversine sort, so behavior is unchanged either way.
+//
 // Location/contact/config live on tenant_config (one row per tenant, joined by
-// tenant_id), NOT on tenants. The embed returns an array; we read [0].
+// tenant_id), NOT on tenants.
 
-/** Haversine distance in km between two lat/lng points */
+const MAX_RESULTS = 50;
+
+/** Haversine distance in km between two lat/lng points (legacy fallback) */
 function haversineKm(
   lat1: number, lng1: number,
   lat2: number, lng2: number
@@ -60,6 +67,52 @@ type LabRow = {
   tenant_config: LabConfigRow | LabConfigRow[] | null;
 };
 
+type RpcLabRow = {
+  id: string;
+  name_ar: string;
+  name_en: string | null;
+  slug: string | null;
+  tier: string;
+  is_active: boolean;
+  config: LabConfigRow | null;
+  distance_km: number | null;
+};
+
+/** Flatten a tenant + its config into the API response shape. */
+function toLabResponse(
+  t: { id: string; name_ar: string; name_en: string | null; slug: string | null; tier: string; is_active: boolean },
+  cfg: LabConfigRow | null,
+  distanceKm: number | null
+) {
+  return {
+    id: t.id,
+    name_ar: t.name_ar,
+    name_en: t.name_en,
+    slug: t.slug,
+    tier: t.tier,
+    is_active: t.is_active,
+    governorate_id: cfg?.default_governorate_id ?? null,
+    address_ar: cfg?.address_ar ?? null,
+    address_en: cfg?.address_en ?? null,
+    phone: cfg?.clinic_phone ?? cfg?.phone_number ?? null,
+    latitude: cfg?.latitude ?? null,
+    longitude: cfg?.longitude ?? null,
+    opening_time: cfg?.opening_time ?? null,
+    closing_time: cfg?.closing_time ?? null,
+    working_days: cfg?.working_days ?? null,
+    logo_url: cfg?.logo_url ?? null,
+    accepts_insurance: cfg?.accepts_insurance ?? null,
+    delivery_available: cfg?.delivery_available ?? null,
+    accepts_walk_ins: cfg?.accepts_walk_ins ?? null,
+    turnaround_hours: cfg?.turnaround_hours ?? null,
+    home_collection: cfg?.home_collection ?? null,
+    home_collection_fee_egp: cfg?.home_collection_fee_egp ?? null,
+    lab_type: cfg?.lab_type ?? null,
+    accreditation_number: cfg?.accreditation_number ?? null,
+    distance_km: distanceKm,
+  };
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -79,9 +132,31 @@ export async function GET(request: NextRequest) {
       tierFilter = ['lab', 'radiology'];
     }
 
+    const userLat = lat ? parseFloat(lat) : NaN;
+    const userLng = lng ? parseFloat(lng) : NaN;
+    const hasCoords = !Number.isNaN(userLat) && !Number.isNaN(userLng);
+
     const supabase = createServerClient();
 
-    // Build query for tenants. All location/contact/config is on tenant_config.
+    // Primary path: PostGIS RPC — distance computed/sorted/limited in the DB.
+    const { data: rpcData, error: rpcError } = await supabase.rpc('find_labs_near', {
+      p_tiers: tierFilter,
+      p_lat: hasCoords ? userLat : null,
+      p_lng: hasCoords ? userLng : null,
+      p_governorate_id: governorateId ?? null,
+      p_limit: MAX_RESULTS,
+    });
+
+    if (!rpcError) {
+      const labs = ((rpcData ?? []) as RpcLabRow[]).map((r) =>
+        toLabResponse(r, r.config, r.distance_km)
+      );
+      return NextResponse.json({ labs });
+    }
+
+    // Fallback: migration 060 not applied yet — legacy query + JS haversine.
+    console.warn('[lab/nearby] find_labs_near RPC unavailable, using legacy path:', rpcError.message);
+
     let query = supabase
       .from('tenants')
       .select(`
@@ -132,7 +207,6 @@ export async function GET(request: NextRequest) {
 
     const rows = (data ?? []) as unknown as LabRow[];
 
-    // Flatten the tenant_config embed (array → [0]) and surface contact/location.
     let labs = rows
       .filter((t) => {
         // When filtering by governorate, drop tenants whose config didn't match
@@ -144,57 +218,25 @@ export async function GET(request: NextRequest) {
       })
       .map((t) => {
         const cfg = Array.isArray(t.tenant_config) ? (t.tenant_config[0] ?? null) : (t.tenant_config ?? null);
-        return {
-          id: t.id,
-          name_ar: t.name_ar,
-          name_en: t.name_en,
-          slug: t.slug,
-          tier: t.tier,
-          is_active: t.is_active,
-          governorate_id: cfg?.default_governorate_id ?? null,
-          address_ar: cfg?.address_ar ?? null,
-          address_en: cfg?.address_en ?? null,
-          phone: cfg?.clinic_phone ?? cfg?.phone_number ?? null,
-          latitude: cfg?.latitude ?? null,
-          longitude: cfg?.longitude ?? null,
-          opening_time: cfg?.opening_time ?? null,
-          closing_time: cfg?.closing_time ?? null,
-          working_days: cfg?.working_days ?? null,
-          logo_url: cfg?.logo_url ?? null,
-          accepts_insurance: cfg?.accepts_insurance ?? null,
-          delivery_available: cfg?.delivery_available ?? null,
-          accepts_walk_ins: cfg?.accepts_walk_ins ?? null,
-          turnaround_hours: cfg?.turnaround_hours ?? null,
-          home_collection: cfg?.home_collection ?? null,
-          home_collection_fee_egp: cfg?.home_collection_fee_egp ?? null,
-          lab_type: cfg?.lab_type ?? null,
-          accreditation_number: cfg?.accreditation_number ?? null,
-          distance_km: null as number | null,
-        };
+        return toLabResponse(t, cfg, null);
       });
 
     // If patient coords supplied, compute haversine distance from tenant_config
     // latitude/longitude and sort ascending. Tenants with null coords go last.
-    if (lat && lng) {
-      const userLat = parseFloat(lat);
-      const userLng = parseFloat(lng);
-      if (!Number.isNaN(userLat) && !Number.isNaN(userLng)) {
-        labs = labs
-          .map((l) => {
-            const hasCoords = l.latitude != null && l.longitude != null;
-            return {
-              ...l,
-              distance_km: hasCoords
-                ? haversineKm(userLat, userLng, l.latitude!, l.longitude!)
-                : null,
-            };
-          })
-          .sort((a, b) => {
-            if (a.distance_km === null) return 1;
-            if (b.distance_km === null) return -1;
-            return a.distance_km - b.distance_km;
-          });
-      }
+    if (hasCoords) {
+      labs = labs
+        .map((l) => ({
+          ...l,
+          distance_km:
+            l.latitude != null && l.longitude != null
+              ? haversineKm(userLat, userLng, l.latitude, l.longitude)
+              : null,
+        }))
+        .sort((a, b) => {
+          if (a.distance_km === null) return 1;
+          if (b.distance_km === null) return -1;
+          return a.distance_km - b.distance_km;
+        });
     }
 
     return NextResponse.json({ labs });
