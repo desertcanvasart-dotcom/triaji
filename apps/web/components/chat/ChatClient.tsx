@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, memo } from 'react';
 import type { DoctorRecommendation, MatchedDoctor } from '@triaji/shared/types';
 import { s, type Lang } from '@triaji/shared/i18n';
 import DoctorList from '@/components/booking/DoctorList';
@@ -58,6 +58,51 @@ interface ChatClientProps {
 }
 
 const MAX_IMAGES_PER_SESSION = 3;
+
+/**
+ * Memoized message list — ChatClient re-renders on every keystroke (input
+ * state lives there), but the conversation itself only changes when a message
+ * is added, so the whole list can skip those renders.
+ */
+const MessageList = memo(function MessageList({
+  messages,
+  isRtl,
+  lang,
+}: {
+  messages: ChatMessage[];
+  isRtl: boolean;
+  lang: Lang;
+}) {
+  return (
+    <>
+      {messages.map((msg) => (
+        <div
+          key={msg.id}
+          className={`flex ${msg.role === 'patient' ? 'justify-end' : 'justify-start'}`}
+        >
+          <div
+            className={`max-w-[80%] rounded-2xl px-4 py-3 whitespace-pre-wrap ${
+              msg.role === 'patient'
+                ? isRtl
+                  ? 'bg-teal-600 text-white rounded-br-md'
+                  : 'bg-teal-600 text-white rounded-bl-md'
+                : isRtl
+                  ? 'bg-white text-gray-800 shadow-sm border border-gray-100 rounded-bl-md'
+                  : 'bg-white text-gray-800 shadow-sm border border-gray-100 rounded-br-md'
+            }`}
+          >
+            {msg.imageUrls && msg.imageUrls.length > 0 && (
+              <div className="flex gap-1 mb-2">
+                <span className="text-xs opacity-70">📷 {msg.imageUrls.length} {s.chat.imagesAttached[lang]}</span>
+              </div>
+            )}
+            {msg.content}
+          </div>
+        </div>
+      ))}
+    </>
+  );
+});
 
 export default function ChatClient({ lang }: ChatClientProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -437,31 +482,7 @@ export default function ChatClient({ lang }: ChatClientProps) {
       {/* Chat Area */}
       <div className="flex-1 overflow-y-auto chat-scroll">
         <div className="max-w-2xl mx-auto w-full p-4 space-y-4">
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex ${msg.role === 'patient' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`max-w-[80%] rounded-2xl px-4 py-3 whitespace-pre-wrap ${
-                  msg.role === 'patient'
-                    ? isRtl
-                      ? 'bg-teal-600 text-white rounded-br-md'
-                      : 'bg-teal-600 text-white rounded-bl-md'
-                    : isRtl
-                      ? 'bg-white text-gray-800 shadow-sm border border-gray-100 rounded-bl-md'
-                      : 'bg-white text-gray-800 shadow-sm border border-gray-100 rounded-br-md'
-                }`}
-              >
-                {msg.imageUrls && msg.imageUrls.length > 0 && (
-                  <div className="flex gap-1 mb-2">
-                    <span className="text-xs opacity-70">📷 {msg.imageUrls.length} {s.chat.imagesAttached[lang]}</span>
-                  </div>
-                )}
-                {msg.content}
-              </div>
-            </div>
-          ))}
+          <MessageList messages={messages} isRtl={isRtl} lang={lang} />
 
           {/* Sign-Up Gate Card */}
           {showSignUpGate && (
