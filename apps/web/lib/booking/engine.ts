@@ -327,18 +327,20 @@ async function finalizeBooking(
 ): Promise<BookingResult> {
   const supabase = createServerClient();
 
-  // Fetch doctor + booking details for confirmation
-  const { data: doctor } = await supabase
-    .from('doctors')
-    .select('name_ar, title_ar, clinic_address_ar, consultation_fee_egp, specialty_id')
-    .eq('id', input.doctorId)
-    .single();
-
-  const { data: booking } = await supabase
-    .from('bookings')
-    .select('appointment_datetime')
-    .eq('id', bookingId)
-    .single();
+  // Fetch doctor + booking details for confirmation (independent — parallel).
+  // patient_id/tenant_id ride along for the chain-registry step below.
+  const [{ data: doctor }, { data: booking }] = await Promise.all([
+    supabase
+      .from('doctors')
+      .select('name_ar, title_ar, clinic_address_ar, consultation_fee_egp, specialty_id')
+      .eq('id', input.doctorId)
+      .single(),
+    supabase
+      .from('bookings')
+      .select('appointment_datetime, patient_id, tenant_id')
+      .eq('id', bookingId)
+      .single(),
+  ]);
 
   const { data: specialty } = await supabase
     .from('specialties')
@@ -397,11 +399,7 @@ async function finalizeBooking(
   // ─── Chain Patient Registry (non-blocking side effect) ──────────────────
   // AMENDMENT: Triggered ONLY on status → 'confirmed'
   {
-    const { data: bookingRow } = await supabase
-      .from('bookings')
-      .select('patient_id, tenant_id')
-      .eq('id', bookingId)
-      .single();
+    const bookingRow = booking;
 
     if (bookingRow?.tenant_id) {
       getChainForTenant(bookingRow.tenant_id as string)

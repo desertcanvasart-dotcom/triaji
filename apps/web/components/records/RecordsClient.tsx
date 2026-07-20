@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import Link from 'next/link';
 import { s, type Lang } from '@triaji/shared/i18n';
 import type { RecordType, HealthRecord, Medication, LabValue } from '@/lib/records/types';
 
@@ -420,9 +421,9 @@ export default function RecordsClient({ lang }: RecordsClientProps) {
       {/* Navigation */}
       <nav className="border-t bg-white py-3 px-6">
         <div className="max-w-2xl mx-auto flex items-center justify-around text-sm">
-          <a href={`/${lang}/chat`} className="text-gray-500 hover:text-teal-600">{lang === 'ar' ? 'محادثة' : 'Chat'}</a>
-          <a href={`/${lang}/records`} className="text-teal-600 font-semibold">{lang === 'ar' ? 'سجلاتي' : 'Records'}</a>
-          <a href={`/${lang}/history`} className="text-gray-500 hover:text-teal-600">{lang === 'ar' ? 'السجل' : 'History'}</a>
+          <Link href={`/${lang}/chat`} className="text-gray-500 hover:text-teal-600">{lang === 'ar' ? 'محادثة' : 'Chat'}</Link>
+          <Link href={`/${lang}/records`} className="text-teal-600 font-semibold">{lang === 'ar' ? 'سجلاتي' : 'Records'}</Link>
+          <Link href={`/${lang}/history`} className="text-gray-500 hover:text-teal-600">{lang === 'ar' ? 'السجل' : 'History'}</Link>
         </div>
       </nav>
     </main>

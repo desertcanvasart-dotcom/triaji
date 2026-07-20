@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { s, type Lang } from '@triaji/shared/i18n';
 
@@ -173,9 +174,9 @@ export default function LoginClient({ lang }: LoginClientProps) {
           </div>
 
           <div className="text-center mt-6">
-            <a href={`/${lang}/chat`} className="text-teal-600 text-sm font-medium hover:underline">
+            <Link href={`/${lang}/chat`} className="text-teal-600 text-sm font-medium hover:underline">
               {s.login.skipLogin[lang]}
-            </a>
+            </Link>
           </div>
         </div>
       </div>

@@ -3,7 +3,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { t, type Lang } from '@triaji/shared/i18n';
 import type { GrowthMeasurement, WhoGrowthReference } from '@triaji/shared/types/paediatric';
-import GrowthChart from './GrowthChart';
+import dynamic from 'next/dynamic';
+
+// recharts is heavy — load the chart only when it's actually rendered.
+const GrowthChart = dynamic(() => import('./GrowthChart'), {
+  ssr: false,
+  loading: () => <div className="h-[300px] animate-pulse rounded-lg bg-gray-100" />,
+});
 
 interface GrowthDashboardProps {
   childId: string;

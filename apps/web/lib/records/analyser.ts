@@ -239,14 +239,16 @@ export async function analyseHealthRecord(recordId: string): Promise<void> {
 export async function getRecentHealthRecords(
   patientId: string,
   daysBack: number = 90
-): Promise<HealthRecord[]> {
+): Promise<Pick<HealthRecord, 'record_type' | 'summary_ar' | 'summary_en'>[]> {
   const supabase = createServerClient();
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - daysBack);
 
+  // Only the fields the triage prompt uses — health_records rows carry large
+  // JSONB (medications, lab_values) that would otherwise be fetched per chat turn.
   const { data, error } = await supabase
     .from('health_records')
-    .select('*')
+    .select('record_type, summary_ar, summary_en')
     .eq('patient_id', patientId)
     .eq('analysed', true)
     .is('deleted_at', null)
@@ -259,5 +261,5 @@ export async function getRecentHealthRecords(
     return [];
   }
 
-  return (data ?? []) as HealthRecord[];
+  return (data ?? []) as Pick<HealthRecord, 'record_type' | 'summary_ar' | 'summary_en'>[];
 }

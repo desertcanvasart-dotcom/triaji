@@ -5,7 +5,14 @@ import { useParams } from 'next/navigation';
 import { t, type Lang } from '@triaji/shared/i18n';
 import AllergiesBanner from './AllergiesBanner';
 import MedicationAdherenceList, { type AdherenceRecord } from './MedicationAdherenceList';
-import VitalTrendChart, { type VitalTrendPoint } from './VitalTrendChart';
+import dynamic from 'next/dynamic';
+import { type VitalTrendPoint } from './VitalTrendChart';
+
+// recharts is heavy — load the chart only when it's actually rendered.
+const VitalTrendChart = dynamic(() => import('./VitalTrendChart'), {
+  ssr: false,
+  loading: () => <div className="h-[220px] animate-pulse rounded-lg bg-gray-100" />,
+});
 import FollowUpList, { type FollowUpEntry } from './FollowUpList';
 import LatestResults, { type LabResult } from './LatestResults';
 

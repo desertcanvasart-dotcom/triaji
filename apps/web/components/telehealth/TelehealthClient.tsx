@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import Link from 'next/link';
 import { s, type Lang } from '@triaji/shared/i18n';
 
 type TelehealthState = 'loading' | 'waiting' | 'precall' | 'incall' | 'postcall' | 'error';
@@ -195,9 +196,9 @@ export default function TelehealthClient({ bookingId, lang }: TelehealthClientPr
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center max-w-md">
             <div className="text-5xl mb-4">&#9888;&#65039;</div>
             <p className="text-gray-700 mb-4">{errorMsg}</p>
-            <a href={`/${lang}`} className="text-teal-600 font-medium hover:underline">
+            <Link href={`/${lang}`} className="text-teal-600 font-medium hover:underline">
               {s.telehealth.returnHome[lang]}
-            </a>
+            </Link>
           </div>
         </div>
       </main>

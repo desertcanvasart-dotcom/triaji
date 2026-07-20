@@ -3,9 +3,10 @@
 @tailwind utilities;
 
 @layer base {
+  /* Direction comes from the <html dir> attribute (rtl by default, ltr on /en)
+     — do not hardcode it here or the attribute can no longer switch it. */
   html {
-    direction: rtl;
-    font-family: 'Cairo', sans-serif;
+    font-family: var(--font-cairo, 'Cairo'), sans-serif;
   }
 
   body {

@@ -162,35 +162,38 @@ export async function handlePatientMessage(
 
   // 4. BRS is already calculated in rulesResult.brs
 
-  // 5. RAG retrieval — semantic search against kb_embeddings
-  const ragDocs = await retrieveByText(patientMessage, {
-    threshold: 0.50,
-    maxResults: 5,
-  });
+  // 5. RAG retrieval, recent records, and history are independent — fetch in parallel.
+  // retrieveByText is the slow one (Cohere embed + pgvector RPC); the other two are DB reads.
+  const [ragDocs, recentRecords, history] = await Promise.all([
+    retrieveByText(patientMessage, {
+      threshold: 0.50,
+      maxResults: 5,
+    }),
+    session.patient_id
+      ? getRecentHealthRecords(session.patient_id, 90)
+      : Promise.resolve([]),
+    getSessionMessages(sessionId),
+  ]);
 
   // 6. Build LLM prompt (language-aware)
   let systemPrompt = buildSystemPrompt(profile, rulesResult.brs, ragDocs, lang, structured);
 
   // 6b. Inject recent health records context
-  if (session.patient_id) {
-    const recentRecords = await getRecentHealthRecords(session.patient_id, 90);
-    if (recentRecords.length > 0) {
-      const summaryField = lang === 'en' ? 'summary_en' : 'summary_ar';
-      const headerLabel = lang === 'en'
-        ? '--- Recent Patient Health Records ---'
-        : '--- السجل الطبي الأخير للمريض ---';
-      const footerLabel = lang === 'en'
-        ? '--- End of Records ---'
-        : '--- نهاية السجل ---';
-      const recordLines = recentRecords.map((r) => {
-        const summary = r[summaryField] ?? r.summary_ar ?? '';
-        return `• ${r.record_type}: ${summary}`;
-      });
-      systemPrompt += `\n${headerLabel}\n${recordLines.join('\n')}\n${footerLabel}\n`;
-    }
+  if (recentRecords.length > 0) {
+    const summaryField = lang === 'en' ? 'summary_en' : 'summary_ar';
+    const headerLabel = lang === 'en'
+      ? '--- Recent Patient Health Records ---'
+      : '--- السجل الطبي الأخير للمريض ---';
+    const footerLabel = lang === 'en'
+      ? '--- End of Records ---'
+      : '--- نهاية السجل ---';
+    const recordLines = recentRecords.map((r) => {
+      const summary = r[summaryField] ?? r.summary_ar ?? '';
+      return `• ${r.record_type}: ${summary}`;
+    });
+    systemPrompt += `\n${headerLabel}\n${recordLines.join('\n')}\n${footerLabel}\n`;
   }
 
-  const history = await getSessionMessages(sessionId);
   const messages = buildMessages(history, patientMessage);
 
   // 7. Call Anthropic API
