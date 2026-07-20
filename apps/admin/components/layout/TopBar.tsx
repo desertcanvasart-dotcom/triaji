@@ -18,9 +18,8 @@ export default function TopBar({ name, role, sidebarCollapsed }: TopBarProps) {
     const supabase = getSupabaseBrowser();
     await supabase.auth.signOut();
 
-    // Clear cookies
-    document.cookie = 'sb-access-token=; path=/; max-age=0';
-    document.cookie = 'sb-refresh-token=; path=/; max-age=0';
+    // Clear the httpOnly session cookies server-side (JS can't clear httpOnly).
+    await fetch('/api/admin/auth/session', { method: 'DELETE' });
 
     router.push('/login');
   }

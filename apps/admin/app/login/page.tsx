@@ -44,9 +44,15 @@ function LoginForm() {
         return;
       }
 
-      // Set cookies for middleware
-      document.cookie = `sb-access-token=${data.session.access_token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
-      document.cookie = `sb-refresh-token=${data.session.refresh_token}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`;
+      // Set the httpOnly session cookies server-side (JS can't set httpOnly).
+      await fetch('/api/admin/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        }),
+      });
 
       // Verify admin status via API
       const res = await fetch('/api/admin/auth/verify', {
@@ -57,8 +63,7 @@ function LoginForm() {
 
       if (!res.ok) {
         setError('This account does not have admin access.');
-        document.cookie = 'sb-access-token=; path=/; max-age=0';
-        document.cookie = 'sb-refresh-token=; path=/; max-age=0';
+        await fetch('/api/admin/auth/session', { method: 'DELETE' });
         await supabase.auth.signOut();
         setLoading(false);
         return;
