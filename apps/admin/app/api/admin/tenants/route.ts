@@ -32,21 +32,51 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Enrich with stats
-  const enriched = await Promise.all(
-    (tenants ?? []).map(async (tenant) => {
-      const [doctorsRes, bookingsRes] = await Promise.all([
-        supabase.from('doctors').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).eq('is_active', true),
-        supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).gte('created_at', new Date(Date.now() - 30 * 86400000).toISOString()),
-      ]);
+  // Enrich with stats. Primary path: one tenant_list_stats RPC (migration
+  // 062) returns both counts for all tenants; falls back to the legacy
+  // 2-queries-per-tenant path until the migration is applied live.
+  const tenantRows = tenants ?? [];
+  const bookingsSince = new Date(Date.now() - 30 * 86400000).toISOString();
 
-      return {
+  let statsById: Map<string, { doctor_count: number; bookings_30d: number }> | null = null;
+
+  if (tenantRows.length > 0) {
+    const { data: stats, error: statsError } = await supabase.rpc('tenant_list_stats', {
+      p_tenant_ids: tenantRows.map((t) => t.id),
+      p_bookings_since: bookingsSince,
+    });
+
+    if (!statsError && stats) {
+      statsById = new Map(
+        (stats as Array<{ tenant_id: string; doctor_count: number; bookings_30d: number }>).map(
+          (s) => [s.tenant_id, { doctor_count: Number(s.doctor_count), bookings_30d: Number(s.bookings_30d) }]
+        )
+      );
+    } else {
+      console.warn('[admin/tenants] tenant_list_stats RPC unavailable, using legacy path:', statsError?.message);
+    }
+  }
+
+  const enriched = statsById
+    ? tenantRows.map((tenant) => ({
         ...tenant,
-        doctor_count: doctorsRes.count ?? 0,
-        bookings_30d: bookingsRes.count ?? 0,
-      };
-    })
-  );
+        doctor_count: statsById.get(tenant.id)?.doctor_count ?? 0,
+        bookings_30d: statsById.get(tenant.id)?.bookings_30d ?? 0,
+      }))
+    : await Promise.all(
+        tenantRows.map(async (tenant) => {
+          const [doctorsRes, bookingsRes] = await Promise.all([
+            supabase.from('doctors').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).eq('is_active', true),
+            supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).gte('created_at', bookingsSince),
+          ]);
+
+          return {
+            ...tenant,
+            doctor_count: doctorsRes.count ?? 0,
+            bookings_30d: bookingsRes.count ?? 0,
+          };
+        })
+      );
 
   return NextResponse.json({ tenants: enriched });
 }
