@@ -2,18 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { getSupabaseBrowser } from '@/lib/supabase/browser';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  Legend,
-} from 'recharts';
+import { VerticalBarChart, SimpleLineChart } from '@/components/charts';
 
 interface FunnelData {
   impression: number;
@@ -172,66 +161,25 @@ export default function AnalyticsPage() {
       {/* Funnel Chart */}
       <div className="card">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Engagement Funnel</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={funnelChartData} layout="vertical">
-            <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-            <XAxis type="number" />
-            <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 13 }} />
-            <Tooltip />
-            <Bar dataKey="value" radius={[0, 4, 4, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+        <VerticalBarChart data={funnelChartData} />
       </div>
 
       {/* Daily Time Series */}
       {data.dailySeries.length > 0 && (
         <div className="card">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Daily Activity</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={data.dailySeries}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="date"
-                tick={{ fontSize: 11 }}
-                tickFormatter={(v: string) => v.slice(5)}
-              />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="impression"
-                name="Impressions"
-                stroke="#94a3b8"
-                strokeWidth={2}
-                dot={false}
-              />
-              <Line
-                type="monotone"
-                dataKey="button_click"
-                name="Clicks"
-                stroke="#0D7A7A"
-                strokeWidth={2}
-                dot={false}
-              />
-              <Line
-                type="monotone"
-                dataKey="session_start"
-                name="Sessions"
-                stroke="#0891b2"
-                strokeWidth={2}
-                dot={false}
-              />
-              <Line
-                type="monotone"
-                dataKey="booking_confirmed"
-                name="Bookings"
-                stroke="#16a34a"
-                strokeWidth={2}
-                dot={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <SimpleLineChart
+            data={data.dailySeries}
+            xTickFontSize={11}
+            xTickFormatter={(v: string) => v.slice(5)}
+            legend
+            lines={[
+              { dataKey: 'impression', name: 'Impressions', stroke: '#94a3b8' },
+              { dataKey: 'button_click', name: 'Clicks', stroke: '#0D7A7A' },
+              { dataKey: 'session_start', name: 'Sessions', stroke: '#0891b2' },
+              { dataKey: 'booking_confirmed', name: 'Bookings', stroke: '#16a34a' },
+            ]}
+          />
         </div>
       )}
 

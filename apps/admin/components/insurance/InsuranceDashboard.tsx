@@ -2,16 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { getSupabaseBrowser } from '@/lib/supabase/browser';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from 'recharts';
+import { WeeklyBarChart } from '@/components/charts';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -218,18 +209,14 @@ export default function InsuranceDashboard() {
       {chartData.length > 0 && (
         <div className="bg-white rounded-xl shadow-sm p-5">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">مطالبات الأسبوع</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" tick={{ fontSize: 13 }} />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="مقدمة" fill="#6366f1" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="موافق عليها" fill="#16a34a" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="مرفوضة" fill="#dc2626" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <WeeklyBarChart
+            data={chartData}
+            bars={[
+              { dataKey: 'مقدمة', fill: '#6366f1', radius: [4, 4, 0, 0] },
+              { dataKey: 'موافق عليها', fill: '#16a34a', radius: [4, 4, 0, 0] },
+              { dataKey: 'مرفوضة', fill: '#dc2626', radius: [4, 4, 0, 0] },
+            ]}
+          />
         </div>
       )}
     </div>

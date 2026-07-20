@@ -2,18 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { getSupabaseBrowser } from '@/lib/supabase/browser';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-  LineChart,
-  Line,
-} from 'recharts';
+import { WeeklyBarChart, SimpleLineChart } from '@/components/charts';
 
 interface BranchStat {
   branch_id: string;
@@ -252,21 +241,17 @@ export default function ChainDashboard({ chainId }: { chainId: string }) {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Revenue by Branch
           </h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={revenueChartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip
-                formatter={(value: unknown) => [
-                  `${Number(value).toLocaleString()} EGP`,
-                  'Revenue',
-                ]}
-              />
-              <Legend />
-              <Bar dataKey="revenue" name="Revenue (EGP)" fill="#7c3aed" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <WeeklyBarChart
+            data={revenueChartData}
+            xTickFontSize={12}
+            tooltipFormatter={(value: unknown) => [
+              `${Number(value).toLocaleString()} EGP`,
+              'Revenue',
+            ]}
+            bars={[
+              { dataKey: 'revenue', name: 'Revenue (EGP)', fill: '#7c3aed', radius: [4, 4, 0, 0] },
+            ]}
+          />
         </div>
       )}
 
@@ -276,22 +261,14 @@ export default function ChainDashboard({ chainId }: { chainId: string }) {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             New Patients Trend
           </h2>
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={trendChartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
-              <Tooltip />
-              <Line
-                type="monotone"
-                dataKey="patients"
-                name="New Patients"
-                stroke="#7c3aed"
-                strokeWidth={2}
-                dot={{ r: 4, fill: '#7c3aed' }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <SimpleLineChart
+            data={trendChartData}
+            height={250}
+            allowDecimals={false}
+            lines={[
+              { dataKey: 'patients', name: 'New Patients', stroke: '#7c3aed', dot: { r: 4, fill: '#7c3aed' } },
+            ]}
+          />
         </div>
       )}
     </div>

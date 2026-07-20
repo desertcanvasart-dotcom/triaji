@@ -2,16 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { getSupabaseBrowser } from '@/lib/supabase/browser';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from 'recharts';
+import { WeeklyBarChart } from '@/components/charts';
 
 interface ComparisonEntry {
   branch_id: string;
@@ -113,18 +104,15 @@ export default function ChainAnalyticsPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Revenue &amp; Patient Comparison
           </h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-              <YAxis yAxisId="left" tick={{ fontSize: 12 }} />
-              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} />
-              <Tooltip />
-              <Legend />
-              <Bar yAxisId="left" dataKey="revenue" name="Revenue (EGP)" fill="#7c3aed" radius={[4, 4, 0, 0]} />
-              <Bar yAxisId="right" dataKey="patients" name="Unique Patients" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <WeeklyBarChart
+            data={chartData}
+            xTickFontSize={12}
+            dualAxis
+            bars={[
+              { dataKey: 'revenue', name: 'Revenue (EGP)', fill: '#7c3aed', radius: [4, 4, 0, 0], yAxisId: 'left' },
+              { dataKey: 'patients', name: 'Unique Patients', fill: '#3b82f6', radius: [4, 4, 0, 0], yAxisId: 'right' },
+            ]}
+          />
         </div>
       )}
 

@@ -2,16 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { getSupabaseBrowser } from '@/lib/supabase/browser';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from 'recharts';
+import { WeeklyBarChart } from '@/components/charts';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -165,17 +156,13 @@ export default function LabDashboard({ tenantId }: { tenantId: string }) {
       {chartData.length > 0 && (
         <div className="bg-white rounded-xl shadow-sm p-5">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">نشاط الأسبوع</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" tick={{ fontSize: 13 }} />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="طلبات" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="مكتمل" fill="#16a34a" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <WeeklyBarChart
+            data={chartData}
+            bars={[
+              { dataKey: 'طلبات', fill: '#3b82f6', radius: [4, 4, 0, 0] },
+              { dataKey: 'مكتمل', fill: '#16a34a', radius: [4, 4, 0, 0] },
+            ]}
+          />
         </div>
       )}
     </div>

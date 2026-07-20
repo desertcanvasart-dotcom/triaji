@@ -2,18 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { getSupabaseBrowser } from '@/lib/supabase/browser';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-  LineChart,
-  Line,
-} from 'recharts';
+import { WeeklyBarChart } from '@/components/charts';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -270,24 +259,20 @@ export default function ChainAnalytics({ chainId }: { chainId: string }) {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Patients per Branch (Weekly)
           </h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={analytics.patients_per_branch_week}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="week" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
-              <Tooltip />
-              <Legend />
-              {analytics.branch_names.map((name, idx) => (
-                <Bar
-                  key={name}
-                  dataKey={name}
-                  stackId="patients"
-                  fill={BRANCH_COLORS[idx % BRANCH_COLORS.length]}
-                  radius={idx === analytics.branch_names.length - 1 ? [4, 4, 0, 0] : undefined}
-                />
-              ))}
-            </BarChart>
-          </ResponsiveContainer>
+          <WeeklyBarChart
+            data={analytics.patients_per_branch_week}
+            xKey="week"
+            xTickFontSize={12}
+            allowDecimals={false}
+            bars={analytics.branch_names.map((name, idx) => ({
+              dataKey: name,
+              stackId: 'patients',
+              fill: BRANCH_COLORS[idx % BRANCH_COLORS.length],
+              radius: idx === analytics.branch_names.length - 1
+                ? ([4, 4, 0, 0] as [number, number, number, number])
+                : undefined,
+            }))}
+          />
         </div>
       )}
 
