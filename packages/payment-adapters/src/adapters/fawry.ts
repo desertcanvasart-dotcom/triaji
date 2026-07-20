@@ -12,7 +12,7 @@
  *   FAWRY_SECURITY_KEY   — secret key for HMAC signature
  */
 
-import { createHmac } from 'crypto';
+import { createHash } from 'crypto';
 import type {
   PaymentAdapter,
   CreatePaymentRequest,
@@ -36,8 +36,10 @@ const getSecurityKey = () => env('FAWRY_SECURITY_KEY');
 // ─── Signature helpers ────────────────────────────────────────────────────────
 
 /**
- * Build the HMAC-SHA256 signature for a charge request.
- * Fawry v2 signature = SHA256(merchantCode + merchantRefNum + customerMobile + amount + currencyCode + secureKey)
+ * Build the signature for a charge request.
+ * Fawry v2 uses a plain SHA-256 digest (NOT HMAC) of the concatenated fields
+ * with the secure key appended:
+ *   SHA256(merchantCode + merchantRefNum + customerMobile + amount + currencyCode + secureKey)
  */
 function buildChargeSignature(
   merchantRefNum: string,
@@ -52,16 +54,16 @@ function buildChargeSignature(
     amount +
     currencyCode +
     getSecurityKey();
-  return createHmac('sha256', getSecurityKey()).update(raw).digest('hex');
+  return createHash('sha256').update(raw).digest('hex');
 }
 
 /**
- * Build the HMAC-SHA256 signature for a status query.
- * Fawry status signature = SHA256(merchantCode + merchantRefNum + secureKey)
+ * Build the signature for a status query.
+ * Fawry status signature = SHA256(merchantCode + merchantRefNum + secureKey) — plain SHA-256, not HMAC.
  */
 function buildStatusSignature(merchantRefNum: string): string {
   const raw = getMerchantCode() + merchantRefNum + getSecurityKey();
-  return createHmac('sha256', getSecurityKey()).update(raw).digest('hex');
+  return createHash('sha256').update(raw).digest('hex');
 }
 
 // ─── Adapter ──────────────────────────────────────────────────────────────────
@@ -167,7 +169,8 @@ export class FawryAdapter implements PaymentAdapter {
       providerOrderId +
       (refundAmount || '') +
       getSecurityKey();
-    const signature = createHmac('sha256', getSecurityKey()).update(raw).digest('hex');
+    // Fawry refund signature is a plain SHA-256 digest, not HMAC.
+    const signature = createHash('sha256').update(raw).digest('hex');
 
     const body: Record<string, unknown> = {
       merchantCode: getMerchantCode(),
@@ -201,9 +204,14 @@ export class FawryAdapter implements PaymentAdapter {
   // ─── Webhook verification ────────────────────────────────────────────────
 
   /**
-   * Verify the HMAC signature on an incoming Fawry webhook callback.
-   * The webhook POST body contains a `messageSignature` field.
-   * Fawry webhook signature = SHA256(referenceNumber + merchantRefNum + paymentAmount + orderAmount + orderStatus + paymentMethod + fawryFees + secureKey)
+   * Verify the signature on an incoming Fawry server-to-server notification (V2).
+   * The callback POST body contains a `messageSignature` field.
+   *
+   * Per Fawry's V2 docs the signature is a plain SHA-256 digest (NOT HMAC) of:
+   *   fawryRefNumber + merchantRefNum + paymentAmount + orderAmount + orderStatus
+   *   + paymentMethod + paymentReferenceNumber + secureKey
+   * paymentReferenceNumber is empty for some notifications (e.g. order creation).
+   * Note: fawryFees is intentionally NOT part of the signature.
    */
   static verifyWebhookSignature(
     payload: {
@@ -213,7 +221,7 @@ export class FawryAdapter implements PaymentAdapter {
       orderAmount: string;
       orderStatus: string;
       paymentMethod: string;
-      fawryFees: string;
+      paymentReferenceNumber: string;
     },
     receivedHash: string,
   ): boolean {
@@ -224,9 +232,9 @@ export class FawryAdapter implements PaymentAdapter {
       payload.orderAmount +
       payload.orderStatus +
       payload.paymentMethod +
-      payload.fawryFees +
+      payload.paymentReferenceNumber +
       getSecurityKey();
-    const expected = createHmac('sha256', getSecurityKey()).update(raw).digest('hex');
+    const expected = createHash('sha256').update(raw).digest('hex');
     return expected === receivedHash;
   }
 }

@@ -1,12 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { createHmac } from 'crypto';
+import { createHash } from 'crypto';
 import { FawryAdapter } from '../src/adapters/fawry';
 
 const MERCHANT_CODE = 'MERCH123';
 const SECURITY_KEY = 'test-secure-key';
 
-/** Independent re-implementation of the Fawry webhook signature, so a
- *  regression in the adapter formula fails these tests. */
+/** Independent re-implementation of the Fawry V2 callback signature (plain
+ *  SHA-256, per Fawry's server-notification-v2 docs), so a regression in the
+ *  adapter formula fails these tests. */
 function webhookSignature(p: {
   referenceNumber: string;
   merchantRefNum: string;
@@ -14,7 +15,7 @@ function webhookSignature(p: {
   orderAmount: string;
   orderStatus: string;
   paymentMethod: string;
-  fawryFees: string;
+  paymentReferenceNumber: string;
 }): string {
   const raw =
     p.referenceNumber +
@@ -23,9 +24,9 @@ function webhookSignature(p: {
     p.orderAmount +
     p.orderStatus +
     p.paymentMethod +
-    p.fawryFees +
+    p.paymentReferenceNumber +
     SECURITY_KEY;
-  return createHmac('sha256', SECURITY_KEY).update(raw).digest('hex');
+  return createHash('sha256').update(raw).digest('hex');
 }
 
 const PAID_PAYLOAD = {
@@ -35,7 +36,7 @@ const PAID_PAYLOAD = {
   orderAmount: '350.00',
   orderStatus: 'PAID',
   paymentMethod: 'PAYATFAWRY',
-  fawryFees: '5.00',
+  paymentReferenceNumber: 'PAYREF-55',
 };
 
 beforeEach(() => {
@@ -78,10 +79,18 @@ describe('FawryAdapter.verifyWebhookSignature', () => {
       PAID_PAYLOAD.orderAmount +
       PAID_PAYLOAD.orderStatus +
       PAID_PAYLOAD.paymentMethod +
-      PAID_PAYLOAD.fawryFees +
+      PAID_PAYLOAD.paymentReferenceNumber +
       'attacker-key';
-    const forged = createHmac('sha256', 'attacker-key').update(raw).digest('hex');
+    const forged = createHash('sha256').update(raw).digest('hex');
     expect(FawryAdapter.verifyWebhookSignature(PAID_PAYLOAD, forged)).toBe(false);
+  });
+
+  it('rejects when fawryFees is injected as the payment reference (must be excluded)', () => {
+    // fawryFees is NOT part of the Fawry V2 signature; a caller passing it in
+    // the paymentReferenceNumber slot must not validate against a real hash.
+    const realHash = webhookSignature(PAID_PAYLOAD);
+    const withFees = { ...PAID_PAYLOAD, paymentReferenceNumber: '5.00' };
+    expect(FawryAdapter.verifyWebhookSignature(withFees, realHash)).toBe(false);
   });
 });
 
@@ -122,8 +131,8 @@ describe('FawryAdapter.createPayment', () => {
     expect(body.merchantCode).toBe(MERCHANT_CODE);
     expect(body.chargeItems[0].price).toBe(350);
 
-    // Charge signature = HMAC(merchantCode + refNum + mobile + amount + currency + key)
-    const expectedSig = createHmac('sha256', SECURITY_KEY)
+    // Charge signature = SHA256(merchantCode + refNum + mobile + amount + currency + key)
+    const expectedSig = createHash('sha256')
       .update(MERCHANT_CODE + 'booking-abc-123' + '01012345678' + '350.00' + 'EGP' + SECURITY_KEY)
       .digest('hex');
     expect(body.signature).toBe(expectedSig);

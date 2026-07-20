@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  // Verify Fawry HMAC signature
+  // Verify Fawry V2 signature (plain SHA-256)
   const receivedHash = payload.messageSignature;
   if (!receivedHash) {
     console.error('[webhook/fawry] Missing messageSignature');
@@ -35,7 +35,10 @@ export async function POST(request: NextRequest) {
       orderAmount: payload.orderAmount ?? '',
       orderStatus: payload.orderStatus ?? '',
       paymentMethod: payload.paymentMethod ?? '',
-      fawryFees: payload.fawryFees ?? '',
+      // Fawry ships this field misspelled as `paymentRefrenceNumber`; accept
+      // either spelling. Empty for notifications that carry no payment ref.
+      paymentReferenceNumber:
+        payload.paymentRefrenceNumber ?? payload.paymentReferenceNumber ?? '',
     },
     receivedHash,
   );
