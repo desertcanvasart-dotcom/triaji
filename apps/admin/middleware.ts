@@ -19,6 +19,103 @@ const ICU_COORDINATOR_ALLOWED_PATHS = ['/icu/beds', '/icu/transfers', '/api/admi
 
 const TENANT_ONLY_PREFIXES = ['/dashboard', '/doctors', '/bookings', '/analytics', '/calls', '/widget', '/his'];
 
+// ─── Middleware auth cache ───────────────────────────────────────────────────
+// Verifying every navigation costs two Supabase round-trips (JWT check via
+// auth.getUser + an admin_users select). After a successful verify we set a
+// short-lived HMAC-signed cookie carrying the admin's role/tenant fields,
+// bound to a fingerprint of the access token — while it's valid both calls
+// are skipped. Token refresh/logout changes or removes the access token, so
+// the cache can't outlive the session; role changes or deactivation take at
+// most AUTH_CACHE_TTL_SECONDS to propagate.
+
+const AUTH_CACHE_COOKIE = 'admin-mw-cache';
+const AUTH_CACHE_TTL_SECONDS = 300;
+
+const encoder = new TextEncoder();
+
+interface AdminInfo {
+  role: string;
+  tenant_id: string | null;
+  chain_id: string | null;
+  branch_tenant_id: string | null;
+}
+
+function b64url(bytes: ArrayBuffer): string {
+  let s = '';
+  for (const b of new Uint8Array(bytes)) s += String.fromCharCode(b);
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+async function hmac(payload: string, secret: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  return b64url(await crypto.subtle.sign('HMAC', key, encoder.encode(payload)));
+}
+
+async function tokenFingerprint(token: string): Promise<string> {
+  return b64url(await crypto.subtle.digest('SHA-256', encoder.encode(token))).slice(0, 22);
+}
+
+async function readAuthCache(
+  request: NextRequest,
+  accessToken: string,
+  secret: string
+): Promise<AdminInfo | null> {
+  const raw = request.cookies.get(AUTH_CACHE_COOKIE)?.value;
+  if (!raw) return null;
+
+  const dot = raw.lastIndexOf('.');
+  if (dot < 0) return null;
+  const payloadB64 = raw.slice(0, dot);
+  const sig = raw.slice(dot + 1);
+  if (sig !== (await hmac(payloadB64, secret))) return null;
+
+  try {
+    const payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/'))) as {
+      tok?: string;
+      exp?: number;
+      role?: string;
+      tenant_id?: string | null;
+      chain_id?: string | null;
+      branch_tenant_id?: string | null;
+    };
+    if (typeof payload.exp !== 'number' || payload.exp < Date.now() / 1000) return null;
+    if (payload.tok !== (await tokenFingerprint(accessToken))) return null;
+    if (typeof payload.role !== 'string') return null;
+    return {
+      role: payload.role,
+      tenant_id: payload.tenant_id ?? null,
+      chain_id: payload.chain_id ?? null,
+      branch_tenant_id: payload.branch_tenant_id ?? null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function buildAuthCacheValue(
+  admin: AdminInfo,
+  accessToken: string,
+  secret: string
+): Promise<string> {
+  const payloadB64 = btoa(
+    JSON.stringify({
+      tok: await tokenFingerprint(accessToken),
+      exp: Math.floor(Date.now() / 1000) + AUTH_CACHE_TTL_SECONDS,
+      role: admin.role,
+      tenant_id: admin.tenant_id,
+      chain_id: admin.chain_id,
+      branch_tenant_id: admin.branch_tenant_id,
+    })
+  ).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return `${payloadB64}.${await hmac(payloadB64, secret)}`;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -52,37 +149,54 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // Verify user
-  const anonClient = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+  // Cache hit: skip the two Supabase round-trips below.
+  const cachedAdmin = await readAuthCache(request, accessToken, supabaseServiceKey);
+  let adminUser: AdminInfo;
 
-  const { data: { user }, error } = await anonClient.auth.getUser(accessToken);
+  if (cachedAdmin) {
+    adminUser = cachedAdmin;
+  } else {
+    // Verify user
+    const anonClient = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
 
-  if (error || !user) {
-    const response = NextResponse.redirect(new URL('/login', request.url));
-    response.cookies.delete('sb-access-token');
-    response.cookies.delete('sb-refresh-token');
-    return response;
-  }
+    const { data: { user }, error } = await anonClient.auth.getUser(accessToken);
 
-  // Check admin role
-  const serviceClient = createClient(supabaseUrl, supabaseServiceKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+    if (error || !user) {
+      const response = NextResponse.redirect(new URL('/login', request.url));
+      response.cookies.delete('sb-access-token');
+      response.cookies.delete('sb-refresh-token');
+      response.cookies.delete(AUTH_CACHE_COOKIE);
+      return response;
+    }
 
-  const { data: adminUser } = await serviceClient
-    .from('admin_users')
-    .select('role, tenant_id, chain_id, branch_tenant_id')
-    .eq('id', user.id)
-    .eq('is_active', true)
-    .single();
+    // Check admin role
+    const serviceClient = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
 
-  if (!adminUser) {
-    const response = NextResponse.redirect(new URL('/login?error=not_admin', request.url));
-    response.cookies.delete('sb-access-token');
-    response.cookies.delete('sb-refresh-token');
-    return response;
+    const { data: adminRow } = await serviceClient
+      .from('admin_users')
+      .select('role, tenant_id, chain_id, branch_tenant_id')
+      .eq('id', user.id)
+      .eq('is_active', true)
+      .single();
+
+    if (!adminRow) {
+      const response = NextResponse.redirect(new URL('/login?error=not_admin', request.url));
+      response.cookies.delete('sb-access-token');
+      response.cookies.delete('sb-refresh-token');
+      response.cookies.delete(AUTH_CACHE_COOKIE);
+      return response;
+    }
+
+    adminUser = {
+      role: adminRow.role,
+      tenant_id: adminRow.tenant_id ?? null,
+      chain_id: adminRow.chain_id ?? null,
+      branch_tenant_id: adminRow.branch_tenant_id ?? null,
+    };
   }
 
   // Chain route access control
@@ -296,6 +410,16 @@ export async function middleware(request: NextRequest) {
   response.headers.set('x-admin-tenant-id', adminUser.tenant_id ?? '');
   response.headers.set('x-admin-chain-id', adminUser.chain_id ?? '');
   response.headers.set('x-admin-branch-tenant-id', adminUser.branch_tenant_id ?? '');
+
+  // Freshly verified — cache the result so the next requests skip Supabase.
+  if (!cachedAdmin) {
+    response.cookies.set(AUTH_CACHE_COOKIE, await buildAuthCacheValue(adminUser, accessToken, supabaseServiceKey), {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: AUTH_CACHE_TTL_SECONDS,
+    });
+  }
 
   return response;
 }
