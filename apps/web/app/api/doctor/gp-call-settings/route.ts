@@ -12,10 +12,38 @@ function getServiceClient() {
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
+function getAnonClient() {
+  const url = process.env['NEXT_PUBLIC_SUPABASE_URL'];
+  const key = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
+  if (!url || !key) throw new Error('Missing Supabase env vars');
+  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+}
+
+async function authenticateDoctor(request: NextRequest): Promise<{ id: string } | null> {
+  const accessToken = request.cookies.get('sb-access-token')?.value
+    ?? request.headers.get('Authorization')?.replace('Bearer ', '');
+  if (!accessToken) return null;
+
+  const anonClient = getAnonClient();
+  const { data: { user }, error } = await anonClient.auth.getUser(accessToken);
+  if (error || !user) return null;
+
+  const supabase = getServiceClient();
+  const { data: doctorAccount } = await supabase
+    .from('doctor_accounts')
+    .select('id, verification_status')
+    .eq('id', user.id)
+    .single();
+
+  if (!doctorAccount || doctorAccount.verification_status !== 'verified') return null;
+  return { id: doctorAccount.id as string };
+}
+
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 interface CallSettingsBody {
-  doctorAccountId: string;
+  /** Legacy field — if present it must match the authenticated doctor. */
+  doctorAccountId?: string;
   fee?: number;
   enabled?: boolean;
   maxDuration?: number;
@@ -27,28 +55,26 @@ interface CallSettingsBody {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as CallSettingsBody;
-
-    if (!body.doctorAccountId) {
+    // Doctors may only modify their own call settings.
+    const doctor = await authenticateDoctor(request);
+    if (!doctor) {
       return NextResponse.json(
-        { error: 'doctorAccountId is required' },
-        { status: 400 }
+        { error: 'غير مصرح. يرجى تسجيل الدخول' },
+        { status: 401 }
       );
     }
 
-    const supabase = getServiceClient();
+    const body = (await request.json()) as CallSettingsBody;
 
-    // ── Verify doctor exists ─────────────────────────────────────────────
-
-    const { data: existing } = await supabase
-      .from('doctor_accounts')
-      .select('id')
-      .eq('id', body.doctorAccountId)
-      .maybeSingle();
-
-    if (!existing) {
-      return NextResponse.json({ error: 'حساب الطبيب غير موجود' }, { status: 404 });
+    if (body.doctorAccountId && body.doctorAccountId !== doctor.id) {
+      return NextResponse.json(
+        { error: 'غير مصرح بتعديل إعدادات طبيب آخر' },
+        { status: 403 }
+      );
     }
+
+    const doctorAccountId = doctor.id;
+    const supabase = getServiceClient();
 
     // ── Build update payload ─────────────────────────────────────────────
 
@@ -125,7 +151,7 @@ export async function POST(request: NextRequest) {
     const { error: updateError } = await supabase
       .from('doctor_accounts')
       .update(update)
-      .eq('id', body.doctorAccountId);
+      .eq('id', doctorAccountId);
 
     if (updateError) {
       console.error('[GP Settings] Update error:', updateError);

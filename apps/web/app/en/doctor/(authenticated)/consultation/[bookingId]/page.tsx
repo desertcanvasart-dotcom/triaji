@@ -293,6 +293,14 @@ export default function ConsultationPage() {
   const [notesSaved, setNotesSaved] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Cancel the pending notes autosave on unmount so it can't setState after
+  // the component is gone (e.g. navigating away right after typing).
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
+
   const [completing, setCompleting] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 

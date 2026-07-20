@@ -83,57 +83,56 @@ export async function GET(request: NextRequest, context: RouteContext) {
       );
     }
 
-    // Fetch patient profile
-    const { data: patientProfile } = await supabase
-      .from('patient_profiles')
-      .select('*')
-      .eq('patient_id', booking.patient_id)
-      .single();
-
-    // Fetch patient basic info
-    const { data: patient } = await supabase
-      .from('patients')
-      .select('id, phone_number, name_ar')
-      .eq('id', booking.patient_id)
-      .single();
-
-    // Fetch session summary if session exists
-    let sessionSummary = null;
-    let triageImages: { content_ar: string; image_urls: string[]; created_at: string }[] = [];
-
-    if (booking.session_id) {
-      const { data: summary } = await supabase
-        .from('session_summaries')
+    // Patient profile, patient info, session data, and consent are all
+    // independent of each other — fetch in parallel. Only health records
+    // depend on the consent result (below).
+    const [
+      { data: patientProfile },
+      { data: patient },
+      { data: summary },
+      { data: messages },
+      { data: consent },
+    ] = await Promise.all([
+      supabase
+        .from('patient_profiles')
         .select('*')
-        .eq('session_id', booking.session_id)
-        .single();
-      sessionSummary = summary;
+        .eq('patient_id', booking.patient_id)
+        .single(),
+      supabase
+        .from('patients')
+        .select('id, phone_number, name_ar')
+        .eq('id', booking.patient_id)
+        .single(),
+      booking.session_id
+        ? supabase
+            .from('session_summaries')
+            .select('*')
+            .eq('session_id', booking.session_id)
+            .single()
+        : Promise.resolve({ data: null }),
+      booking.session_id
+        ? supabase
+            .from('session_messages')
+            .select('content_ar, image_urls, created_at')
+            .eq('session_id', booking.session_id)
+            .not('image_urls', 'is', null)
+            .order('created_at', { ascending: true })
+        : Promise.resolve({ data: null }),
+      supabase
+        .from('history_consent')
+        .select('id')
+        .eq('patient_id', booking.patient_id)
+        .eq('doctor_id', doctorAccount.doctor_id)
+        .is('revoked_at', null)
+        .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString())
+        .limit(1)
+        .single(),
+    ]);
 
-      // Fetch triage messages with images
-      const { data: messages } = await supabase
-        .from('session_messages')
-        .select('content_ar, image_urls, created_at')
-        .eq('session_id', booking.session_id)
-        .not('image_urls', 'is', null)
-        .order('created_at', { ascending: true });
-
-      if (messages) {
-        triageImages = messages.filter(
-          (m: { image_urls: string[] | null }) => m.image_urls && m.image_urls.length > 0
-        ) as { content_ar: string; image_urls: string[]; created_at: string }[];
-      }
-    }
-
-    // Check history consent
-    const { data: consent } = await supabase
-      .from('history_consent')
-      .select('id')
-      .eq('patient_id', booking.patient_id)
-      .eq('doctor_id', doctorAccount.doctor_id)
-      .is('revoked_at', null)
-      .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString())
-      .limit(1)
-      .single();
+    const sessionSummary = summary;
+    const triageImages = (messages ?? []).filter(
+      (m: { image_urls: string[] | null }) => m.image_urls && m.image_urls.length > 0
+    ) as { content_ar: string; image_urls: string[]; created_at: string }[];
 
     // Fetch health records only if consent exists
     let healthRecords: { id: string; record_type: string; title_ar: string; uploaded_at: string }[] = [];

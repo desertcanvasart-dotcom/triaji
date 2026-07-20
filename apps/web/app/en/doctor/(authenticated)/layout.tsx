@@ -8,6 +8,7 @@ import Link from 'next/link';
 
 interface DoctorAccount {
   id: string;
+  name_en: string | null;
   name_ar: string;
   specialty_ar: string;
   verification_status: 'pending' | 'verified' | 'rejected';
@@ -26,18 +27,18 @@ interface NavItem {
 // ─── Constants ──────────────────────────────────────────────────────────────
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'مواعيدي', icon: '📅', href: '/ar/doctor/dashboard' },
-  { label: 'المرضى المتابعين', icon: '👥', href: '/ar/doctor/patients' },
-  { label: 'ملخصات المرضى', icon: '📋', href: '/ar/doctor/dashboard' },
-  { label: 'فرز سريع', icon: '⚡', href: '/ar/doctor/quick-intake' },
-  { label: 'إعداداتي', icon: '⚙️', href: '/ar/doctor/settings' },
+  { label: 'My Appointments', icon: '📅', href: '/en/doctor/dashboard' },
+  { label: 'Followed Patients', icon: '👥', href: '/en/doctor/patients' },
+  { label: 'Patient Summaries', icon: '📋', href: '/en/doctor/dashboard' },
+  { label: 'Quick Intake', icon: '⚡', href: '/en/doctor/quick-intake' },
+  { label: 'Settings', icon: '⚙️', href: '/en/doctor/settings' },
 ];
 
 // ─── Sidebar Skeleton ───────────────────────────────────────────────────────
 
 function SidebarSkeleton() {
   return (
-    <aside className="w-64 min-h-screen bg-white border-l border-gray-200 p-6">
+    <aside className="w-64 min-h-screen bg-white border-r border-gray-200 p-6">
       <div className="animate-pulse space-y-4">
         <div className="h-6 bg-gray-200 rounded w-3/4" />
         <div className="h-4 bg-gray-200 rounded w-1/2" />
@@ -91,12 +92,12 @@ export default function DoctorAuthenticatedLayout({
         const res = await fetch('/api/doctor/auth/me');
 
         if (res.status === 401) {
-          router.replace('/ar/doctor/login');
+          router.replace('/en/doctor/login');
           return;
         }
 
         if (!res.ok) {
-          router.replace('/ar/doctor/login');
+          router.replace('/en/doctor/login');
           return;
         }
 
@@ -104,13 +105,13 @@ export default function DoctorAuthenticatedLayout({
         const account = data.doctorAccount;
 
         if (!account || account.verification_status !== 'verified') {
-          router.replace('/ar/doctor/pending');
+          router.replace('/en/doctor/pending');
           return;
         }
 
         setDoctor(account);
       } catch {
-        router.replace('/ar/doctor/login');
+        router.replace('/en/doctor/login');
       } finally {
         setLoading(false);
       }
@@ -124,7 +125,7 @@ export default function DoctorAuthenticatedLayout({
     try {
       await fetch('/api/doctor/auth/logout', { method: 'POST' });
     } finally {
-      router.replace('/ar/doctor/login');
+      router.replace('/en/doctor/login');
     }
   }, [router]);
 
@@ -135,7 +136,7 @@ export default function DoctorAuthenticatedLayout({
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-gray-50 font-cairo">
+      <div className="flex min-h-screen bg-gray-50" dir="ltr">
         <SidebarSkeleton />
         <ContentSkeleton />
       </div>
@@ -146,14 +147,16 @@ export default function DoctorAuthenticatedLayout({
     return null;
   }
 
+  const displayName = doctor.name_en || doctor.name_ar;
+
   return (
-    <div className="flex min-h-screen bg-gray-50 font-cairo">
+    <div className="flex min-h-screen bg-gray-50" dir="ltr">
       {/* Mobile hamburger */}
       <button
         type="button"
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed top-4 right-4 z-50 md:hidden bg-white border border-gray-200 rounded-lg p-2 shadow-sm"
-        aria-label="فتح القائمة"
+        className="fixed top-4 left-4 z-50 md:hidden bg-white border border-gray-200 rounded-lg p-2 shadow-sm"
+        aria-label="Open menu"
       >
         <svg
           className="w-6 h-6 text-[#1A2F4A]"
@@ -189,30 +192,30 @@ export default function DoctorAuthenticatedLayout({
           }}
           role="button"
           tabIndex={0}
-          aria-label="إغلاق القائمة"
+          aria-label="Close menu"
         />
       )}
 
       {/* Sidebar */}
       <aside
         className={`
-          fixed md:static inset-y-0 right-0 z-40
-          w-64 bg-white border-l border-gray-200
+          fixed md:static inset-y-0 left-0 z-40
+          w-64 bg-white border-r border-gray-200
           transform transition-transform duration-200 ease-in-out
-          ${sidebarOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
           flex flex-col
         `}
       >
         {/* Doctor info */}
         <div className="p-6 border-b border-gray-100">
           <h2 className="text-lg font-bold text-[#1A2F4A]">
-            د. {doctor.name_ar}
+            Dr. {displayName}
           </h2>
           <p className="text-sm text-gray-500 mt-1">
             {doctor.specialty_ar}
           </p>
           <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
-            ✓ موثق
+            ✓ Verified
           </span>
         </div>
 
@@ -229,7 +232,7 @@ export default function DoctorAuthenticatedLayout({
                   transition-colors duration-150
                   ${
                     isActive
-                      ? 'bg-teal-50 text-teal-700 border-r-4 border-teal-600'
+                      ? 'bg-teal-50 text-teal-700 border-l-4 border-teal-600'
                       : 'text-[#1A2F4A] hover:bg-gray-50'
                   }
                 `}
@@ -266,7 +269,7 @@ export default function DoctorAuthenticatedLayout({
                 />
               </svg>
             )}
-            <span>تسجيل الخروج</span>
+            <span>Log out</span>
           </button>
         </div>
       </aside>

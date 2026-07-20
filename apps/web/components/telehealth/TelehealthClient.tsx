@@ -32,6 +32,17 @@ export default function TelehealthClient({ bookingId, lang }: TelehealthClientPr
   const streamRef = useRef<MediaStream | null>(null);
   const callTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Unmount cleanup: stop the call timer and release the camera/mic so
+  // navigating away mid-call (or during the device test) doesn't leak the
+  // interval or leave the camera light on.
+  useEffect(() => {
+    return () => {
+      if (callTimerRef.current) clearInterval(callTimerRef.current);
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    };
+  }, []);
+
   // Load booking info
   useEffect(() => {
     async function loadBooking() {
