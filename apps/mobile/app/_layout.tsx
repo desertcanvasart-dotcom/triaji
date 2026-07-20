@@ -83,7 +83,9 @@ export default function RootLayout() {
   }, [fontsLoaded, biometricChecking]);
 
   useEffect(() => {
-    if (isAuthenticated()) {
+    // Doctors need push too (incoming GP calls, referrals, transfer alerts) —
+    // registration was previously gated on the patient token only.
+    if (isAuthenticated() || isDoctorAuthenticated()) {
       registerForPushNotifications();
     }
   }, []);
@@ -98,9 +100,9 @@ export default function RootLayout() {
 
         if (data?.type === 'gp_video_call_incoming') {
           setIncomingCall({
-            callId: String(data.call_id ?? ''),
-            callerName: String(data.caller_name ?? ''),
-            callerRole: (data.caller_role as 'doctor' | 'patient') ?? 'doctor',
+            callId: String(data.callId ?? ''),
+            callerName: String(data.callerName ?? ''),
+            callerRole: (data.callerRole as 'doctor' | 'patient') ?? 'doctor',
           });
         }
       }
@@ -113,9 +115,9 @@ export default function RootLayout() {
 
         if (data?.type === 'gp_video_call_incoming') {
           setIncomingCall({
-            callId: String(data.call_id ?? ''),
-            callerName: String(data.caller_name ?? ''),
-            callerRole: (data.caller_role as 'doctor' | 'patient') ?? 'doctor',
+            callId: String(data.callId ?? ''),
+            callerName: String(data.callerName ?? ''),
+            callerRole: (data.callerRole as 'doctor' | 'patient') ?? 'doctor',
           });
         }
       }

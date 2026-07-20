@@ -10,8 +10,7 @@ import type {
   CheckResult,
   InteractionCheckRequest,
 } from '@triaji/shared/types';
-
-const API_URL = process.env['EXPO_PUBLIC_API_URL'] || 'http://localhost:3000';
+import { API_BASE_URL as API_URL } from '../config';
 
 /**
  * Check drug interactions by calling the Triajji web API.
@@ -81,25 +80,24 @@ export async function checkAllInteractions(
     };
   }
 
-  // Check each drug against all others that come after it
-  // The API checks newDrug vs existingDrugs, so we iterate
-  const allResults: CheckResult[] = [];
-
-  for (let i = 0; i < drugs.length; i++) {
-    const remaining = drugs.filter((_, j) => j !== i);
-    try {
-      const result = await checkInteractions(
-        drugs[i],
-        remaining,
+  // Check each drug only against the drugs that come after it (upper triangle):
+  // that covers every unordered pair exactly once instead of twice, and the
+  // per-drug checks are independent, so run them in parallel. A failed check
+  // resolves to null and is dropped — the rest still complete.
+  const settled = await Promise.all(
+    drugs.slice(0, -1).map((drug, i) =>
+      checkInteractions(
+        drug,
+        drugs.slice(i + 1),
         patientId,
         doctorAccountId,
         token
-      );
-      allResults.push(result);
-    } catch {
-      // Continue checking other pairs even if one fails
-    }
-  }
+      ).catch(() => null)
+    )
+  );
+  const allResults: CheckResult[] = settled.filter(
+    (r): r is CheckResult => r !== null
+  );
 
   // Deduplicate interactions (A+B and B+A are the same)
   const seen = new Set<string>();

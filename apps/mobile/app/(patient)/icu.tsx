@@ -25,6 +25,14 @@ const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.triajji.
 const SUPABASE_URL = process.env['EXPO_PUBLIC_SUPABASE_URL'] ?? '';
 const SUPABASE_ANON_KEY = process.env['EXPO_PUBLIC_SUPABASE_ANON_KEY'] ?? '';
 
+// Module-scoped so the client is built once, not re-created on every render
+// (useRef keeps only the first instance but its argument was still evaluated
+// each render).
+const supabaseClient =
+  SUPABASE_URL && SUPABASE_ANON_KEY
+    ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
+
 const UNIT_TYPES: (IcuUnitType | 'all')[] = [
   'all',
   'general_icu',
@@ -43,11 +51,7 @@ export default function PatientIcuScreen() {
   const [results, setResults] = useState<IcuSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedType, setSelectedType] = useState<IcuUnitType | 'all'>('all');
-  const supabaseRef = useRef(
-    SUPABASE_URL && SUPABASE_ANON_KEY
-      ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-      : null
-  );
+  const supabaseRef = useRef(supabaseClient);
 
   const fetchResults = useCallback(async () => {
     if (!location) return;

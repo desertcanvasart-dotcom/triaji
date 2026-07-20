@@ -3,7 +3,7 @@
  * Uses expo-location for both patient and doctor ICU screens.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import * as Location from 'expo-location';
 
 interface LocationCoords {
@@ -23,6 +23,17 @@ export function useLocation(): UseLocationResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // The permission/GPS prompt can still be pending when the screen unmounts
+  // (e.g. navigating away). Guard the setters so we don't setState on an
+  // unmounted component.
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
   const requestPermission = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -31,8 +42,10 @@ export function useLocation(): UseLocationResult {
       const { status } = await Location.requestForegroundPermissionsAsync();
 
       if (status !== 'granted') {
-        setError('PERMISSION_DENIED');
-        setLoading(false);
+        if (mountedRef.current) {
+          setError('PERMISSION_DENIED');
+          setLoading(false);
+        }
         return;
       }
 
@@ -40,14 +53,20 @@ export function useLocation(): UseLocationResult {
         accuracy: Location.Accuracy.Balanced,
       });
 
-      setLocation({
-        lat: position.coords.latitude,
-        lng: position.coords.longitude,
-      });
+      if (mountedRef.current) {
+        setLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'LOCATION_ERROR');
+      if (mountedRef.current) {
+        setError(err instanceof Error ? err.message : 'LOCATION_ERROR');
+      }
     } finally {
-      setLoading(false);
+      if (mountedRef.current) {
+        setLoading(false);
+      }
     }
   }, []);
 

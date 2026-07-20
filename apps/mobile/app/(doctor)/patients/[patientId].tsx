@@ -262,13 +262,13 @@ export default function PatientDetailScreen() {
           <Text style={[styles.sectionTitle, isRtl && styles.textRtl]}>
             {s.doctorPatients.vitalsSummary[lang]}
           </Text>
-          {patient.vitals.length === 0 ? (
+          {(patient.vitals ?? []).length === 0 ? (
             <Text style={[styles.emptyText, isRtl && styles.textRtl]}>
               {s.mobileRecord.noData[lang]}
             </Text>
           ) : (
             <View style={styles.vitalsGrid}>
-              {patient.vitals.map((v, i) => (
+              {(patient.vitals ?? []).map((v, i) => (
                 <View key={i} style={styles.vitalItem}>
                   <Text style={styles.vitalLabel}>{v.label}</Text>
                   <Text style={styles.vitalValue}>
@@ -286,12 +286,12 @@ export default function PatientDetailScreen() {
           <Text style={[styles.sectionTitle, isRtl && styles.textRtl]}>
             {s.doctorConsultation.activeMedications[lang]}
           </Text>
-          {patient.medications.length === 0 ? (
+          {(patient.medications ?? []).length === 0 ? (
             <Text style={[styles.emptyText, isRtl && styles.textRtl]}>
               {s.doctorConsultation.noMedications[lang]}
             </Text>
           ) : (
-            patient.medications.map((med, i) => (
+            (patient.medications ?? []).map((med, i) => (
               <View key={i} style={[styles.medRow, isRtl && styles.rowRtl]}>
                 <Text style={[styles.medName, isRtl && styles.textRtl]}>
                   {med.name}
@@ -309,12 +309,12 @@ export default function PatientDetailScreen() {
           <Text style={[styles.sectionTitle, isRtl && styles.textRtl]}>
             {s.doctorPatients.labHistory[lang]}
           </Text>
-          {patient.lab_results.length === 0 ? (
+          {(patient.lab_results ?? []).length === 0 ? (
             <Text style={[styles.emptyText, isRtl && styles.textRtl]}>
               {s.doctorConsultation.noLabResults[lang]}
             </Text>
           ) : (
-            patient.lab_results.map((lab, i) => (
+            (patient.lab_results ?? []).map((lab, i) => (
               <View key={i} style={[styles.labRow, isRtl && styles.rowRtl]}>
                 <View style={styles.labInfo}>
                   <Text style={[styles.labName, isRtl && styles.textRtl]}>

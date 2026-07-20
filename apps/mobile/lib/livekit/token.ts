@@ -1,6 +1,5 @@
 import { getPatientToken } from '../storage';
-
-const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+import { API_BASE_URL as API_BASE } from '../config';
 
 /**
  * Get a LiveKit participant token for a GP video call.
