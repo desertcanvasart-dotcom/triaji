@@ -1,9 +1,62 @@
 # Triaji — Next Session: Start Here
 
-_Last updated 2026-07-03. Everything committed + pushed; `main` @ `b1f083e`, working tree clean.
+_Last updated 2026-07-21. Everything committed + pushed; `main` @ `2ca642f`, working tree clean.
 Full history/detail in [remaining-work.md](remaining-work.md). Goal on the table: **set a customer
 delivery date.** Framing already given to the user: web platform ~1 week, call center ~1 day after
 credentials exist, mobile 2–4 weeks (phase 2)._
+
+---
+
+## Session 2026-07-21 — perf / security / correctness pass
+
+**17 commits, all pushed + CI green** (`1f32459`..`2ca642f`; 91 files, +3,222 / −1,353). A broad
+enhancement pass across web / admin / doctor portal / mobile / payment-adapters that surfaced
+several real security + correctness bugs.
+
+**Security fixes (prioritize before deploy):**
+- **Fawry payment verification was fundamentally broken** — the adapter used HMAC at all four
+  signature sites but Fawry V2 uses a plain SHA-256 digest, so no real callback could ever
+  validate (payments would silently never confirm). Also fixed the webhook using `fawryFees`
+  instead of `paymentReferenceNumber`. Verified vs Fawry's official V2 docs. (`c08159b`)
+  **Still open:** the charge-request signature's *field order* (customerMobile+currency vs Fawry's
+  documented customerProfileId+paymentMethod) needs one live Fawry-staging test — algorithm is
+  fixed, per-method field set is unverifiable without staging access.
+- **Unauthenticated IDOR write** on `POST /api/doctor/gp-call-settings` (anyone could change any
+  doctor's video-call fee/availability) — now authenticated + self-scoped. (`880eca3`)
+- **English doctor pages had no auth gate** — `app/en/doctor/(authenticated)/` was missing its
+  layout, so `/en/doctor/*` rendered with no login redirect. Added the mirror layout; also fixed a
+  latent auth-gate bug (wrong `/auth/me` shape) that let unverified doctors through. (`880eca3`)
+- **Admin session tokens were XSS-readable** (set via `document.cookie`) and went stale on refresh
+  (~1h logout). Moved to httpOnly cookies set server-side + a `SessionSync` refresh sync. (`a883356`)
+  Full login→>1h-refresh flow needs a live admin session to confirm; cold-start-after-expiry with
+  the tab closed still redirects once (wants an `@supabase/ssr` migration — re-scoped task chip).
+
+**Correctness fixes:**
+- Clinical-document numbering was `count+1` → duplicate numbers + storage collision under
+  concurrency. Now an atomic counter RPC (migration **063**). (`8b26b1c`)
+- Mobile incoming GP-call notifications navigated with an empty `callId` (snake_case vs the
+  camelCase server payload); doctors never registered for push; the video-call Android channel was
+  never registered (lived in dead code). (`b47a474`, `2ca642f`)
+- Mobile biometric gate dead-ended the whole app on a single failed Face ID — now has retry +
+  sign-out. (`2ca642f`)
+
+**Perf (headline items):** triage orchestrator + admin dashboards parallelized; recharts
+lazy-loaded (admin dashboards + web charts + doctor consultation forms, all build-proven);
+admin middleware auth cached in a signed cookie; lab-nearby / widget-analytics / tenant-stats
+pushed into SQL RPCs.
+
+**New DB migrations — ALL APPLIED + VERIFIED LIVE (2026-07-21):**
+`060_find_labs_near`, `061_widget_analytics_summary`, `062_tenant_list_stats`,
+`063_clinical_document_number`. Their routes take the DB-side path; `lab/nearby` runtime-confirmed
+with zero fallback warnings. (Verifying 063's mutating RPC consumed seq #1, so the first real
+clinical doc will be `TRJ-2026-00002` — harmless, gaps are by design.)
+
+**Blocking live AI-triage QA:** the Anthropic API key in root `.env.local` has **zero credit
+balance** — `POST /api/chat` 500s with a billing error (patient sees the graceful Arabic fallback).
+Top up at Anthropic Plans & Billing.
+
+**Open task chips (re-scoped, need the app runnable to validate):** mobile shared-API-client +
+AbortController + secure token storage; optional admin `@supabase/ssr` cold-start migration.
 
 ---
 
@@ -40,6 +93,8 @@ credentials exist, mobile 2–4 weeks (phase 2)._
 ### 2. Credential-gated QA (never runtime-tested)
 - **Telehealth/LiveKit:** needs `LIVEKIT_API_KEY/SECRET/URL` + a telehealth booking; test a real call.
 - **Payment webhooks:** needs Fawry/Paymob/Vodafone secrets (were on hold per user's call).
+  NOTE (2026-07-21): the Fawry signature scheme was fixed HMAC→plain-SHA-256 (`c08159b`); a live
+  Fawry-staging test is still required to confirm the charge-request field order per payment method.
 
 ### 3. Call center go-live (code 100% done; all infra/config)
 1. Env keys: `TWILIO_*`, `DEEPGRAM_API_KEY`, `ELEVENLABS_API_KEY[/_EN]`, `TWILIO_WEBHOOK_BASE_URL`.
