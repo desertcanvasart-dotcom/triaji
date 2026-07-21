@@ -19,6 +19,7 @@ Full docs are in **[`docs/`](docs/README.md)**:
 - **[Data model](docs/data-model.md)** — the schema, relationships, RLS, and RPCs.
 - **[API reference](docs/api-reference.md)** — all 240 API routes.
 - **[User guide](docs/user-guide.md)** — how to use the app per role.
+- **[Deployment runbook](docs/deployment.md)** — ship it to production.
 - **[Product walkthrough](docs/triaji-full-walkthrough.md)** — the exhaustive screen-by-screen tour.
 
 ## Quick start
