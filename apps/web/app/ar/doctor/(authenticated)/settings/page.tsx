@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import StampSetup from '@/components/doctor/StampSetup';
+import MyClinicSection from '@/components/doctor/MyClinicSection';
 
 // react-signature-canvas is heavy and only needed on this settings page — keep
 // it out of the initial bundle.
@@ -357,6 +358,10 @@ export default function DoctorSettingsPage() {
             }}
             onSave={handleClinicSave}
           />
+
+          <hr className="border-gray-200" />
+
+          <MyClinicSection locale="ar" />
         </div>
       )}
     </div>

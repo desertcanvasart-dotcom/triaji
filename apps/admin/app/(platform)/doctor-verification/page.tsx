@@ -14,11 +14,33 @@ interface DoctorRegistration {
   phone: string;
   email: string;
   clinic_name_ar: string | null;
+  clinic_mode?: 'independent' | 'own_clinic' | 'existing_clinic' | null;
+  requested_clinic_name_en?: string | null;
+  requested_tenant_id?: string | null;
+  tenants?: { name_en: string } | null;
   verification_status: 'pending' | 'verified' | 'rejected' | 'suspended';
   rejection_reason: string | null;
   self_registered: boolean;
   created_at: string;
   governorates: { name_ar: string; name_en: string } | null;
+}
+
+function clinicRequestBadge(reg: DoctorRegistration) {
+  if (reg.clinic_mode === 'own_clinic') {
+    return (
+      <span className="badge-amber" title={reg.clinic_name_ar ?? ''}>
+        + New clinic: {reg.requested_clinic_name_en ?? reg.clinic_name_ar ?? '—'}
+      </span>
+    );
+  }
+  if (reg.clinic_mode === 'existing_clinic') {
+    return (
+      <span className="badge-teal">
+        Joins: {reg.tenants?.name_en ?? 'requested facility'}
+      </span>
+    );
+  }
+  return <span className="badge-slate">Independent</span>;
 }
 
 export default function DoctorVerificationPage() {
@@ -168,7 +190,10 @@ export default function DoctorVerificationPage() {
                       </div>
                     </td>
                     <td className="table-cell font-mono">{reg.syndicate_number}</td>
-                    <td className="table-cell" dir="rtl">{reg.specialty_ar}</td>
+                    <td className="table-cell" dir="rtl">
+                      {reg.specialty_ar}
+                      <div className="mt-1" dir="ltr">{clinicRequestBadge(reg)}</div>
+                    </td>
                     <td className="table-cell">{reg.governorates?.name_en ?? '—'}</td>
                     <td className="table-cell" dir="ltr">{reg.phone}</td>
                     <td className="table-cell text-xs">

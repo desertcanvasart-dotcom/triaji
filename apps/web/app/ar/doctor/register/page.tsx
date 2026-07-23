@@ -1,7 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+
+type ClinicMode = 'independent' | 'own_clinic' | 'existing_clinic';
+
+interface ClinicOption {
+  id: string;
+  name_ar: string;
+  name_en: string;
+  tier: string;
+}
 
 const SPECIALTIES = [
   'طب باطني',
@@ -58,7 +67,11 @@ interface FormData {
   syndicate_number: string;
   specialty: string;
   governorate: string;
+  clinic_mode: ClinicMode;
   clinic_name: string;
+  clinic_name_en: string;
+  clinic_address: string;
+  requested_tenant_id: string;
   phone: string;
   email: string;
   password: string;
@@ -70,6 +83,8 @@ interface FormErrors {
   syndicate_number?: string;
   specialty?: string;
   governorate?: string;
+  clinic_name?: string;
+  requested_tenant_id?: string;
   phone?: string;
   email?: string;
   password?: string;
@@ -83,7 +98,11 @@ export default function DoctorRegisterPage() {
     syndicate_number: '',
     specialty: '',
     governorate: '',
+    clinic_mode: 'independent',
     clinic_name: '',
+    clinic_name_en: '',
+    clinic_address: '',
+    requested_tenant_id: '',
     phone: '',
     email: '',
     password: '',
@@ -92,6 +111,16 @@ export default function DoctorRegisterPage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [clinics, setClinics] = useState<ClinicOption[]>([]);
+
+  // Load the joinable-facilities list the first time it's needed.
+  useEffect(() => {
+    if (form.clinic_mode !== 'existing_clinic' || clinics.length > 0) return;
+    fetch('/api/clinics')
+      .then((r) => (r.ok ? r.json() : { clinics: [] }))
+      .then((d) => setClinics(d.clinics ?? []))
+      .catch(() => setClinics([]));
+  }, [form.clinic_mode, clinics.length]);
 
   function updateField(field: keyof FormData, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -149,6 +178,13 @@ export default function DoctorRegisterPage() {
       errs.confirm_password = 'كلمتين المرور مش متطابقين';
     }
 
+    if (form.clinic_mode === 'own_clinic' && !form.clinic_name.trim()) {
+      errs.clinic_name = 'اسم العيادة مطلوب';
+    }
+    if (form.clinic_mode === 'existing_clinic' && !form.requested_tenant_id) {
+      errs.requested_tenant_id = 'اختر المنشأة اللي بتشتغل فيها';
+    }
+
     return errs;
   }
 
@@ -172,7 +208,11 @@ export default function DoctorRegisterPage() {
           syndicate_number: form.syndicate_number.trim(),
           specialty: form.specialty,
           governorate: form.governorate,
+          clinic_mode: form.clinic_mode,
           clinic_name: form.clinic_name.trim() || undefined,
+          requested_clinic_name_en: form.clinic_name_en.trim() || undefined,
+          requested_clinic_address_ar: form.clinic_address.trim() || undefined,
+          requested_tenant_id: form.requested_tenant_id || undefined,
           phone: form.phone.trim(),
           email: form.email.trim(),
           password: form.password,
@@ -275,13 +315,81 @@ export default function DoctorRegisterPage() {
               options={GOVERNORATES.map((g) => ({ value: g, label: g }))}
             />
 
-            <InputField
-              label="اسم العيادة أو المستشفى"
-              value={form.clinic_name}
-              onChange={(v) => updateField('clinic_name', v)}
-              placeholder="اختياري"
-              required={false}
-            />
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                مكان الشغل
+                <span className="text-red-500 mr-1">*</span>
+              </label>
+              <div className="space-y-2">
+                {(
+                  [
+                    { value: 'independent', label: 'طبيب مستقل (من غير عيادة)' },
+                    { value: 'own_clinic', label: 'عندي عيادة خاصة' },
+                    { value: 'existing_clinic', label: 'بشتغل في عيادة أو مستشفى مسجلة على ترياچي' },
+                  ] as { value: ClinicMode; label: string }[]
+                ).map((opt) => (
+                  <label
+                    key={opt.value}
+                    className={`flex items-center gap-2 border rounded-xl px-4 py-2.5 text-sm cursor-pointer transition-colors ${
+                      form.clinic_mode === opt.value
+                        ? 'border-teal-500 bg-teal-50 text-teal-900'
+                        : 'border-gray-200 bg-white text-gray-700'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="clinic_mode"
+                      value={opt.value}
+                      checked={form.clinic_mode === opt.value}
+                      onChange={() => updateField('clinic_mode', opt.value)}
+                      className="accent-teal-600"
+                    />
+                    {opt.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {form.clinic_mode === 'own_clinic' && (
+              <>
+                <InputField
+                  label="اسم العيادة (بالعربي)"
+                  value={form.clinic_name}
+                  onChange={(v) => updateField('clinic_name', v)}
+                  error={errors.clinic_name}
+                  placeholder="عيادة د. محمد أحمد"
+                />
+                <InputField
+                  label="اسم العيادة (بالإنجليزي)"
+                  value={form.clinic_name_en}
+                  onChange={(v) => updateField('clinic_name_en', v)}
+                  placeholder="اختياري — بيظهر في الدليل الإنجليزي"
+                  required={false}
+                  dir="ltr"
+                />
+                <InputField
+                  label="عنوان العيادة"
+                  value={form.clinic_address}
+                  onChange={(v) => updateField('clinic_address', v)}
+                  placeholder="اختياري"
+                  required={false}
+                />
+                <p className="text-xs text-gray-400 -mt-3">
+                  هننشئ صفحة لعيادتك ولوحة تحكم خاصة بيها بعد مراجعة حسابك.
+                </p>
+              </>
+            )}
+
+            {form.clinic_mode === 'existing_clinic' && (
+              <SelectField
+                label="اختر المنشأة"
+                value={form.requested_tenant_id}
+                onChange={(v) => updateField('requested_tenant_id', v)}
+                error={errors.requested_tenant_id}
+                placeholder={clinics.length === 0 ? 'جاري التحميل...' : 'اختر العيادة أو المستشفى'}
+                options={clinics.map((c) => ({ value: c.id, label: c.name_ar || c.name_en }))}
+              />
+            )}
 
             <InputField
               label="رقم الموبايل"

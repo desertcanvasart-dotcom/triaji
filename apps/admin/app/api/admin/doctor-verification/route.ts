@@ -43,8 +43,26 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  // Resolve requested-facility names for existing_clinic requests (the column
+  // exists once migration 064 is applied; absent before that).
+  const registrations = (data ?? []) as Array<Record<string, unknown>>;
+  const requestedIds = [
+    ...new Set(registrations.map((r) => r['requested_tenant_id']).filter(Boolean)),
+  ] as string[];
+  if (requestedIds.length > 0) {
+    const { data: tenants } = await supabase
+      .from('tenants')
+      .select('id, name_en')
+      .in('id', requestedIds);
+    const names = new Map((tenants ?? []).map((t) => [t.id, t.name_en]));
+    for (const r of registrations) {
+      const tid = r['requested_tenant_id'] as string | null;
+      if (tid && names.has(tid)) r['tenants'] = { name_en: names.get(tid) };
+    }
+  }
+
   return NextResponse.json({
-    registrations: data ?? [],
+    registrations,
     total: count ?? 0,
     page,
     limit,
