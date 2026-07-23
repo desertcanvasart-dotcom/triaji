@@ -3,6 +3,8 @@ import Link from 'next/link';
 
 // ─── English Lab Directory ──────────────────────────────────────────────────
 
+export const dynamic = 'force-dynamic';
+
 export default async function LabDirectoryPage() {
   const supabase = createServerClient();
 
