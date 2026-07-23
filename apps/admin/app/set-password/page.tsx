@@ -91,7 +91,7 @@ export default function SetPasswordPage() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-lg border border-gray-200 p-8">
         <h1 className="text-xl font-bold text-gray-900 mb-1">Set your password</h1>
-        <p className="text-sm text-gray-500 mb-6">Triajji Admin</p>
+        <p className="text-sm text-gray-500 mb-6">DoctorTrio Admin</p>
 
         {linkError ? (
           <p className="text-sm text-red-600">{linkError}</p>

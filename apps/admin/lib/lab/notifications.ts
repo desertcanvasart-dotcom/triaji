@@ -58,14 +58,14 @@ export async function sendOrderRoutedNotification(
         `Address: ${data.labAddress}\n` +
         `Phone: ${data.labPhone}\n\n` +
         `Please visit the lab or book an appointment.\n` +
-        `Triajji`
+        `DoctorTrio`
       : `الدكتور ${data.doctorName} طلب لك تحاليل.\n\n` +
         `التحاليل: ${testList}\n` +
         `المعمل: ${data.labName}\n` +
         `العنوان: ${data.labAddress}\n` +
         `التليفون: ${data.labPhone}\n\n` +
         `يرجى زيارة المعمل أو حجز موعد.\n` +
-        `ترياچي 🏥`;
+        `دكتور تريو 🏥`;
 
   return sendWhatsAppMessage(patientPhone, message);
 }
@@ -99,7 +99,7 @@ export async function sendAppointmentConfirmation(
         `Tests: ${testList}\n` +
         `Address: ${data.labAddress}\n` +
         prepNote +
-        `\nTriajji`
+        `\nDoctorTrio`
       : `تم تأكيد موعد التحاليل ✅\n\n` +
         `المعمل: ${data.labName}\n` +
         `التاريخ: ${data.date}\n` +
@@ -107,7 +107,7 @@ export async function sendAppointmentConfirmation(
         `التحاليل: ${testList}\n` +
         `العنوان: ${data.labAddress}\n` +
         prepNote +
-        `\nترياچي 🏥`;
+        `\nدكتور تريو 🏥`;
 
   return sendWhatsAppMessage(patientPhone, message);
 }
@@ -138,13 +138,13 @@ export async function sendResultsReadyToPatient(
         `Tests: ${testList}\n` +
         urlLine +
         `\nYou can also collect your results from the lab.\n` +
-        `Triajji`
+        `DoctorTrio`
       : `نتائج تحاليلك جاهزة! 📋\n\n` +
         `المعمل: ${data.labName}\n` +
         `التحاليل: ${testList}\n` +
         urlLine +
         `\nيمكنك أيضاً استلام النتائج من المعمل.\n` +
-        `ترياچي 🏥`;
+        `دكتور تريو 🏥`;
 
   return sendWhatsAppMessage(patientPhone, message);
 }
@@ -169,7 +169,7 @@ export async function sendResultsReadyToDoctor(
     `التحاليل: ${testList}\n` +
     `رقم التحويل: ${data.routingId}` +
     abnormalFlag +
-    `\n\nترياچي 🏥`;
+    `\n\nدكتور تريو 🏥`;
 
   return sendWhatsAppMessage(doctorPhone, message);
 }

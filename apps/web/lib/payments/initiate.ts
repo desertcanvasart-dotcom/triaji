@@ -229,7 +229,7 @@ async function initiatePaymentInner(
   const triajiReference = refData as string;
 
   // Determine return and webhook URLs
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://triajji.com';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://doctortrio.online';
   const returnUrl = params.returnUrl ?? `${baseUrl}/ar/pay/success?reference=${triajiReference}`;
   const webhookUrl = `${baseUrl}/api/webhooks/${params.provider === 'vodafone_cash' ? 'vodafone' : params.provider}`;
 

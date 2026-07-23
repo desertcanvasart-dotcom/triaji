@@ -11,8 +11,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Triajji Admin',
-  description: 'Triajji Admin Panel — Hospital & Clinic Management',
+  title: 'DoctorTrio Admin',
+  description: 'DoctorTrio Admin Panel — Hospital & Clinic Management',
 };
 
 export const viewport: Viewport = {

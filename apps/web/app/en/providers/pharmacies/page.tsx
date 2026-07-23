@@ -19,7 +19,7 @@ const CONTENT: ProviderContent = {
     { icon: '🔔', title: 'Patient Notification When Ready', description: 'The patient gets a WhatsApp message when the prescription is ready — they arrive at the right time' },
     { icon: '✅', title: 'Dispensing Confirmation', description: 'Record the dispensing in the system — and the doctor knows the patient received their medication' },
     { icon: '💰', title: 'Invoicing & Insurance', description: 'Calculate the copay and process insurance — all in the same system' },
-    { icon: '📦', title: 'Delivery to Patient', description: 'Your pharmacy offers delivery? The patient orders through Triajji' },
+    { icon: '📦', title: 'Delivery to Patient', description: 'Your pharmacy offers delivery? The patient orders through DoctorTrio' },
     { icon: '📊', title: 'Sales Reports', description: 'Most requested medications, daily revenue, and customer satisfaction' },
   ],
   steps: [

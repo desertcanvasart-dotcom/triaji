@@ -10,7 +10,7 @@ export default function DoctorLandingPage() {
             href="/"
             className="text-2xl font-bold text-navy-500"
           >
-            Triajji
+            DoctorTrio
           </Link>
           <div className="flex items-center gap-3">
             <Link
@@ -36,7 +36,7 @@ export default function DoctorLandingPage() {
             Connect with your patients smarter
           </h1>
           <p className="text-lg text-gray-600 leading-relaxed mb-10 max-w-2xl mx-auto">
-            Triajji gives you a complete patient summary before every consultation — based on their symptoms, medical history, and risk level.
+            DoctorTrio gives you a complete patient summary before every consultation — based on their symptoms, medical history, and risk level.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
@@ -84,7 +84,7 @@ export default function DoctorLandingPage() {
               Manage your appointments
             </h3>
             <p className="text-gray-600 leading-relaxed">
-              View your upcoming appointments via Triajji and manage your availability from a simple dashboard.
+              View your upcoming appointments via DoctorTrio and manage your availability from a simple dashboard.
             </p>
           </div>
         </div>
@@ -143,7 +143,7 @@ export default function DoctorLandingPage() {
       {/* Footer */}
       <footer className="py-8 px-4 bg-navy-500">
         <p className="text-center text-sm text-gray-300">
-          © 2026 Triajji — All rights reserved
+          © 2026 DoctorTrio — All rights reserved
         </p>
       </footer>
     </div>

@@ -20,7 +20,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { s } from '@triaji/shared/i18n';
 import AvailabilityBadge from '@/components/gp/AvailabilityBadge';
 
-const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.triajji.com';
+const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.doctortrio.online';
 
 interface GpData {
   id: string;

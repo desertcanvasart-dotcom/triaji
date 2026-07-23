@@ -129,7 +129,7 @@ function notifyPatientOfGPRequest(
   doctor: DoctorAccount,
   requestId: string
 ) {
-  const baseUrl = process.env['NEXT_PUBLIC_APP_URL'] ?? 'https://triajji.com';
+  const baseUrl = process.env['NEXT_PUBLIC_APP_URL'] ?? 'https://doctortrio.online';
   const confirmUrl = `${baseUrl}/api/gp/confirm/${requestId}`;
   const preferredLanguage = patient.patient_profiles?.[0]?.preferred_language ?? 'ar';
 

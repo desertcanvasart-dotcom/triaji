@@ -173,7 +173,7 @@ export async function POST(request: NextRequest) {
     // Title (Arabic, right-aligned) + English subtitle (left)
     drawRtl(page, 'شهادة لياقة صحية مدرسية', right, y, boldFont, 20, NAVY);
     page.drawText('School Health Fitness Certificate', { x: MARGIN, y: y - 22, size: 9, font, color: TEAL });
-    drawRtl(page, 'منصة ترياچي الصحية', right, y - 22, font, 9, TEAL);
+    drawRtl(page, 'منصة دكتور تريو الصحية', right, y - 22, font, 9, TEAL);
     y -= 44;
 
     page.drawLine({

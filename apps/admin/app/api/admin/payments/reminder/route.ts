@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
   }
 
   // 4. Build payment link
-  const baseUrl = process.env['NEXT_PUBLIC_APP_URL'] ?? 'https://triajji.com';
+  const baseUrl = process.env['NEXT_PUBLIC_APP_URL'] ?? 'https://doctortrio.online';
   const paymentLink = `${baseUrl}/${lang}/pay/${txn.triaji_reference}`;
 
   // 5. Send WhatsApp reminder
@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
 💳 ادفع دلوقتي:
 ${paymentLink}
 
-ترياچي 🏥`
+دكتور تريو 🏥`
       : `Payment reminder 🔔
 
 🏥 ${providerName}
@@ -150,7 +150,7 @@ ${paymentLink}
 💳 Pay now:
 ${paymentLink}
 
-Triajji 🏥`;
+DoctorTrio 🏥`;
 
     // Call WhatsApp API directly via the web app
     try {

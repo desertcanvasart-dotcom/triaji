@@ -3,7 +3,7 @@
  *
  * Handles scheduling, deduplication, and execution of patient callbacks.
  * When a patient hangs up mid-triage, has no audio, or misses a call,
- * Triajji proactively calls them back after a configurable delay.
+ * DoctorTrio proactively calls them back after a configurable delay.
  *
  * Callback lifecycle:
  *   1. Trigger detected (stream close, no audio, missed call)
@@ -181,7 +181,7 @@ async function initiateCallbackCall(callback: CallbackRecord): Promise<void> {
   const supabase = createServerClient();
   const client = getTwilioClient();
 
-  const baseUrl = process.env['TWILIO_WEBHOOK_BASE_URL'] || 'https://app.triajji.com';
+  const baseUrl = process.env['TWILIO_WEBHOOK_BASE_URL'] || 'https://app.doctortrio.online';
   const fromNumber = process.env['TWILIO_PHONE_NUMBER'];
 
   if (!fromNumber) {
@@ -343,10 +343,10 @@ async function sendWhatsAppFallback(callback: CallbackRecord): Promise<void> {
 
   // Build the tenant chat URL
   const chatUrl = callback.tenant_id
-    ? `${process.env['NEXT_PUBLIC_APP_URL'] || 'https://app.triajji.com'}/chat?t=${callback.tenant_id}`
-    : `${process.env['NEXT_PUBLIC_APP_URL'] || 'https://app.triajji.com'}/chat`;
+    ? `${process.env['NEXT_PUBLIC_APP_URL'] || 'https://app.doctortrio.online'}/chat?t=${callback.tenant_id}`
+    : `${process.env['NEXT_PUBLIC_APP_URL'] || 'https://app.doctortrio.online'}/chat`;
 
-  const message = `أهلاً، أنا نور من ترياچي 👋
+  const message = `أهلاً، أنا نور من دكتور تريو 👋
 
 حاولنا نتواصل معاك مرتين بس ماكنتيش متاح.
 
@@ -355,7 +355,7 @@ ${chatUrl}
 
 أو اتصل بنا مرة تانية في أي وقت.
 
-ترياچي 🏥`;
+دكتور تريو 🏥`;
 
   const result = await sendWhatsAppMessage(callback.patient_phone, message);
 

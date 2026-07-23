@@ -55,7 +55,7 @@ export interface LabChainBranch {
 export interface LabChainTestMapping {
   id: string;
   chain_code: LabChainCode;
-  triaji_test_code: string;     // Internal Triajji test code
+  triaji_test_code: string;     // Internal DoctorTrio test code
   chain_test_code: string;      // Mapped code for the chain API
   test_name: string;
   test_name_ar: string;
@@ -88,7 +88,7 @@ export interface LabChainSyncLog {
   id: string;
   chain_code: LabChainCode;
   tenant_id: string;
-  lab_order_id: string;         // Triajji's lab order ID
+  lab_order_id: string;         // DoctorTrio's lab order ID
   external_order_id?: string;   // Chain's order reference
   action: 'submit_order' | 'check_results' | 'book_appointment' | 'initiate_payment' | 'webhook_received';
   status: 'success' | 'error' | 'pending';

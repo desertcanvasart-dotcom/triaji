@@ -5,7 +5,7 @@ const CONTENT: ProviderContent = {
   hero: {
     badge: 'For Hospitals',
     title: 'Transform Your Hospital into a Smart Healthcare Institution',
-    subtitle: 'Triajji connects your patients with your doctors, streamlines operations, and integrates with insurance and labs \u2014 all in one system',
+    subtitle: 'DoctorTrio connects your patients with your doctors, streamlines operations, and integrates with insurance and labs \u2014 all in one system',
     cta: 'Register Your Hospital Now',
     ctaHref: '/en/register/provider',
   },
@@ -24,7 +24,7 @@ const CONTENT: ProviderContent = {
   ],
   steps: [
     { number: '1', title: 'Register Your Hospital', description: 'Enter your hospital details and doctors in 10 minutes' },
-    { number: '2', title: 'Connect Your Current System', description: 'We connect Triajji to your HIS or you start with the base system' },
+    { number: '2', title: 'Connect Your Current System', description: 'We connect DoctorTrio to your HIS or you start with the base system' },
     { number: '3', title: 'Go Live', description: 'Your patients book, triage, and reach you \u2014 instantly' },
   ],
   proofStats: [

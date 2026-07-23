@@ -66,7 +66,7 @@ export default function TelehealthScreen() {
       }
     } catch {
       // LiveKit RN not installed — open in browser
-      const webUrl = `${process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.triajji.com'}/${lang}/telehealth/${bookingId}`;
+      const webUrl = `${process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.doctortrio.online'}/${lang}/telehealth/${bookingId}`;
       Linking.openURL(webUrl);
     }
   };

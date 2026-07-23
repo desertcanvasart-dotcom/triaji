@@ -23,7 +23,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { isAuthenticated, getPatientToken } from '@/lib/storage';
 import { s, t } from '@triaji/shared/i18n';
 
-const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.triajji.com';
+const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.doctortrio.online';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 

@@ -5,7 +5,7 @@ const CONTENT: ProviderContent = {
   hero: {
     badge: 'For Insurance Companies',
     title: 'Your Gateway to Integration with Egypt\'s Healthcare Ecosystem',
-    subtitle: 'Triajji provides policy verification, pre-authorization requests, and claims processing — from all service providers in our network',
+    subtitle: 'DoctorTrio provides policy verification, pre-authorization requests, and claims processing — from all service providers in our network',
     cta: 'Contact Us for Integration',
     ctaHref: '/en/contact',
   },
@@ -15,9 +15,9 @@ const CONTENT: ProviderContent = {
     { icon: '🏝️', title: 'Disconnected from Providers', description: 'No unified channel with hospitals, clinics, and labs' },
   ],
   features: [
-    { icon: '✅', title: 'Instant Policy Verification', description: 'Providers verify the patient\'s policy on Triajji — instant response' },
+    { icon: '✅', title: 'Instant Policy Verification', description: 'Providers verify the patient\'s policy on DoctorTrio — instant response' },
     { icon: '📋', title: 'Digital Pre-Authorization Requests', description: 'Providers submit pre-auth requests digitally — and your team responds from the portal' },
-    { icon: '💰', title: 'Unified Claims Processing', description: 'All claims from Triajji providers in one dashboard — organized and categorized' },
+    { icon: '💰', title: 'Unified Claims Processing', description: 'All claims from DoctorTrio providers in one dashboard — organized and categorized' },
     { icon: '🔄', title: 'Automatic Periodic Settlement', description: 'Monthly settlement reports are generated automatically for each provider' },
     { icon: '📊', title: 'Claims Analytics', description: 'Most claimed services, approval rates, and time-based trends' },
     { icon: '🔌', title: 'Direct API Integration', description: 'When you sign the API agreement, direct and synchronized connection with your system' },

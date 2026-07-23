@@ -1,14 +1,14 @@
 /**
- * Triajji Widget Entry Point
+ * DoctorTrio Widget Entry Point
  *
  * This runs immediately when the <script> is loaded on a host page.
- * It reads window.TriajjiConfig, fetches tenant config, and mounts
+ * It reads window.DoctorTrioConfig, fetches tenant config, and mounts
  * the widget inside a Shadow DOM for complete style isolation.
  */
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { TriajjiWidget } from './widget';
+import { DoctorTrioWidget } from './widget';
 import { trackEvent } from './analytics';
 import type { TenantConfig, UserConfig } from './config';
 import { getApiUrl } from './config';
@@ -18,7 +18,7 @@ import widgetCSS from './styles/widget.css?inline';
 
 declare global {
   interface Window {
-    TriajjiConfig?: {
+    DoctorTrioConfig?: {
       tenantSlug?: string;
       primaryColor?: string;
       position?: 'bottom-right' | 'bottom-left';
@@ -28,11 +28,11 @@ declare global {
   }
 }
 
-(async function initTriajji() {
-  const config = window.TriajjiConfig;
+(async function initDoctorTrio() {
+  const config = window.DoctorTrioConfig;
 
   if (!config?.tenantSlug) {
-    console.warn('[Triajji] window.TriajjiConfig.tenantSlug is required');
+    console.warn('[DoctorTrio] window.DoctorTrioConfig.tenantSlug is required');
     return;
   }
 
@@ -46,7 +46,7 @@ declare global {
 
   const apiUrl = getApiUrl(userConfig);
 
-  // Fetch validated tenant config from Triajji API
+  // Fetch validated tenant config from DoctorTrio API
   let tenantConfig: TenantConfig;
 
   try {
@@ -61,18 +61,18 @@ declare global {
 
     if (!response.ok) {
       if (response.status === 403) {
-        console.warn('[Triajji] Widget blocked: domain not authorised for this tenant');
+        console.warn('[DoctorTrio] Widget blocked: domain not authorised for this tenant');
       } else if (response.status === 404) {
-        console.warn('[Triajji] Tenant not found:', config.tenantSlug);
+        console.warn('[DoctorTrio] Tenant not found:', config.tenantSlug);
       } else {
-        console.warn('[Triajji] Failed to load widget config:', response.status);
+        console.warn('[DoctorTrio] Failed to load widget config:', response.status);
       }
       return;
     }
 
     tenantConfig = await response.json();
   } catch (err) {
-    console.warn('[Triajji] Network error loading widget config:', err);
+    console.warn('[DoctorTrio] Network error loading widget config:', err);
     return;
   }
 
@@ -105,6 +105,6 @@ function mountWidget(tenantConfig: TenantConfig, userConfig: UserConfig) {
 
   // Mount React
   ReactDOM.createRoot(container).render(
-    React.createElement(TriajjiWidget, { tenantConfig, userConfig })
+    React.createElement(DoctorTrioWidget, { tenantConfig, userConfig })
   );
 }

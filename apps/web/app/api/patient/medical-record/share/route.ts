@@ -32,7 +32,7 @@ export async function POST() {
     return NextResponse.json({ error: 'Failed to create share link' }, { status: 500 });
   }
 
-  const baseUrl = process.env['NEXT_PUBLIC_APP_URL'] ?? 'https://triajji.com';
+  const baseUrl = process.env['NEXT_PUBLIC_APP_URL'] ?? 'https://doctortrio.online';
   // Points at the viewer page app/ar/share/medical-record/[token]/page.tsx
   const shareUrl = `${baseUrl}/ar/share/medical-record/${token}`;
 

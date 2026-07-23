@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
   await storeOTP(normalizedPhone, otp);
 
   // Send OTP message
-  const otpMessage = `رمز ترياچي: ${otp}. صالح لمدة 10 دقائق. لا تشاركه مع أحد.`;
+  const otpMessage = `رمز دكتور تريو: ${otp}. صالح لمدة 10 دقائق. لا تشاركه مع أحد.`;
 
   const waResult = await sendWhatsAppMessage(normalizedPhone, otpMessage);
   if (!waResult.success) {

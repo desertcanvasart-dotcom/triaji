@@ -8,19 +8,19 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://app.triajji.com"
+        "EXPO_PUBLIC_API_URL": "https://app.doctortrio.online"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://app.triajji.com"
+        "EXPO_PUBLIC_API_URL": "https://app.doctortrio.online"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://app.triajji.com"
+        "EXPO_PUBLIC_API_URL": "https://app.doctortrio.online"
       }
     }
   },

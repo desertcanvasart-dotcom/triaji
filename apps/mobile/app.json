@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Triajji",
+    "name": "DoctorTrio",
     "slug": "triaji",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -17,11 +17,11 @@
       "bundleIdentifier": "com.triaji.app",
       "supportsTablet": true,
       "infoPlist": {
-        "NSMicrophoneUsageDescription": "Triajji needs microphone access for voice input and telehealth calls.",
-        "NSCameraUsageDescription": "Triajji needs camera access for telehealth video calls.",
-        "NSLocationWhenInUseUsageDescription": "Triajji uses your location to find nearby ICU beds and hospitals.",
-        "NSFaceIDUsageDescription": "Use Face ID to securely sign in to Triajji.",
-        "NSPhotoLibraryUsageDescription": "Triajji needs photo library access so you can attach medical records and lab results."
+        "NSMicrophoneUsageDescription": "DoctorTrio needs microphone access for voice input and telehealth calls.",
+        "NSCameraUsageDescription": "DoctorTrio needs camera access for telehealth video calls.",
+        "NSLocationWhenInUseUsageDescription": "DoctorTrio uses your location to find nearby ICU beds and hospitals.",
+        "NSFaceIDUsageDescription": "Use Face ID to securely sign in to DoctorTrio.",
+        "NSPhotoLibraryUsageDescription": "DoctorTrio needs photo library access so you can attach medical records and lab results."
       }
     },
     "android": {
@@ -51,19 +51,19 @@
       [
         "expo-av",
         {
-          "microphonePermission": "Triajji needs microphone access for voice input."
+          "microphonePermission": "DoctorTrio needs microphone access for voice input."
         }
       ],
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Triajji uses your location to find nearby ICU beds and hospitals."
+          "locationWhenInUsePermission": "DoctorTrio uses your location to find nearby ICU beds and hospitals."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Triajji needs photo library access so you can attach medical records and lab results."
+          "photosPermission": "DoctorTrio needs photo library access so you can attach medical records and lab results."
         }
       ],
       "expo-local-authentication",

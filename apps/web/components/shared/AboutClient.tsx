@@ -38,15 +38,15 @@ const ABOUT: Record<Lang, {
     storyPoints: [
       { number: '\u0661', icon: '\u{1FA91}', title: 'تجربة الانتظار الطويل', body: 'بدأ كل شيء من غرفة انتظار مزدحمة، حيث كان الإحباط سيد الموقف بسبب طوابير الانتظار الطويلة وعدم وضوح الرؤية بشأن وقت الدخول للطبيب. هذه التجربة أبرزت الحاجة الماسة لنظام يُقلّل هذا العبء النفسي والزمني على المرضى — نظام يُعيد للمريض شعوره بالكرامة والاحترام وهو ينتظر رعايته الصحية.' },
       { number: '\u0662', icon: '\u{1F91D}', title: 'الرغبة المشتركة في التغيير', body: 'تلاقت هذه الفكرة مع شغف مجموعة من الأطباء والخبراء المهتمين بتحسين جودة الرعاية الصحية. اجتمعوا لمناقشة كيفية توظيف التكنولوجيا في إيجاد حلول لهذه التحديات، وكان الهدف واضحاً: ابتكار نظام يُسهّل على الفريق الطبي إدارة المواعيد بشكل أكثر كفاءة، ويضمن للمريض رحلة علاجية أسرع وأكثر سلاسة — حيث يصل كل مريض إلى الطبيب المناسب بأقصر الطرق وأوفرها.' },
-      { number: '\u0663', icon: '\u{1F4A1}', title: 'ولادة الحل الذكي — ترياچي', body: 'من رحم هذه النقاشات والرؤى المشتركة، وُلدت فكرة "ترياچي". إنها ليست مجرد تطبيق، بل هي حل متكامل لإعادة تنظيم تجربة الرعاية الصحية. من خلال توفير خدمة فرز الحالات عن بعد، يستطيع المريض التواصل مع الأطباء عبر الدردشة الفورية، والحصول على التوجيه الطبي الصحيح — مما يُلغي الحاجة للانتظار الطويل ويضمن حصول كل حالة على الاهتمام الذي تستحقه فوراً.' },
+      { number: '\u0663', icon: '\u{1F4A1}', title: 'ولادة الحل الذكي — دكتور تريو', body: 'من رحم هذه النقاشات والرؤى المشتركة، وُلدت فكرة "دكتور تريو". إنها ليست مجرد تطبيق، بل هي حل متكامل لإعادة تنظيم تجربة الرعاية الصحية. من خلال توفير خدمة فرز الحالات عن بعد، يستطيع المريض التواصل مع الأطباء عبر الدردشة الفورية، والحصول على التوجيه الطبي الصحيح — مما يُلغي الحاجة للانتظار الطويل ويضمن حصول كل حالة على الاهتمام الذي تستحقه فوراً.' },
     ],
-    storyClosing: 'ترياچي هو الناتج من سنوات من العمل الطبي، والتكنولوجيا المتقدمة، والإيمان العميق بأن الرعاية الصحية في مصر ممكن تبقى أحسن بكتير.',
+    storyClosing: 'دكتور تريو هو الناتج من سنوات من العمل الطبي، والتكنولوجيا المتقدمة، والإيمان العميق بأن الرعاية الصحية في مصر ممكن تبقى أحسن بكتير.',
     valuesTitle: '\u0642\u064a\u0645\u0646\u0627',
     values: [
       { icon: '\u{1F468}\u200D\u2695\uFE0F', title: 'الطبيب أولاً و دائماً', description: 'نحن نساعدك في العثور على الطبيب المناسب، من خلال تزويدك بـ أدق وأشمل المعلومات المتاحة عن الأطباء، وتزويد الطبيب بـ تفاصيل طبية دقيقة عن حالتك.' },
       { icon: '\u{1F512}', title: '\u0627\u0644\u062e\u0635\u0648\u0635\u064a\u0629 \u062e\u0637 \u0623\u062d\u0645\u0631', description: '\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0645\u0631\u064a\u0636 \u0645\u0644\u0643\u0647. \u0628\u0646\u062d\u0645\u064a\u0647\u0627 \u0628\u0623\u0639\u0644\u0649 \u0645\u0639\u0627\u064a\u064a\u0631 \u0627\u0644\u062a\u0634\u0641\u064a\u0631 \u0648\u0644\u0627 \u0646\u0634\u0627\u0631\u0643\u0647\u0627 \u0625\u0644\u0627 \u0628\u0625\u0630\u0646 \u0635\u0631\u064a\u062d \u0645\u0646 \u0627\u0644\u0645\u0631\u064a\u0636.' },
-      { icon: '\u26A1', title: 'السرعة تساعد كثيراً في إنقاذ الأرواح', description: 'كل دقيقة تأخير في الرعاية الصحية لها ثمن. لذا قمنا ببناء ترياچي على السرعة والكفاءة.' },
-      { icon: '\u{1F30D}', title: '\u0644\u0643\u0644 \u0627\u0644\u0645\u0635\u0631\u064a\u064a\u0646', description: 'من الإسكندرية لأسوان، من المدينة للريف — ترياچي في كل محافظات مصر الـ27.' },
+      { icon: '\u26A1', title: 'السرعة تساعد كثيراً في إنقاذ الأرواح', description: 'كل دقيقة تأخير في الرعاية الصحية لها ثمن. لذا قمنا ببناء دكتور تريو على السرعة والكفاءة.' },
+      { icon: '\u{1F30D}', title: '\u0644\u0643\u0644 \u0627\u0644\u0645\u0635\u0631\u064a\u064a\u0646', description: 'من الإسكندرية لأسوان، من المدينة للريف — دكتور تريو في كل محافظات مصر الـ27.' },
       { icon: '\u{1F9E0}', title: '\u0627\u0644\u062a\u0643\u0646\u0648\u0644\u0648\u062c\u064a\u0627 \u0641\u064a \u062e\u062f\u0645\u0629 \u0627\u0644\u0637\u0628', description: 'نستخدم أحدث تقنيات الذكاء الاصطناعي ولكن ليس للإبهار — بل لتقديم خدمة صحية استثنائية يستحقها المواطن المصري.' },
       { icon: '\u{1F91D}', title: '\u0634\u0631\u0627\u0643\u0629 \u062d\u0642\u064a\u0642\u064a\u0629 \u0645\u0639 \u0627\u0644\u0623\u0637\u0628\u0627\u0621', description: '\u062a\u0631\u064a\u062c\u064a \u0627\u062a\u0628\u0646\u0649 \u0628\u0627\u0644\u062a\u0639\u0627\u0648\u0646 \u0645\u0639 \u0627\u0644\u0623\u0637\u0628\u0627\u0621 \u0648\u0644\u064a\u0633 \u0636\u062f\u0647\u0645. \u0643\u0644 \u0645\u064a\u0632\u0629 \u0641\u064a \u0627\u0644\u0645\u0646\u0635\u0629 \u0645\u0635\u0645\u0645\u0629 \u062a\u0632\u064a\u062f \u0645\u0646 \u0643\u0641\u0627\u0621\u0629 \u0627\u0644\u0637\u0628\u064a\u0628.' },
     ],
@@ -64,30 +64,30 @@ const ABOUT: Record<Lang, {
     teamTitle: '\u0641\u0631\u064a\u0642\u0646\u0627',
     team: '\u062a\u0631\u064a\u062c\u064a \u0628\u064f\u0646\u064a \u0628\u0648\u0627\u0633\u0637\u0629 \u0641\u0631\u064a\u0642 \u0645\u0646 \u0627\u0644\u0623\u0637\u0628\u0627\u0621 \u0648\u0627\u0644\u0645\u0647\u0646\u062f\u0633\u064a\u0646 \u0648\u0627\u0644\u0645\u062a\u062e\u0635\u0635\u064a\u0646 \u0641\u064a \u0627\u0644\u0631\u0639\u0627\u064a\u0629 \u0627\u0644\u0635\u062d\u064a\u0629 \u2014 \u062c\u0645\u0639\u0647\u0645 \u0647\u062f\u0641 \u0648\u0627\u062d\u062f: \u062a\u062d\u0633\u064a\u0646 \u062a\u062c\u0631\u0628\u0629 \u0627\u0644\u0631\u0639\u0627\u064a\u0629 \u0627\u0644\u0635\u062d\u064a\u0629 \u0641\u064a \u0645\u0635\u0631. \u0627\u0644\u0641\u0631\u064a\u0642 \u064a\u062c\u0645\u0639 \u0628\u064a\u0646 \u062e\u0628\u0631\u0629 \u0637\u0628\u064a\u0629 \u0639\u0645\u064a\u0642\u0629 \u0641\u064a \u0627\u0644\u062a\u0634\u062e\u064a\u0635 \u0648\u0627\u0644\u0639\u0644\u0627\u062c\u060c \u0648\u062e\u0628\u0631\u0629 \u062a\u0642\u0646\u064a\u0629 \u0645\u062a\u0642\u062f\u0645\u0629 \u0641\u064a \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a \u0648\u0623\u0645\u0646 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a.',
     nav: { home: '\u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629', about: '\u0645\u0646 \u0646\u062d\u0646' },
-    footer: { emergency: '\u26A0\uFE0F \u062a\u0631\u064a\u0627\u0686\u064a \u0644\u064a\u0633 \u0628\u062f\u064a\u0644\u0627\u064b \u0639\u0646 \u0627\u0644\u0637\u0648\u0627\u0631\u0626 \u2014 \u0641\u064a \u062d\u0627\u0644\u0627\u062a \u0627\u0644\u0637\u0648\u0627\u0631\u0626 \u0627\u062a\u0635\u0644 \u0628\u0640 123', copyright: '\u00A9 2026 \u062a\u0631\u064a\u0627\u0686\u064a. \u062c\u0645\u064a\u0639 \u0627\u0644\u062d\u0642\u0648\u0642 \u0645\u062d\u0641\u0648\u0638\u0629.' },
+    footer: { emergency: '\u26A0\uFE0F \u062f\u0643\u062a\u0648\u0631 \u062a\u0631\u064a\u0648 \u0644\u064a\u0633 \u0628\u062f\u064a\u0644\u0627\u064b \u0639\u0646 \u0627\u0644\u0637\u0648\u0627\u0631\u0626 \u2014 \u0641\u064a \u062d\u0627\u0644\u0627\u062a \u0627\u0644\u0637\u0648\u0627\u0631\u0626 \u0627\u062a\u0635\u0644 \u0628\u0640 123', copyright: '\u00A9 2026 \u062f\u0643\u062a\u0648\u0631 \u062a\u0631\u064a\u0648. \u062c\u0645\u064a\u0639 \u0627\u0644\u062d\u0642\u0648\u0642 \u0645\u062d\u0641\u0648\u0638\u0629.' },
   },
   en: {
     badge: 'Our Story',
     title: 'Doctors united by a single mission',
-    subtitle: 'Triajji was born inside Egyptian clinics \u2014 by doctors who lived the problem and decided to solve it',
+    subtitle: 'DoctorTrio was born inside Egyptian clinics \u2014 by doctors who lived the problem and decided to solve it',
     missionTitle: 'Our Mission',
-    mission: 'We believe every Egyptian patient deserves smart, fast, and reliable healthcare \u2014 regardless of where they are or their circumstances. Triajji is not a replacement for doctors \u2014 it is the bridge that connects patients to the right doctor as quickly as possible with the best available information.',
+    mission: 'We believe every Egyptian patient deserves smart, fast, and reliable healthcare \u2014 regardless of where they are or their circumstances. DoctorTrio is not a replacement for doctors \u2014 it is the bridge that connects patients to the right doctor as quickly as possible with the best available information.',
     storyTitle: 'How the Story Began',
     storyIntro: 'The spark behind our idea came from a personal experience with one of the most important challenges patients face every day.',
     storyPoints: [
       { number: '1', icon: '\u{1FA91}', title: 'The long waiting room experience', body: 'Everything started in a crowded waiting room, where frustration was the defining feeling \u2014 long queues with no clarity on when you would actually see the doctor. This experience made the need painfully obvious: a system that reduces this psychological and time burden on patients, one that restores the patient\'s sense of dignity and respect while they wait for their healthcare.' },
       { number: '2', icon: '\u{1F91D}', title: 'A shared desire to change things', body: 'This idea found resonance with a group of doctors and specialists passionate about improving the quality of healthcare. They came together to discuss how technology could solve these challenges. The goal was clear: to build a system that helps medical teams manage appointments more efficiently, and guarantees patients a faster and smoother treatment journey \u2014 where every patient reaches the right doctor by the shortest possible path.' },
-      { number: '3', icon: '\u{1F4A1}', title: 'The birth of the smart solution \u2014 Triajji', body: 'From these discussions and shared visions, Triajji was born. It is not merely an application \u2014 it is a comprehensive solution for reorganising the entire healthcare experience. Through remote triage, patients can communicate with doctors via instant chat and receive the right medical guidance immediately. This eliminates the need for long waiting and ensures that every case receives the attention it deserves, right away.' },
+      { number: '3', icon: '\u{1F4A1}', title: 'The birth of the smart solution \u2014 DoctorTrio', body: 'From these discussions and shared visions, DoctorTrio was born. It is not merely an application \u2014 it is a comprehensive solution for reorganising the entire healthcare experience. Through remote triage, patients can communicate with doctors via instant chat and receive the right medical guidance immediately. This eliminates the need for long waiting and ensures that every case receives the attention it deserves, right away.' },
     ],
-    storyClosing: 'Triajji is the result of years of medical practice, advanced technology, and a deep belief that healthcare in Egypt can be significantly better.',
+    storyClosing: 'DoctorTrio is the result of years of medical practice, advanced technology, and a deep belief that healthcare in Egypt can be significantly better.',
     valuesTitle: 'Our Values',
     values: [
-      { icon: '\u{1F468}\u200D\u2695\uFE0F', title: 'The doctor comes first \u2014 always', description: 'Triajji does not diagnose or treat. Our role is to connect the patient to the right doctor \u2014 with the best possible information.' },
+      { icon: '\u{1F468}\u200D\u2695\uFE0F', title: 'The doctor comes first \u2014 always', description: 'DoctorTrio does not diagnose or treat. Our role is to connect the patient to the right doctor \u2014 with the best possible information.' },
       { icon: '\u{1F512}', title: 'Privacy is non-negotiable', description: 'Patient data belongs to the patient. We protect it with the highest encryption standards and only share it with the patient\'s explicit consent.' },
-      { icon: '\u26A1', title: 'Speed saves lives', description: 'Every minute of delay in healthcare has a cost. We build Triajji with an obsession for speed and efficiency.' },
-      { icon: '\u{1F30D}', title: 'For all Egyptians', description: 'From Alexandria to Aswan, from city to countryside \u2014 Triajji operates across all 27 Egyptian governorates.' },
+      { icon: '\u26A1', title: 'Speed saves lives', description: 'Every minute of delay in healthcare has a cost. We build DoctorTrio with an obsession for speed and efficiency.' },
+      { icon: '\u{1F30D}', title: 'For all Egyptians', description: 'From Alexandria to Aswan, from city to countryside \u2014 DoctorTrio operates across all 27 Egyptian governorates.' },
       { icon: '\u{1F9E0}', title: 'Technology in service of medicine', description: 'We use the latest AI technologies not to impress \u2014 but to serve the patient better.' },
-      { icon: '\u{1F91D}', title: 'Real partnership with doctors', description: 'Triajji was built with doctors, not against them. Every feature is designed to increase the doctor\'s efficiency.' },
+      { icon: '\u{1F91D}', title: 'Real partnership with doctors', description: 'DoctorTrio was built with doctors, not against them. Every feature is designed to increase the doctor\'s efficiency.' },
     ],
     techTitle: 'The technology we use',
     techSubtitle: 'We combine the world\'s most advanced technologies in service of the Egyptian patient',
@@ -98,12 +98,12 @@ const ABOUT: Record<Lang, {
       { name: 'Deepgram', role: 'Speech-to-text in Egyptian Arabic' },
       { name: 'PostGIS', role: 'Precise geographic search for nearest providers' },
     ],
-    disclaimerTitle: 'Triajji is not a replacement for doctors',
-    disclaimer: 'We state clearly: Triajji is an organisational platform, not a medical one. We do not diagnose conditions, prescribe medications, or provide medical opinions. Our sole role is to help patients reach the right doctor as quickly as possible with the most information available \u2014 and medical decisions always remain with the licensed physician.',
+    disclaimerTitle: 'DoctorTrio is not a replacement for doctors',
+    disclaimer: 'We state clearly: DoctorTrio is an organisational platform, not a medical one. We do not diagnose conditions, prescribe medications, or provide medical opinions. Our sole role is to help patients reach the right doctor as quickly as possible with the most information available \u2014 and medical decisions always remain with the licensed physician.',
     teamTitle: 'Our Team',
-    team: 'Triajji was built by a team of doctors, engineers, and healthcare specialists \u2014 united by a single goal: improving the healthcare experience in Egypt. The team combines deep medical expertise in diagnosis and treatment with advanced technical knowledge in artificial intelligence and data security.',
+    team: 'DoctorTrio was built by a team of doctors, engineers, and healthcare specialists \u2014 united by a single goal: improving the healthcare experience in Egypt. The team combines deep medical expertise in diagnosis and treatment with advanced technical knowledge in artificial intelligence and data security.',
     nav: { home: 'Home', about: 'About Us' },
-    footer: { emergency: '\u26A0\uFE0F Triajji is not a substitute for emergency services \u2014 call 123 in emergencies', copyright: '\u00A9 2026 Triajji. All rights reserved.' },
+    footer: { emergency: '\u26A0\uFE0F DoctorTrio is not a substitute for emergency services \u2014 call 123 in emergencies', copyright: '\u00A9 2026 DoctorTrio. All rights reserved.' },
   },
 };
 
@@ -266,9 +266,9 @@ function TechArchDiagram({ isRtl }: { isRtl: boolean }) {
       <circle cx="60" cy="72" r="8" stroke="#0D7A7A" strokeWidth="1.5" fill="none" />
       <path d="M46 95C46 88 52 84 60 84C68 84 74 88 74 95" stroke="#0D7A7A" strokeWidth="1.5" fill="none" />
 
-      {/* Triajji (Claude AI) center node */}
+      {/* DoctorTrio (Claude AI) center node */}
       <rect x="230" y="50" width="140" height="60" rx="12" fill="#0D7A7A" />
-      <text x="300" y="75" textAnchor="middle" fill="white" fontSize="13" fontWeight="bold" className={isRtl ? 'scale-x-[-1]' : ''} style={{ transformOrigin: '300px 75px' }}>Triajji</text>
+      <text x="300" y="75" textAnchor="middle" fill="white" fontSize="13" fontWeight="bold" className={isRtl ? 'scale-x-[-1]' : ''} style={{ transformOrigin: '300px 75px' }}>DoctorTrio</text>
       <text x="300" y="93" textAnchor="middle" fill="#B2F5EA" fontSize="10" className={isRtl ? 'scale-x-[-1]' : ''} style={{ transformOrigin: '300px 93px' }}>Claude AI</text>
 
       {/* Doctor node */}
@@ -277,9 +277,9 @@ function TechArchDiagram({ isRtl }: { isRtl: boolean }) {
       <path d="M526 95C526 88 532 84 540 84C548 84 554 88 554 95" stroke="#0D7A7A" strokeWidth="1.5" fill="none" />
       <path d="M530 68L534 64L538 68" stroke="#0D7A7A" strokeWidth="1" fill="none" />
 
-      {/* Arrows: Patient -> Triajji */}
+      {/* Arrows: Patient -> DoctorTrio */}
       <path d="M95 80H225" stroke="#0D7A7A" strokeWidth="2" markerEnd="url(#arrowhead)" />
-      {/* Arrows: Triajji -> Doctor */}
+      {/* Arrows: DoctorTrio -> Doctor */}
       <path d="M375 80H505" stroke="#0D7A7A" strokeWidth="2" markerEnd="url(#arrowhead)" />
 
       {/* Bottom tech nodes */}
@@ -336,7 +336,7 @@ function DisclaimerBridgeSVG() {
       <circle cx="15" cy="26" r="3" stroke="#0D7A7A" strokeWidth="1" fill="none" />
       <path d="M10 37C10 34 12 32 15 32C18 32 20 34 20 37" stroke="#0D7A7A" strokeWidth="1" fill="none" />
 
-      {/* Phone (Triajji) */}
+      {/* Phone (DoctorTrio) */}
       <rect x="40" y="18" width="20" height="34" rx="4" stroke="#0D7A7A" strokeWidth="1.5" fill="none" />
       <line x1="45" y1="24" x2="55" y2="24" stroke="#0D7A7A" strokeWidth="1" />
       <line x1="45" y1="44" x2="55" y2="44" stroke="#0D7A7A" strokeWidth="1" />
@@ -353,7 +353,7 @@ function DisclaimerBridgeSVG() {
       <path d="M61 35L76 35" stroke="#0D7A7A" strokeWidth="1" markerEnd="url(#discArrow)" />
 
       {/* Labels */}
-      <text x="50" y="72" textAnchor="middle" fill="#0D7A7A" fontSize="7">Triajji</text>
+      <text x="50" y="72" textAnchor="middle" fill="#0D7A7A" fontSize="7">DoctorTrio</text>
 
       <defs>
         <marker id="discArrow" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
@@ -442,7 +442,7 @@ function StoryTimeline({ lang }: { lang: Lang }) {
     : [
         { label: 'Waiting Room', icon: 'waiting' as const },
         { label: 'Doctors Meet', icon: 'meeting' as const },
-        { label: 'Triajji is Born', icon: 'born' as const },
+        { label: 'DoctorTrio is Born', icon: 'born' as const },
       ];
 
   const panelSVG = (icon: 'waiting' | 'meeting' | 'born') => {
@@ -531,7 +531,7 @@ export default function AboutClient({ lang }: { lang: Lang }) {
   const isRtl = lang === 'ar';
   const otherLang = lang === 'ar' ? 'en' : 'ar';
   const c = ABOUT[lang];
-  const logoText = lang === 'ar' ? '\u062a\u0631\u064a\u0627\u0686\u064a' : 'Triajji';
+  const logoText = lang === 'ar' ? '\u062f\u0643\u062a\u0648\u0631 \u062a\u0631\u064a\u0648' : 'DoctorTrio';
 
   return (
     <main

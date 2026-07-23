@@ -3,7 +3,7 @@
  *
  * Handles the full booking flow: validate → reserve → notify → confirm.
  * Supports three booking modes:
- *   - native:          Standard Triajji booking (default)
+ *   - native:          Standard DoctorTrio booking (default)
  *   - his_integration: Book via HIS API, store reference
  *   - hybrid:          Try HIS first, fall back to native on failure
  */

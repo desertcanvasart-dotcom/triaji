@@ -8,7 +8,7 @@ import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import type { Lang } from '@triaji/shared/i18n';
 import { s } from '@triaji/shared/i18n';
 
-const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.triajji.com';
+const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.doctortrio.online';
 
 type AvailabilityStatus = 'available' | 'unavailable' | 'unset' | 'loading' | 'error';
 

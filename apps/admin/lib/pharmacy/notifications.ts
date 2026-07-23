@@ -58,14 +58,14 @@ export async function sendPrescriptionRoutedNotification(
         `Pharmacy address: ${data.pharmacyAddress}\n` +
         `Phone: ${data.pharmacyPhone}\n\n` +
         `Please bring your original prescription when collecting.\n` +
-        `Triajji`
+        `DoctorTrio`
       : `تم إرسال روشتتك لصيدلية ${data.pharmacyName}.\n\n` +
         `الطبيب: ${data.doctorName}\n` +
         `عدد الأدوية: ${data.medicationCount}\n` +
         `عنوان الصيدلية: ${data.pharmacyAddress}\n` +
         `التليفون: ${data.pharmacyPhone}\n\n` +
         `لازم تاخد معاك الروشتة الأصلية عند الاستلام.\n` +
-        `ترياچي 🏥`;
+        `دكتور تريو 🏥`;
 
   return sendWhatsAppMessage(phone, message);
 }
@@ -89,11 +89,11 @@ export async function sendPharmacyReceivedNotification(
       ? `${data.pharmacyName} has received your prescription and is preparing your medications.\n\n` +
         prepNote +
         `We'll notify you when it's ready for pickup.\n` +
-        `Triajji`
+        `DoctorTrio`
       : `صيدلية ${data.pharmacyName} استلمت روشتتك وجاري تحضير الأدوية.\n\n` +
         prepNote +
         `هنبلغك لما تكون جاهزة للاستلام.\n` +
-        `ترياچي 🏥`;
+        `دكتور تريو 🏥`;
 
   return sendWhatsAppMessage(phone, message);
 }
@@ -120,13 +120,13 @@ export async function sendPrescriptionReadyNotification(
         `Phone: ${data.pharmacyPhone}\n` +
         urlLine +
         `\nPlease bring your original prescription.\n` +
-        `Triajji`
+        `DoctorTrio`
       : `روشتتك جاهزة للاستلام من صيدلية ${data.pharmacyName}!\n\n` +
         `العنوان: ${data.pharmacyAddress}\n` +
         `التليفون: ${data.pharmacyPhone}\n` +
         urlLine +
         `\nلازم تاخد معاك الروشتة الأصلية.\n` +
-        `ترياچي 🏥`;
+        `دكتور تريو 🏥`;
 
   return sendWhatsAppMessage(phone, message);
 }
@@ -147,13 +147,13 @@ export async function sendPartialReadyNotification(
         `Not available:\n${data.unavailableMeds.map((m) => `  - ${m}`).join('\n')}\n\n` +
         `Address: ${data.pharmacyAddress}\n` +
         `Please bring your original prescription.\n` +
-        `Triajji`
+        `DoctorTrio`
       : `روشتتك في صيدلية ${data.pharmacyName} جاهزة جزئياً.\n\n` +
         `متوفر:\n${data.availableMeds.map((m) => `  - ${m}`).join('\n')}\n\n` +
         `غير متوفر:\n${data.unavailableMeds.map((m) => `  - ${m}`).join('\n')}\n\n` +
         `العنوان: ${data.pharmacyAddress}\n` +
         `لازم تاخد معاك الروشتة الأصلية.\n` +
-        `ترياچي 🏥`;
+        `دكتور تريو 🏥`;
 
   return sendWhatsAppMessage(phone, message);
 }
@@ -177,7 +177,7 @@ export async function sendCollectedNotificationToDoctor(
     `عدد الأدوية: ${data.medicationCount}\n` +
     `رقم التحويل: ${data.routingId}` +
     substituteNote +
-    `\n\nترياچي 🏥`;
+    `\n\nدكتور تريو 🏥`;
 
   return sendWhatsAppMessage(doctorPhone, message);
 }

@@ -305,7 +305,7 @@ export default function MedicalRecordDashboard({ lang }: MedicalRecordDashboardP
             />
           </div>
 
-          {/* Ask Triajji button */}
+          {/* Ask DoctorTrio button */}
           <a
             href={`/${lang}/health-assistant`}
             className="block w-full bg-teal-600 hover:bg-teal-700 text-white rounded-xl p-4 transition-colors shadow-md group"
@@ -314,7 +314,7 @@ export default function MedicalRecordDashboard({ lang }: MedicalRecordDashboardP
               <div className="flex items-center gap-3">
                 <span className="text-2xl" role="img" aria-label="sparkle">&#10024;</span>
                 <div>
-                  <p className="font-bold text-base">{t('healthAssistant.askTriajji', lang)}</p>
+                  <p className="font-bold text-base">{t('healthAssistant.askDoctorTrio', lang)}</p>
                   <p className="text-teal-100 text-xs">{t('healthAssistant.subtitle', lang)}</p>
                 </div>
               </div>

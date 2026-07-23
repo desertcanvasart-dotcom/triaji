@@ -19,7 +19,7 @@ import {
 import type { Lang } from '@triaji/shared/i18n';
 import { s } from '@triaji/shared/i18n';
 
-const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.triajji.com';
+const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.doctortrio.online';
 
 const FREQUENCY_OPTIONS = ['once', 'twice', 'thrice'] as const;
 const DURATION_OPTIONS = [3, 5, 7, 10, 14, 30] as const;

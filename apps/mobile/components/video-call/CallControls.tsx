@@ -38,7 +38,7 @@ interface CallControlsProps {
   callId?: string;
 }
 
-const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.triajji.com';
+const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.doctortrio.online';
 
 export default function CallControls({
   role,

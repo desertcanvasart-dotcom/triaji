@@ -72,7 +72,7 @@ export async function processChainResults(
     return;
   }
 
-  // Map chain test codes back to Triajji codes
+  // Map chain test codes back to DoctorTrio codes
   const mappedResults = await mapResultCodes(supabase, ctx.chainCode, chainResult.results);
 
   // Build lab_values array (same format as Phase 17 manual upload)
@@ -155,7 +155,7 @@ export async function processChainResults(
   const abnormalCount = labValues.filter((lv) => lv.abnormal).length;
 
   // Build results view URL
-  const appUrl = process.env['NEXT_PUBLIC_APP_URL'] ?? 'https://triajji.com';
+  const appUrl = process.env['NEXT_PUBLIC_APP_URL'] ?? 'https://doctortrio.online';
   const viewUrl = `${appUrl}/ar/lab/results/${routingId}`;
 
   // ─── Notify patient ────────────────────────────────────────────────────────
@@ -264,7 +264,7 @@ async function loadRoutingContext(
   };
 }
 
-// ─── Code Mapping (Chain → Triajji) ──────────────────────────────────────────────
+// ─── Code Mapping (Chain → DoctorTrio) ──────────────────────────────────────────────
 
 interface MappedResult extends LabChainTestResult {
   triajiCode?: string;

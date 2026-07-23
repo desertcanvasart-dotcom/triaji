@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = createServerClient();
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://triajji.com';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://doctortrio.online';
   const now = new Date();
 
   let totalExpired = 0;

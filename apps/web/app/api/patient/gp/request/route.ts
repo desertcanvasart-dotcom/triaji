@@ -117,7 +117,7 @@ async function notifyDoctorOfGPRequest(
 
     if (!patientData) return;
 
-    const baseUrl = process.env['NEXT_PUBLIC_APP_URL'] ?? 'https://triajji.com';
+    const baseUrl = process.env['NEXT_PUBLIC_APP_URL'] ?? 'https://doctortrio.online';
     const confirmUrl = `${baseUrl}/api/gp/confirm/${requestId}`;
 
     const { sendGPRequestNotification } = await import('@/lib/gp/notifications');

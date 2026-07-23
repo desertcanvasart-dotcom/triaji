@@ -4,7 +4,7 @@ import type { ProviderContent } from '@/components/providers/ProviderPageTemplat
 const CONTENT: ProviderContent = {
   hero: {
     badge: 'For Labs',
-    title: 'Connect Your Lab to Thousands of Doctors on Triajji',
+    title: 'Connect Your Lab to Thousands of Doctors on DoctorTrio',
     subtitle: 'Orders come to you online, patients book their appointments, and results are automatically returned to the patient record',
     cta: 'Register Your Lab Now',
     ctaHref: '/en/register/provider',
@@ -16,9 +16,9 @@ const CONTENT: ProviderContent = {
   ],
   features: [
     { icon: '📋', title: 'Digital Order Intake', description: 'Orders come directly from the doctor with full details — no paper needed' },
-    { icon: '📅', title: 'Integrated Appointment Booking', description: 'Patients book their lab appointment through Triajji directly' },
+    { icon: '📅', title: 'Integrated Appointment Booking', description: 'Patients book their lab appointment through DoctorTrio directly' },
     { icon: '⚡', title: 'Automatic Result Delivery', description: 'Results are sent to the patient record and the doctor automatically — no phone calls' },
-    { icon: '🔗', title: 'Connected to the Doctor Network', description: 'Every doctor registered on Triajji can send you orders directly' },
+    { icon: '🔗', title: 'Connected to the Doctor Network', description: 'Every doctor registered on DoctorTrio can send you orders directly' },
     { icon: '💰', title: 'Online Invoicing & Payment', description: 'Patients pay before the visit — no money left waiting' },
     { icon: '📊', title: 'Performance Reports', description: 'Order count, turnaround time, and revenue — all in one report' },
   ],

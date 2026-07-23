@@ -27,7 +27,7 @@ export default function WidgetPage() {
     tenant_id: '',
     logo_url: '',
     primary_color: '#0D7A7A',
-    welcome_message_ar: 'أهلاً بيك في ترياچي! أنا هنا أساعدك تلاقي الدكتور المناسب.',
+    welcome_message_ar: 'أهلاً بيك في دكتور تريو! أنا هنا أساعدك تلاقي الدكتور المناسب.',
     widget_domains: [],
     booking_mode: 'native',
   });
@@ -81,7 +81,7 @@ export default function WidgetPage() {
   // Generate QR code when tenant changes
   useEffect(() => {
     if (tenant?.slug) {
-      const url = `https://app.triajji.com/ar/chat?tenant=${tenant.slug}`;
+      const url = `https://app.doctortrio.online/ar/chat?tenant=${tenant.slug}`;
       QRCode.toDataURL(url, { width: 200, margin: 2 }).then((dataUrl) => {
         setQrDataUrl(dataUrl);
       }).catch(() => {
@@ -139,14 +139,14 @@ export default function WidgetPage() {
   }
 
   function getEmbedCode(): string {
-    return `<!-- Triajji Medical Triage Widget -->
+    return `<!-- DoctorTrio Medical Triage Widget -->
 <script>
-  window.TriajjiConfig = {
+  window.DoctorTrioConfig = {
     tenantSlug: '${tenant?.slug ?? ''}',
     primaryColor: '${config.primary_color}',
   };
 </script>
-<script src="https://app.triajji.com/widget.js" async></script>
+<script src="https://app.doctortrio.online/widget.js" async></script>
 <div id="triaji-widget"></div>`;
   }
 
@@ -291,11 +291,11 @@ export default function WidgetPage() {
           <div>
             <p className="text-sm text-gray-500 mb-1">Direct URL:</p>
             <code className="text-sm bg-gray-100 px-3 py-1.5 rounded block mb-3">
-              https://app.triajji.com/ar/chat?tenant={tenant.slug}
+              https://app.doctortrio.online/ar/chat?tenant={tenant.slug}
             </code>
             <button
               onClick={() => {
-                navigator.clipboard.writeText(`https://app.triajji.com/ar/chat?tenant=${tenant.slug}`);
+                navigator.clipboard.writeText(`https://app.doctortrio.online/ar/chat?tenant=${tenant.slug}`);
                 showToast('Link copied.', 'success');
               }}
               className="btn-secondary text-sm"

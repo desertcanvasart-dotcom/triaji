@@ -114,7 +114,7 @@ export default function ChainSidebar({ role, collapsed, onToggle }: ChainSidebar
       {/* Footer */}
       <div className="px-4 py-3 border-t border-white/10">
         {!collapsed && (
-          <p className="text-xs text-white/50">Triajji Chain</p>
+          <p className="text-xs text-white/50">DoctorTrio Chain</p>
         )}
       </div>
     </aside>

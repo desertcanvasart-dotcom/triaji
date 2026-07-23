@@ -68,7 +68,7 @@ ${data.description}
 🔖 رقم المرجع: ${data.reference}
 📅 التاريخ: ${dateStr}
 
-شكراً لك — ترياچي 🏥`
+شكراً لك — دكتور تريو 🏥`
       : `Payment successful ✅
 
 ${data.description}
@@ -77,7 +77,7 @@ ${data.description}
 🔖 Reference: ${data.reference}
 📅 Date: ${dateStr}
 
-Thank you — Triajji 🏥`;
+Thank you — DoctorTrio 🏥`;
 
   return sendWhatsAppMessage(phone, message);
 }
@@ -105,7 +105,7 @@ ${data.description}
       message += `\n\n🔄 يمكنك الحجز مرة أخرى من هنا:\n${data.bookingLink}`;
     }
 
-    message += '\n\nترياچي 🏥';
+    message += '\n\nدكتور تريو 🏥';
   } else {
     message = `Payment expired ⏰
 
@@ -118,7 +118,7 @@ Your booking was cancelled due to payment expiry. The slot has been released and
       message += `\n\n🔄 You can book again here:\n${data.bookingLink}`;
     }
 
-    message += '\n\nTriajji 🏥';
+    message += '\n\nDoctorTrio 🏥';
   }
 
   return sendWhatsAppMessage(phone, message);
@@ -144,7 +144,7 @@ export async function sendPaymentReminder(
 💳 ادفع دلوقتي:
 ${data.paymentLink}
 
-ترياچي 🏥`
+دكتور تريو 🏥`
       : `Payment reminder 🔔
 
 🏥 ${data.providerName}
@@ -154,7 +154,7 @@ ${data.paymentLink}
 💳 Pay now:
 ${data.paymentLink}
 
-Triajji 🏥`;
+DoctorTrio 🏥`;
 
   return sendWhatsAppMessage(phone, message);
 }

@@ -359,7 +359,7 @@ export default function ChainsPage() {
 
                   {/* Payment toggle */}
                   <div className="flex items-center justify-between bg-white rounded-lg p-3">
-                    <span className="text-sm text-gray-700">Payment via Triajji</span>
+                    <span className="text-sm text-gray-700">Payment via DoctorTrio</span>
                     <button
                       onClick={async () => {
                         await fetch('/api/admin/chains', {

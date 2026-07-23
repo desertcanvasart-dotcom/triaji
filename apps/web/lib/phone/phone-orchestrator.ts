@@ -72,8 +72,8 @@ export const EMERGENCY_RESPONSE: Record<PhoneLanguage, string> = {
 
 /** Booking confirmation messages by language */
 export const BOOKING_CONFIRMATION: Record<PhoneLanguage, string> = {
-  ar: 'تم تسجيل بياناتك. هنبعتلك التفاصيل على واتساب. شكراً لتواصلك مع ترياچي.',
-  en: 'Your information has been recorded. We will send the details to your WhatsApp. Thank you for contacting Triajji.',
+  ar: 'تم تسجيل بياناتك. هنبعتلك التفاصيل على واتساب. شكراً لتواصلك مع دكتور تريو.',
+  en: 'Your information has been recorded. We will send the details to your WhatsApp. Thank you for contacting DoctorTrio.',
 };
 
 /** Error messages by language */

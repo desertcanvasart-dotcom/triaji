@@ -1,6 +1,6 @@
 /**
  * GET /api/admin/his/doctors — Fetch doctors from connected HIS
- * Returns both HIS doctors and Triajji doctors for mapping UI.
+ * Returns both HIS doctors and DoctorTrio doctors for mapping UI.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
     const adapter = getAdapter(config);
     const hisDoctors = await adapter.fetchDoctors();
 
-    // Also fetch Triajji doctors for this tenant (for mapping UI)
+    // Also fetch DoctorTrio doctors for this tenant (for mapping UI)
     const { data: triajiDoctors } = await supabase
       .from('doctors')
       .select('id, name_ar, name_en, his_doctor_id, specialty_id')

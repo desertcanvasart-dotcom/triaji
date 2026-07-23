@@ -98,12 +98,12 @@ export async function POST(request: NextRequest) {
     // Build contextual greeting in the same language as the original session
     const greetings = {
       missed_call: {
-        ar: 'أهلاً، أنا نور من ترياچي. اتصلت بيك لأنك اتصلت بينا ومكناش متاحين. هل تحتاج مساعدة طبية؟',
-        en: 'Hello, this is Nour from Triajji. You called us earlier but we were unavailable. Do you need medical assistance?',
+        ar: 'أهلاً، أنا نور من دكتور تريو. اتصلت بيك لأنك اتصلت بينا ومكناش متاحين. هل تحتاج مساعدة طبية؟',
+        en: 'Hello, this is Nour from DoctorTrio. You called us earlier but we were unavailable. Do you need medical assistance?',
       },
       default: {
-        ar: 'أهلاً، أنا نور من ترياچي. اتصلت بيك لأن خطنا انقطع. هل لازلت محتاج مساعدة؟',
-        en: 'Hello, this is Nour from Triajji. You called us earlier and we got disconnected. Can I help you?',
+        ar: 'أهلاً، أنا نور من دكتور تريو. اتصلت بيك لأن خطنا انقطع. هل لازلت محتاج مساعدة؟',
+        en: 'Hello, this is Nour from DoctorTrio. You called us earlier and we got disconnected. Can I help you?',
       },
     };
 
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
     const greeting = greetings[greetingKey][originalLang];
 
     // Build TwiML that connects to the Media Stream for triage
-    const baseUrl = process.env['TWILIO_WEBHOOK_BASE_URL'] || 'https://app.triajji.com';
+    const baseUrl = process.env['TWILIO_WEBHOOK_BASE_URL'] || 'https://app.doctortrio.online';
     const wsUrl = baseUrl.replace('https://', 'wss://').replace('http://', 'ws://');
 
     const twiml = buildCallbackStreamTwiml({

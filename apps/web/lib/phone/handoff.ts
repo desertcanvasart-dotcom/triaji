@@ -34,14 +34,14 @@ interface TenantAgentConfig {
  * WhatsApp message sent to the patient when being transferred to a human agent.
  */
 function handoffSummaryForPatient(shortRef: string): string {
-  return `مرحباً، هنا ترياچي.
+  return `مرحباً، هنا دكتور تريو.
 
 جاري تحويلك لأحد موظفينا المتخصصين.
 رقم المرجع بتاعك: ${shortRef}
 
 لو المكالمة اتقطعت، ممكن تتصل بينا تاني وتقول رقم المرجع ده.
 
-ترياچي — الدكتور الصح، في المكان الصح`;
+دكتور تريو — الدكتور الصح، في المكان الصح`;
 }
 
 /**
@@ -70,7 +70,7 @@ function handoffSummaryForAgent(data: {
   const specialtyText = data.specialty ?? 'لم يتم تحديد تخصص';
   const complaintText = data.chiefComplaint ?? 'لم يتم تسجيل شكوى';
 
-  return `تحويل مكالمة من ترياچي
+  return `تحويل مكالمة من دكتور تريو
 
 رقم المرجع: ${data.shortRef}
 رقم المريض: ${data.patientPhone}
@@ -154,7 +154,7 @@ export async function initiateHandoff(input: HandoffInput): Promise<void> {
     // No agent number configured — end call with message
     try {
       const client = getTwilioClient();
-      const noAgentMessage = 'عذراً، لا يوجد موظف متاح حالياً. سيتم إرسال ملخص على واتساب. شكراً لتواصلك مع ترياچي.';
+      const noAgentMessage = 'عذراً، لا يوجد موظف متاح حالياً. سيتم إرسال ملخص على واتساب. شكراً لتواصلك مع دكتور تريو.';
       await client.calls(input.callSid).update({
         twiml: `<Response><Say language="ar-EG">${noAgentMessage}</Say><Hangup/></Response>`,
       });

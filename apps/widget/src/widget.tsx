@@ -20,7 +20,7 @@ import { SlotPicker } from './booking/SlotPicker';
 import { BookingForm } from './booking/BookingForm';
 import { Confirmation } from './booking/Confirmation';
 
-interface TriajjiWidgetProps {
+interface DoctorTrioWidgetProps {
   tenantConfig: TenantConfig;
   userConfig: UserConfig;
 }
@@ -30,7 +30,7 @@ function nextMsgId(): string {
   return `msg_${++msgCounter}_${Date.now()}`;
 }
 
-export function TriajjiWidget({ tenantConfig, userConfig }: TriajjiWidgetProps) {
+export function DoctorTrioWidget({ tenantConfig, userConfig }: DoctorTrioWidgetProps) {
   const primaryColor = getPrimaryColor(tenantConfig, userConfig);
   const apiUrl = getApiUrl(userConfig);
   const position = userConfig.position ?? 'bottom-right';
@@ -80,7 +80,7 @@ export function TriajjiWidget({ tenantConfig, userConfig }: TriajjiWidgetProps) 
       setSessionId(id);
       return id;
     } catch (err) {
-      console.error('[Triajji] Failed to create session:', err);
+      console.error('[DoctorTrio] Failed to create session:', err);
       setMessages((prev) => [
         ...prev,
         {
@@ -239,7 +239,7 @@ export function TriajjiWidget({ tenantConfig, userConfig }: TriajjiWidgetProps) 
         />
       )}
       <span className="triaji-header-title">
-        {tenantConfig.nameAr || 'ترياچي'}
+        {tenantConfig.nameAr || 'دكتور تريو'}
       </span>
       <button className="triaji-close-btn" onClick={handleClose} aria-label="إغلاق">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -315,7 +315,7 @@ export function TriajjiWidget({ tenantConfig, userConfig }: TriajjiWidgetProps) 
       )}
 
       <div className="triaji-powered">
-        Powered by <a href="https://triajji.com" target="_blank" rel="noopener noreferrer">Triajji</a>
+        Powered by <a href="https://doctortrio.online" target="_blank" rel="noopener noreferrer">DoctorTrio</a>
       </div>
     </div>
   );

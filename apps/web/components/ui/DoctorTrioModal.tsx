@@ -28,16 +28,16 @@ const MODAL = {
     title: { ar: 'الجلسة الأولى — قبل الكشف', en: 'Session One — Before the Visit' },
     subtitle: { ar: 'أونلاين | 15–20 دقيقة تقريباً', en: 'Online | Approx. 15–20 minutes' },
     desc: {
-      ar: 'ترياڃي بيسمع أعراضك، يحدد التخصص، وتحجز مع الدكتور الصح',
-      en: 'Triajji listens to your symptoms, determines the specialty, and books you with the right doctor',
+      ar: 'دكتور تريو بيسمع أعراضك، يحدد التخصص، وتحجز مع الدكتور الصح',
+      en: 'DoctorTrio listens to your symptoms, determines the specialty, and books you with the right doctor',
     },
   },
   session2: {
     title: { ar: 'الجلسة الثانية — الكشف الحضوري', en: 'Session Two — In-Person Examination' },
     subtitle: { ar: 'في العيادة | حسب وقت الدكتور', en: 'At the clinic | Based on doctor availability' },
     desc: {
-      ar: 'الفحص الطبي الكامل مع الدكتور — روشتة، تحاليل، وأشعة كلها على ترياڃي',
-      en: 'Full medical examination with the doctor — prescriptions, labs, and imaging all on Triajji',
+      ar: 'الفحص الطبي الكامل مع الدكتور — روشتة، تحاليل، وأشعة كلها على دكتور تريو',
+      en: 'Full medical examination with the doctor — prescriptions, labs, and imaging all on DoctorTrio',
     },
     badge: { ar: '★ الجلسة الأساسية', en: '★ Core Session' },
   },
@@ -63,8 +63,8 @@ const MODAL = {
       en: 'Instead of paying:',
     },
     items: {
-      ar: 'جلسة ترياڃي + كشف + متابعة',
-      en: 'Triajji session + exam + follow-up',
+      ar: 'جلسة دكتور تريو + كشف + متابعة',
+      en: 'DoctorTrio session + exam + follow-up',
     },
     withTrio: {
       ar: 'مع Doctor Trio:',

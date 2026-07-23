@@ -22,7 +22,7 @@ const NAV = {
 
 const HERO = {
   headline: { ar: 'قولِّنا بتشتكى من إيه… وهنوصلك بالدكتور المناسب فوراً', en: 'Tell us your symptoms — we\'ll find the right doctor instantly' },
-  sub:      { ar: 'بناءً على الأعراض سيقوم ترياچي بتحديد الطبيب + حجز + تحاليل أو أشعة + تأمين — في تجربة واحدة متكاملة', en: 'Based on your symptoms, Triajji identifies the doctor + booking + labs or radiology + insurance — one complete healthcare experience' },
+  sub:      { ar: 'بناءً على الأعراض سيقوم دكتور تريو بتحديد الطبيب + حجز + تحاليل أو أشعة + تأمين — في تجربة واحدة متكاملة', en: 'Based on your symptoms, DoctorTrio identifies the doctor + booking + labs or radiology + insurance — one complete healthcare experience' },
   ctaPatient:  { ar: 'ابدأ التوجيه الطبي', en: 'Start Medical Triage' },
   ctaDoctor:   { ar: 'سجّل كطبيب', en: 'Register as Doctor' },
   ctaProvider: { ar: 'للمستشفيات والعيادات', en: 'For Hospitals & Clinics' },
@@ -45,7 +45,7 @@ const TRUST_STATS = {
 };
 
 const CHAT_MOCKUP = {
-  header: { ar: 'ترياچي', en: 'Triajji' },
+  header: { ar: 'دكتور تريو', en: 'DoctorTrio' },
   subtitle: { ar: 'مساعدك الصحي الذكي', en: 'Your AI health assistant' },
   online: { ar: 'متصل الآن', en: 'Online now' },
   inputPlaceholder: { ar: 'اكتب رسالة...', en: 'Type a message...' },
@@ -69,11 +69,11 @@ const CHAT_MOCKUP = {
 };
 
 const HOW_IT_WORKS = {
-  title: { ar: 'كيف يعمل ترياچي؟', en: 'How It Works' },
+  title: { ar: 'كيف يعمل دكتور تريو؟', en: 'How It Works' },
   steps: {
     ar: [
       { num: '1', icon: '🎤', title: 'يتعرف على أعراضك بدقة', desc: 'بالصوت أو الكتابة — بالعربي العادي' },
-      { num: '2', icon: '🧠', title: 'ويقيمها بشكل صحيح', desc: 'ترياچي يحدد الخطورة ويرشحلك الدكتور المناسب' },
+      { num: '2', icon: '🧠', title: 'ويقيمها بشكل صحيح', desc: 'دكتور تريو يحدد الخطورة ويرشحلك الدكتور المناسب' },
       { num: '3', icon: '📅', title: 'يقوم بالحجز ومن ثم يتابع', desc: 'حجز الموعد، سجلك الطبي، ومتابعة مستمرة' },
     ],
     en: [
@@ -93,7 +93,7 @@ const PILLARS = {
       { icon: '🧪', title: 'التحاليل والصيدلية', desc: 'ربط مع البرج والمختبر وألفا — النتايج توصلك أوتوماتيك والروشتة تتبع للصيدلية' },
       { icon: '👨‍⚕️', title: 'شبكة الأطباء', desc: 'طبيب أساسي يتابع حالتك، مكالمات فيديو، وتحويلات بين التخصصات' },
       { icon: '📞', title: 'مركز الاتصال الذكي', desc: 'ذكاء اصطناعي يرد 24/7 بدون أخطاء — مدعوم بقاعدة بيانات طبية شاملة', callCenter: true },
-      { icon: '💬', title: 'ترياچي يسألك', desc: 'مساعد صحي ذكي يشرحلك نتايج تحاليلك وأدويتك بالعربي — مبني على بياناتك الشخصية' },
+      { icon: '💬', title: 'دكتور تريو يسألك', desc: 'مساعد صحي ذكي يشرحلك نتايج تحاليلك وأدويتك بالعربي — مبني على بياناتك الشخصية' },
       { icon: '🚨', title: 'أسرّة العناية المركزة', desc: 'أول نظام في مصر لعرض أسرّة العناية المتاحة في الوقت الفعلي', featured: true },
     ],
     en: [
@@ -102,7 +102,7 @@ const PILLARS = {
       { icon: '🧪', title: 'Labs & Pharmacy', desc: 'Connected to Al-Borg, Al-Mokhtabar, and Alfa — results arrive automatically, prescriptions routed to pharmacy' },
       { icon: '👨‍⚕️', title: 'Doctor Network', desc: 'A primary care doctor who follows your case, video calls, and specialist referrals' },
       { icon: '📞', title: 'AI Call Center', desc: 'AI answers 24/7 with zero errors — powered by a comprehensive medical knowledge base', callCenter: true },
-      { icon: '💬', title: 'Ask Triajji', desc: 'A personal health AI that explains your lab results and medications in plain language — grounded in your own data' },
+      { icon: '💬', title: 'Ask DoctorTrio', desc: 'A personal health AI that explains your lab results and medications in plain language — grounded in your own data' },
       { icon: '🚨', title: 'ICU Bed Availability', desc: 'Egypt\'s first real-time ICU bed availability system', featured: true },
     ],
   },
@@ -133,19 +133,19 @@ const DOCTOR_TRIO = {
 const CALL_CENTER = {
   badge:      { ar: '🤖 مدعوم بالذكاء الاصطناعي', en: '🤖 AI-Powered' },
   title:      { ar: 'مركز الاتصال بتاعنا —هو نقطة التقاء كافة خدماتك الطبية', en: 'Our Call Center — The Hub for All Your Medical Services' },
-  subtitle:   { ar: 'مش محتاج تطبيق أو إنترنت — اتصل وهتلاقي ترياچي جاهز لمساعدتك في أي وقت', en: 'No app or internet needed — call and Triajji is ready to help at any time' },
+  subtitle:   { ar: 'مش محتاج تطبيق أو إنترنت — اتصل وهتلاقي دكتور تريو جاهز لمساعدتك في أي وقت', en: 'No app or internet needed — call and DoctorTrio is ready to help at any time' },
   capabilities: {
     ar: [
       { icon: '🧠', title: 'تجربة رقمية بالكامل', desc: 'تجربة رقمية طبية متخصصة على أعلى مستوى' },
       { icon: '🕐', title: '24 ساعة / 7 أيام', desc: 'مفيش إجازات أو أوقات راحة — متاح كل يوم، كل ساعة، طول السنة' },
       { icon: '✅', title: 'بدون أخطاء بشرية', desc: 'معلومات طبية دقيقة ومحدّثة دايماً — مفيش نسيان أو خطأ' },
-      { icon: '📚', title: 'قاعدة بيانات طبية شاملة', desc: 'ترياچي مدعوم بقاعدة بيانات طبية محدثة بشكل دوري بإشراف نخبة من أفضل الأطباء المصريين' },
+      { icon: '📚', title: 'قاعدة بيانات طبية شاملة', desc: 'دكتور تريو مدعوم بقاعدة بيانات طبية محدثة بشكل دوري بإشراف نخبة من أفضل الأطباء المصريين' },
     ],
     en: [
       { icon: '🧠', title: 'Fully digital experience', desc: 'A specialised digital medical experience at the highest level' },
       { icon: '🕐', title: '24 hours / 7 days', desc: 'No holidays or breaks — available every day, every hour, all year' },
       { icon: '✅', title: 'Zero human error', desc: 'Always accurate and up-to-date medical information — no mistakes' },
-      { icon: '📚', title: 'Comprehensive knowledge', desc: 'Powered by all of Triajji\'s medical data — symptoms, medications, doctors, labs' },
+      { icon: '📚', title: 'Comprehensive knowledge', desc: 'Powered by all of DoctorTrio\'s medical data — symptoms, medications, doctors, labs' },
     ],
   },
   comparison: {
@@ -172,13 +172,13 @@ const CALL_CENTER = {
 };
 
 const WIDGET_SHOWCASE = {
-  title:    { ar: 'ضع ترياچي في موقع مستشفاك', en: 'Add Triajji to Your Hospital Website' },
-  subtitle: { ar: 'سطر واحد من الكود يضيف ترياچي لأي موقع — مرضاك يستخدموا ترياچي من غير ما يسيبوا موقعك', en: 'One line of code adds Triajji to any website — your patients use Triajji without leaving your site' },
+  title:    { ar: 'ضع دكتور تريو في موقع مستشفاك', en: 'Add DoctorTrio to Your Hospital Website' },
+  subtitle: { ar: 'سطر واحد من الكود يضيف دكتور تريو لأي موقع — مرضاك يستخدموا دكتور تريو من غير ما يسيبوا موقعك', en: 'One line of code adds DoctorTrio to any website — your patients use DoctorTrio without leaving your site' },
   codeLabel:{ ar: 'أضف هذا الكود لموقعك:', en: 'Add this to your website:' },
-  code:     '<script\n  src="https://triajji.com/widget.js"\n  data-tenant="HOSPITAL_ID"\n></script>',
+  code:     '<script\n  src="https://doctortrio.online/widget.js"\n  data-tenant="HOSPITAL_ID"\n></script>',
   features: {
-    ar: ['يظهر كزر ترياچي في ركن موقعك', 'مريضك يفرز أعراضه ويحجز مباشرة', 'كل البيانات ترجع لداشبورد المستشفى', 'يتكيف مع ألوان موقعك', 'يتضمن مركز اتصال يعمل بالذكاء الاصطناعي، ومدعوماً بقاعدة بيانات طبية حديثة'],
-    en: ['Appears as a Triajji button on your site', 'Patient triages and books directly', 'All data flows to your hospital dashboard', 'Adapts to your website\'s colours', 'Includes an AI-powered call center, backed by an up-to-date medical database'],
+    ar: ['يظهر كزر دكتور تريو في ركن موقعك', 'مريضك يفرز أعراضه ويحجز مباشرة', 'كل البيانات ترجع لداشبورد المستشفى', 'يتكيف مع ألوان موقعك', 'يتضمن مركز اتصال يعمل بالذكاء الاصطناعي، ومدعوماً بقاعدة بيانات طبية حديثة'],
+    en: ['Appears as a DoctorTrio button on your site', 'Patient triages and books directly', 'All data flows to your hospital dashboard', 'Adapts to your website\'s colours', 'Includes an AI-powered call center, backed by an up-to-date medical database'],
   },
   cta:     { ar: 'احصل على الكود', en: 'Get the Code' },
   ctaNote: { ar: 'مجاني للمستشفيات والعيادات المسجلة', en: 'Free for registered hospitals and clinics' },
@@ -187,14 +187,14 @@ const WIDGET_SHOWCASE = {
 
 const FOR_PATIENTS = {
   title:    { ar: 'للمرضى', en: 'For Patients' },
-  tagline:  { ar: 'ترياچي هو مدير لملفك الطبي بالكامل', en: 'Triajji is the complete manager of your medical file' },
+  tagline:  { ar: 'دكتور تريو هو مدير لملفك الطبي بالكامل', en: 'DoctorTrio is the complete manager of your medical file' },
   subtitle: { ar: 'كل اللي محتاجه لصحتك — في تطبيق واحد', en: 'Everything you need for your health — in one app' },
   showMore: { ar: 'عرض المزيد', en: 'Show more' },
   showLess: { ar: 'عرض أقل', en: 'Show less' },
   features: {
     ar: [
       { icon: '🧠', tag: 'ذكاء اصطناعي', title: 'التوجيه الطبي الذكي', desc: 'صف أعراضك بصوتك أو كتابةً — الذكاء الاصطناعي يحلل حالتك ويوصلك للدكتور المناسب' },
-      { icon: '🤖', tag: 'جديد', title: 'ترياچي يسألك', desc: 'مساعدك الصحي الشخصي — بيشرحلك تحاليلك وأدويتك وتاريخك الطبي بالعامية' },
+      { icon: '🤖', tag: 'جديد', title: 'دكتور تريو يسألك', desc: 'مساعدك الصحي الشخصي — بيشرحلك تحاليلك وأدويتك وتاريخك الطبي بالعامية' },
       { icon: '📋', tag: '', title: 'سجلك الطبي الكامل', desc: 'تحاليل، أدوية، زيارات، أشعة — كل تاريخك الصحي في مكان واحد مع منحنيات التطور' },
       { icon: '🧪', tag: '', title: 'التحاليل والأشعة', desc: 'احجز في معامل البرج والمختبر وألفا — النتايج بترجع تلقائياً لسجلك' },
       { icon: '💊', tag: '', title: 'الروشتة والصيدلية', desc: 'روشتتك بتتبعت للصيدلية أونلاين — ادفع واستلم أو توصيل لبيتك' },
@@ -208,7 +208,7 @@ const FOR_PATIENTS = {
     ],
     en: [
       { icon: '🧠', tag: 'AI', title: 'AI Medical Triage', desc: 'Describe your symptoms by voice or text — AI analyses your case and connects you with the right doctor' },
-      { icon: '🤖', tag: 'New', title: 'Ask Triajji', desc: 'Your personal health AI — explains your labs, medications, and medical history in plain language' },
+      { icon: '🤖', tag: 'New', title: 'Ask DoctorTrio', desc: 'Your personal health AI — explains your labs, medications, and medical history in plain language' },
       { icon: '📋', tag: '', title: 'Complete Medical Record', desc: 'Labs, medications, visits, imaging — your complete health history in one place with trend charts' },
       { icon: '🧪', tag: '', title: 'Labs & Radiology', desc: 'Book at Al-Borg, Al-Mokhtabar, and Alfa — results automatically return to your record' },
       { icon: '💊', tag: '', title: 'Prescriptions & Pharmacy', desc: 'Your prescription sent to the pharmacy online — pay and collect or have it delivered' },
@@ -273,8 +273,8 @@ const FOR_PROVIDERS = {
 };
 
 const JOURNEY = {
-  title:    { ar: 'رحلة المريض في ترياچي', en: 'The Patient Journey on Triajji' },
-  subtitle: { ar: 'من أول عرض لآخر متابعة — كل ده في ترياچي', en: 'From first symptom to final follow-up — all in Triajji' },
+  title:    { ar: 'رحلة المريض في دكتور تريو', en: 'The Patient Journey on DoctorTrio' },
+  subtitle: { ar: 'من أول عرض لآخر متابعة — كل ده في دكتور تريو', en: 'From first symptom to final follow-up — all in DoctorTrio' },
   steps: {
     ar: [
       { icon: '💬', num: '١', label: 'صف أعراضك' },
@@ -284,7 +284,7 @@ const JOURNEY = {
       { icon: '💊', num: '٥', label: 'احصل على روشتة' },
       { icon: '🧪', num: '٦', label: 'نتايج التحاليل' },
       { icon: '👨‍⚕️', num: '٧', label: 'متابعة الطبيب' },
-      { icon: '🤖', num: '٨', label: 'اسأل ترياچي' },
+      { icon: '🤖', num: '٨', label: 'اسأل دكتور تريو' },
     ],
     en: [
       { icon: '💬', num: '1', label: 'Describe symptoms' },
@@ -294,13 +294,13 @@ const JOURNEY = {
       { icon: '💊', num: '5', label: 'Get prescription' },
       { icon: '🧪', num: '6', label: 'Lab results arrive' },
       { icon: '👨‍⚕️', num: '7', label: 'GP follow-up' },
-      { icon: '🤖', num: '8', label: 'Ask Triajji' },
+      { icon: '🤖', num: '8', label: 'Ask DoctorTrio' },
     ],
   },
 };
 
 const TRUST = {
-  title: { ar: 'أرقام ترياچي', en: 'Triajji in Numbers' },
+  title: { ar: 'أرقام دكتور تريو', en: 'DoctorTrio in Numbers' },
   stats: {
     ar: [
       { value: '27', label: 'محافظة مصرية', icon: '🗺️' },
@@ -322,13 +322,13 @@ const ICU_SECTION = {
   ar: {
     badge:       '🚨 الأول من نوعه في مصر',
     title:       'في الطوارئ — اعرف مين عنده سرير عناية فوراً',
-    subtitle:    'ترياچي بيعرض أسرّة العناية المركزة المتاحة في مستشفيات ترياچي في الوقت الفعلي — لأول مرة في مصر',
-    problem:     'في كل يوم، أسر مصرية بتضيع وقت ثمين وهي بتتصل بمستشفى ورا مستشفى تسأل "عندكم سرير عناية؟" — ترياچي حل هذه المشكلة.',
+    subtitle:    'دكتور تريو بيعرض أسرّة العناية المركزة المتاحة في مستشفيات دكتور تريو في الوقت الفعلي — لأول مرة في مصر',
+    problem:     'في كل يوم، أسر مصرية بتضيع وقت ثمين وهي بتتصل بمستشفى ورا مستشفى تسأل "عندكم سرير عناية؟" — دكتور تريو حل هذه المشكلة.',
     features: [
       { icon: '📍', title: 'أقرب مستشفى بسرير متاح', description: 'النتايج مرتبة حسب المسافة منك — أقرب أولاً' },
       { icon: '⚡', title: 'بيانات فعلية لحظة بلحظة', description: 'المستشفيات بتحدّث عدد الأسرة المتاحة أولاً بأول' },
       { icon: '🏥', title: '8 أنواع وحدات عناية', description: 'عناية عامة · قلبية · أطفال · جراحية · حروق · أعصاب · وأكتر' },
-      { icon: '🔒', title: 'للأطباء فقط', description: 'متاح حصرياً للأطباء والعيادات المسجّلة في ترياچي' },
+      { icon: '🔒', title: 'للأطباء فقط', description: 'متاح حصرياً للأطباء والعيادات المسجّلة في دكتور تريو' },
     ],
     liveDisplay: {
       label:     'أسرّة متاحة الآن',
@@ -344,15 +344,15 @@ const ICU_SECTION = {
       lastUpdate: 'آخر تحديث: منذ 4 دقائق',
     },
     cta:              'للأطباء: ابحث عن سرير عناية',
-    ctaNote:          'يتطلب حساب طبيب مسجّل في ترياچي',
+    ctaNote:          'يتطلب حساب طبيب مسجّل في دكتور تريو',
     forHospitals:     'أنت مستشفى؟',
-    forHospitalsLink: 'سجّل أسرّة عنايتك في ترياچي →',
+    forHospitalsLink: 'سجّل أسرّة عنايتك في دكتور تريو →',
   },
   en: {
     badge:       '🚨 First of its kind in Egypt',
     title:       'In an emergency — find an available ICU bed instantly',
-    subtitle:    'Triajji displays real-time ICU bed availability across Triajji-registered hospitals — for the first time in Egypt',
-    problem:     'Every day, Egyptian families waste precious time calling hospital after hospital asking "do you have an ICU bed?" — Triajji solves this.',
+    subtitle:    'DoctorTrio displays real-time ICU bed availability across DoctorTrio-registered hospitals — for the first time in Egypt',
+    problem:     'Every day, Egyptian families waste precious time calling hospital after hospital asking "do you have an ICU bed?" — DoctorTrio solves this.',
     features: [
       { icon: '📍', title: 'Nearest hospital with available beds', description: 'Results sorted by distance from your location — closest first' },
       { icon: '⚡', title: 'Real-time live data', description: 'Hospitals update their available bed counts in real time' },
@@ -373,9 +373,9 @@ const ICU_SECTION = {
       lastUpdate: 'Last update: 4 minutes ago',
     },
     cta:              'Doctors: Search for an ICU bed',
-    ctaNote:          'Requires a verified Triajji doctor account',
+    ctaNote:          'Requires a verified DoctorTrio doctor account',
     forHospitals:     'Are you a hospital?',
-    forHospitalsLink: 'Register your ICU beds on Triajji →',
+    forHospitalsLink: 'Register your ICU beds on DoctorTrio →',
   },
 };
 
@@ -392,10 +392,10 @@ const FOOTER = {
   doctors:   { ar: 'للأطباء', en: 'For Doctors' },
   providers: { ar: 'لمقدمي الخدمة', en: 'For Providers' },
   emergency: {
-    ar: '⚠️ ترياچي ليس بديلاً عن الطوارئ — في حالات الطوارئ اتصل بـ 123',
-    en: '⚠️ Triajji is not a substitute for emergency care — call 123',
+    ar: '⚠️ دكتور تريو ليس بديلاً عن الطوارئ — في حالات الطوارئ اتصل بـ 123',
+    en: '⚠️ DoctorTrio is not a substitute for emergency care — call 123',
   },
-  copyright: { ar: '© 2026 ترياچي — جميع الحقوق محفوظة', en: '© 2026 Triajji — All rights reserved' },
+  copyright: { ar: '© 2026 دكتور تريو — جميع الحقوق محفوظة', en: '© 2026 DoctorTrio — All rights reserved' },
 };
 
 const COLOR_MAP: Record<string, string> = {
@@ -587,7 +587,7 @@ export default async function HomePage() {
                         </div>
                         <div className={`flex ${isRtl ? 'justify-start' : 'justify-end'} mb-1`}>
                           <span className="bg-gray-200 text-gray-700 text-[10px] rounded-xl px-3 py-1 inline-block">
-                            {lang === 'ar' ? 'ترياچي بيحلل...' : 'AI is analysing...'}
+                            {lang === 'ar' ? 'دكتور تريو بيحلل...' : 'AI is analysing...'}
                           </span>
                         </div>
                         <div className={`flex gap-1 ${isRtl ? 'justify-start' : 'justify-start'}`}>
@@ -998,7 +998,7 @@ export default async function HomePage() {
                     <CopyCodeButton code={WIDGET_SHOWCASE.code} label={WIDGET_SHOWCASE.copyLabel[lang]} />
                     <pre dir="ltr" className="text-sm font-mono text-white/90 overflow-x-auto whitespace-pre">
                       <span className="text-teal-400">{'<script'}</span>{'\n'}
-                      {'  '}src=<span className="text-amber-400">{'"https://triajji.com/widget.js"'}</span>{'\n'}
+                      {'  '}src=<span className="text-amber-400">{'"https://doctortrio.online/widget.js"'}</span>{'\n'}
                       {'  '}data-tenant=<span className="text-amber-400">{'"HOSPITAL_ID"'}</span>{'\n'}
                       <span className="text-teal-400">{'></script>'}</span>
                     </pre>
@@ -1022,7 +1022,7 @@ export default async function HomePage() {
                       <div className="h-2 w-2/3 bg-gray-200 rounded mb-1.5" />
                       <div className="h-2 w-1/3 bg-gray-200 rounded" />
                       <div className="absolute bottom-3 end-3 bg-teal-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
-                        🏥 {lang === 'ar' ? 'ترياچي' : 'Triajji'}
+                        🏥 {lang === 'ar' ? 'دكتور تريو' : 'DoctorTrio'}
                       </div>
                     </div>
                   </div>
@@ -1289,7 +1289,7 @@ export default async function HomePage() {
               <ul className="space-y-2 text-sm">
                 <li><Link href={`/${lang}/chat`} className="hover:text-white transition-colors">{lang === 'ar' ? 'التوجيه الطبي' : 'Triage'}</Link></li>
                 <li><Link href={`/${lang}/medical-record`} className="hover:text-white transition-colors">{lang === 'ar' ? 'السجل الطبي' : 'Records'}</Link></li>
-                <li><Link href={`/${lang}/health-assistant`} className="hover:text-white transition-colors">{lang === 'ar' ? 'ترياچي يسألك' : 'Ask Triajji'}</Link></li>
+                <li><Link href={`/${lang}/health-assistant`} className="hover:text-white transition-colors">{lang === 'ar' ? 'دكتور تريو يسألك' : 'Ask DoctorTrio'}</Link></li>
               </ul>
             </div>
             <div>

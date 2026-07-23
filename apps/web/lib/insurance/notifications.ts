@@ -63,7 +63,7 @@ export async function sendPolicyVerifiedNotification(
           data.coverageEnd ? `Coverage Until: ${formatDateEn(data.coverageEnd)}` : '',
           ``,
           `You can now use your insurance for appointments and services.`,
-          `Triajji Healthcare`,
+          `DoctorTrio Healthcare`,
         ].filter(Boolean).join('\n')
       : [
           `Your insurance policy verification is complete.`,
@@ -73,7 +73,7 @@ export async function sendPolicyVerifiedNotification(
           `Status: ${data.status === 'expired' ? 'Expired' : 'Suspended'}`,
           ``,
           `Please contact your insurance provider for more details.`,
-          `Triajji Healthcare`,
+          `DoctorTrio Healthcare`,
         ].filter(Boolean).join('\n')
     : isActive
       ? [
@@ -87,7 +87,7 @@ export async function sendPolicyVerifiedNotification(
           data.coverageEnd ? `التغطية حتى: ${formatDateAr(data.coverageEnd)}` : '',
           ``,
           `تقدر دلوقتي تستخدم التأمين في المواعيد والخدمات.`,
-          `ترياچي للرعاية الصحية`,
+          `دكتور تريو للرعاية الصحية`,
         ].filter(Boolean).join('\n')
       : [
           `تم مراجعة بوليصة التأمين الخاصة بك.`,
@@ -97,7 +97,7 @@ export async function sendPolicyVerifiedNotification(
           `الحالة: ${data.status === 'expired' ? 'منتهية' : 'موقوفة'}`,
           ``,
           `من فضلك تواصل مع شركة التأمين لمزيد من التفاصيل.`,
-          `ترياچي للرعاية الصحية`,
+          `دكتور تريو للرعاية الصحية`,
         ].filter(Boolean).join('\n');
 
   return sendWhatsAppMessage(phone, message);
@@ -134,7 +134,7 @@ export async function sendPreAuthDecisionNotification(
           data.validUntil ? `Valid Until: ${formatDateEn(data.validUntil)}` : '',
           ``,
           `You can now proceed with booking your appointment.`,
-          `Triajji Healthcare`,
+          `DoctorTrio Healthcare`,
         ].filter(Boolean).join('\n')
       : [
           `Your pre-authorization request has been denied.`,
@@ -143,7 +143,7 @@ export async function sendPreAuthDecisionNotification(
           data.denialReasonAr ? `Reason: ${data.denialReasonAr}` : '',
           ``,
           `Please contact your insurance provider if you wish to appeal.`,
-          `Triajji Healthcare`,
+          `DoctorTrio Healthcare`,
         ].filter(Boolean).join('\n')
     : isApproved
       ? [
@@ -155,7 +155,7 @@ export async function sendPreAuthDecisionNotification(
           data.validUntil ? `صالح حتى: ${formatDateAr(data.validUntil)}` : '',
           ``,
           `تقدر دلوقتي تحجز موعدك.`,
-          `ترياچي للرعاية الصحية`,
+          `دكتور تريو للرعاية الصحية`,
         ].filter(Boolean).join('\n')
       : [
           `تم رفض طلب الموافقة المسبقة.`,
@@ -164,7 +164,7 @@ export async function sendPreAuthDecisionNotification(
           data.denialReasonAr ? `السبب: ${data.denialReasonAr}` : '',
           ``,
           `من فضلك تواصل مع شركة التأمين لو عايز تقدم تظلم.`,
-          `ترياچي للرعاية الصحية`,
+          `دكتور تريو للرعاية الصحية`,
         ].filter(Boolean).join('\n');
 
   return sendWhatsAppMessage(phone, message);
@@ -202,7 +202,7 @@ export async function sendClaimDecisionNotification(
         data.patientCopayEgp ? `تحمل المريض: ${formatCurrency(data.patientCopayEgp)}` : '',
         data.providerReceivesEgp ? `المستحق للمقدم: ${formatCurrency(data.providerReceivesEgp)}` : '',
         ``,
-        `ترياچي للرعاية الصحية`,
+        `دكتور تريو للرعاية الصحية`,
       ].filter(Boolean).join('\n')
     : [
         `تم رفض المطالبة.`,
@@ -213,7 +213,7 @@ export async function sendClaimDecisionNotification(
         data.rejectionReasonAr ? `سبب الرفض: ${data.rejectionReasonAr}` : '',
         ``,
         `يمكنك تقديم تظلم من خلال النظام.`,
-        `ترياچي للرعاية الصحية`,
+        `دكتور تريو للرعاية الصحية`,
       ].filter(Boolean).join('\n');
 
   return sendWhatsAppMessage(phone, message);
@@ -245,7 +245,7 @@ export async function sendPreAuthSubmittedNotification(
         `Expected Response: within ${data.expectedResponseHours} hours`,
         ``,
         `We'll notify you once the insurance company responds.`,
-        `Triajji Healthcare`,
+        `DoctorTrio Healthcare`,
       ].join('\n')
     : [
         `تم تقديم طلب موافقة مسبقة من التأمين بخصوصك.`,
@@ -256,7 +256,7 @@ export async function sendPreAuthSubmittedNotification(
         `الرد المتوقع: خلال ${data.expectedResponseHours} ساعة`,
         ``,
         `هنبلغك أول ما شركة التأمين ترد.`,
-        `ترياچي للرعاية الصحية`,
+        `دكتور تريو للرعاية الصحية`,
       ].join('\n');
 
   return sendWhatsAppMessage(phone, message);

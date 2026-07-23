@@ -12,7 +12,7 @@ import { api } from './api';
 
 // ─── Notification Types ────────────────────────────────────────────────────
 
-type TriajjiNotification =
+type DoctorTrioNotification =
   | { type: 'lab_results_ready'; routingId: string }
   | { type: 'prescription_ready'; routingId: string }
   | { type: 'follow_up_reminder'; followUpId: string; doctorId: string }
@@ -38,7 +38,7 @@ Notifications.setNotificationHandler({
 
 // ─── Deep Link Routing ─────────────────────────────────────────────────────
 
-function getDeepLinkPath(data: TriajjiNotification): string | null {
+function getDeepLinkPath(data: DoctorTrioNotification): string | null {
   switch (data.type) {
     case 'lab_results_ready':
       return `/(patient)/labs/results/${data.routingId}`;
@@ -77,7 +77,7 @@ function getDeepLinkPath(data: TriajjiNotification): string | null {
  * Handle a notification response (tap) by navigating to the appropriate screen.
  */
 function handleNotificationResponse(response: Notifications.NotificationResponse): void {
-  const data = response.notification.request.content.data as TriajjiNotification | undefined;
+  const data = response.notification.request.content.data as DoctorTrioNotification | undefined;
   if (!data?.type) return;
 
   const path = getDeepLinkPath(data);

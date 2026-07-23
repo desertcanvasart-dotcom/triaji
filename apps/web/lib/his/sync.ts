@@ -2,7 +2,7 @@
  * HIS Availability Sync
  *
  * Pulls doctor availability from a hospital's HIS and upserts into
- * Triajji's doctor_availability table. Used by the cron job and manual sync.
+ * DoctorTrio's doctor_availability table. Used by the cron job and manual sync.
  */
 
 import { createServerClient } from '@triaji/shared/supabase';

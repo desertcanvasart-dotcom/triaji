@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
   await supabase.from('tenant_config').insert({
     tenant_id: tenant.id,
     primary_color: '#0D7A7A',
-    welcome_message_ar: 'أهلاً بيك في ترياچي! أنا هنا أساعدك تلاقي الدكتور المناسب.',
+    welcome_message_ar: 'أهلاً بيك في دكتور تريو! أنا هنا أساعدك تلاقي الدكتور المناسب.',
     booking_mode: 'native',
   });
 

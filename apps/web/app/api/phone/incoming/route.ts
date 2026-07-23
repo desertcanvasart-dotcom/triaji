@@ -69,7 +69,7 @@ export async function POST(request: Request) {
     });
 
     // 6. Build TwiML response
-    const baseUrl = process.env.TWILIO_WEBHOOK_BASE_URL || 'https://app.triajji.com';
+    const baseUrl = process.env.TWILIO_WEBHOOK_BASE_URL || 'https://app.doctortrio.online';
     const wsUrl = baseUrl.replace('https://', 'wss://').replace('http://', 'ws://');
 
     const twiml = buildStreamTwiml({

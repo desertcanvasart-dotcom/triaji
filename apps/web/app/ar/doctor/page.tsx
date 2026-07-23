@@ -10,7 +10,7 @@ export default function DoctorLandingPage() {
             href="/"
             className="text-2xl font-bold text-navy-500"
           >
-            ترياڃي
+            دكتور تريو
           </Link>
           <div className="flex items-center gap-3">
             <Link
@@ -36,7 +36,7 @@ export default function DoctorLandingPage() {
             وصّل مع مرضاك بشكل أذكى
           </h1>
           <p className="text-lg text-gray-600 leading-relaxed mb-10 max-w-2xl mx-auto">
-            ترياڃي بيوفرلك ملخص طبي شامل لكل مريض قبل الكشف — بناءً على أعراضه، تاريخه الطبي، ودرجة خطورة حالته.
+            دكتور تريو بيوفرلك ملخص طبي شامل لكل مريض قبل الكشف — بناءً على أعراضه، تاريخه الطبي، ودرجة خطورة حالته.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
@@ -84,7 +84,7 @@ export default function DoctorLandingPage() {
               إدارة مواعيدك
             </h3>
             <p className="text-gray-600 leading-relaxed">
-              شوف مواعيدك القادمة عبر ترياڃي وادّر أوقات فراغك من لوحة تحكم بسيطة.
+              شوف مواعيدك القادمة عبر دكتور تريو وادّر أوقات فراغك من لوحة تحكم بسيطة.
             </p>
           </div>
         </div>
@@ -143,7 +143,7 @@ export default function DoctorLandingPage() {
       {/* Footer */}
       <footer className="py-8 px-4 bg-navy-500">
         <p className="text-center text-sm text-gray-300">
-          © 2026 ترياڃي — جميع الحقوق محفوظة
+          © 2026 دكتور تريو — جميع الحقوق محفوظة
         </p>
       </footer>
     </div>

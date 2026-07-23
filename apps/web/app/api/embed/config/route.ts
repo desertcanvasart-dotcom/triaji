@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
       primaryColor: configData?.primary_color ?? '0D7A7A',
       welcomeMessageAr:
         configData?.welcome_message_ar ??
-        'أهلاً بيك في ترياچي! أنا هنا أساعدك تلاقي الدكتور المناسب.',
+        'أهلاً بيك في دكتور تريو! أنا هنا أساعدك تلاقي الدكتور المناسب.',
       bookingMode: configData?.booking_mode ?? 'native',
     },
     { cache: 'public, max-age=300' }

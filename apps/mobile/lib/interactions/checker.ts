@@ -13,7 +13,7 @@ import type {
 import { API_BASE_URL as API_URL } from '../config';
 
 /**
- * Check drug interactions by calling the Triajji web API.
+ * Check drug interactions by calling the DoctorTrio web API.
  *
  * @param newDrug        The drug being added
  * @param existingDrugs  Patient's current medications

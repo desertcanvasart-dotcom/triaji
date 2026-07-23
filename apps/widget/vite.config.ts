@@ -12,7 +12,7 @@ export default defineConfig({
   build: {
     lib: {
       entry: 'src/index.ts',
-      name: 'Triajji',
+      name: 'DoctorTrio',
       fileName: () => 'widget.js',
       formats: ['iife'],
     },

@@ -9,11 +9,11 @@ const F = {
   doctors:   { ar: 'للأطباء', en: 'For Doctors' },
   providers: { ar: 'لمقدمي الخدمة', en: 'For Providers' },
   emergency: {
-    ar: '\u26A0\uFE0F ترياچي ليس بديلاً عن الطوارئ — في حالات الطوارئ اتصل بـ 123',
-    en: '\u26A0\uFE0F Triajji is not a substitute for emergency care — call 123',
+    ar: '\u26A0\uFE0F دكتور تريو ليس بديلاً عن الطوارئ — في حالات الطوارئ اتصل بـ 123',
+    en: '\u26A0\uFE0F DoctorTrio is not a substitute for emergency care — call 123',
   },
-  copyright: { ar: '\u00A9 2026 ترياچي — جميع الحقوق محفوظة', en: '\u00A9 2026 Triajji — All rights reserved' },
-  appName:   { ar: 'ترياچي', en: 'Triajji' },
+  copyright: { ar: '\u00A9 2026 دكتور تريو — جميع الحقوق محفوظة', en: '\u00A9 2026 DoctorTrio — All rights reserved' },
+  appName:   { ar: 'دكتور تريو', en: 'DoctorTrio' },
 };
 
 export default function SiteFooter({ lang }: { lang: Lang }) {
@@ -48,7 +48,7 @@ export default function SiteFooter({ lang }: { lang: Lang }) {
             <ul className="space-y-2 text-sm">
               <li><Link href={`/${lang}/chat`} className="hover:text-white transition-colors">{lang === 'ar' ? 'التوجيه الطبي' : 'Triage'}</Link></li>
               <li><Link href={`/${lang}/medical-record`} className="hover:text-white transition-colors">{lang === 'ar' ? 'السجل الطبي' : 'Records'}</Link></li>
-              <li><Link href={`/${lang}/health-assistant`} className="hover:text-white transition-colors">{lang === 'ar' ? 'ترياچي يسألك' : 'Ask Triajji'}</Link></li>
+              <li><Link href={`/${lang}/health-assistant`} className="hover:text-white transition-colors">{lang === 'ar' ? 'دكتور تريو يسألك' : 'Ask DoctorTrio'}</Link></li>
             </ul>
           </div>
           <div>

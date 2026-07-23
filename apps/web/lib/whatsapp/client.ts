@@ -204,10 +204,10 @@ export function clinicalDocumentCaption(
   dateAr: string
 ): string {
   const templates: Record<string, string> = {
-    prescription: `أرسل لك الدكتور ${doctorName} روشتتك الطبية 💊\nرقم الروشتة: ${docNumber} | التاريخ: ${dateAr}\nالروشتة مرفقة. ترياڃي 🏥`,
-    lab_order: `أرسل لك الدكتور ${doctorName} طلب التحاليل 🧪\nرقم الطلب: ${docNumber} | التاريخ: ${dateAr}\nالطلب مرفق. ترياڃي 🏥`,
-    imaging_order: `أرسل لك الدكتور ${doctorName} طلب الأشعة 📡\nرقم الطلب: ${docNumber} | التاريخ: ${dateAr}\nالطلب مرفق. ترياڃي 🏥`,
-    consultation_summary: `أرسل لك الدكتور ${doctorName} ملخص كشفك 📋\nالتاريخ: ${dateAr}\nالملخص مرفق. ترياڃي 🏥`,
+    prescription: `أرسل لك الدكتور ${doctorName} روشتتك الطبية 💊\nرقم الروشتة: ${docNumber} | التاريخ: ${dateAr}\nالروشتة مرفقة. دكتور تريو 🏥`,
+    lab_order: `أرسل لك الدكتور ${doctorName} طلب التحاليل 🧪\nرقم الطلب: ${docNumber} | التاريخ: ${dateAr}\nالطلب مرفق. دكتور تريو 🏥`,
+    imaging_order: `أرسل لك الدكتور ${doctorName} طلب الأشعة 📡\nرقم الطلب: ${docNumber} | التاريخ: ${dateAr}\nالطلب مرفق. دكتور تريو 🏥`,
+    consultation_summary: `أرسل لك الدكتور ${doctorName} ملخص كشفك 📋\nالتاريخ: ${dateAr}\nالملخص مرفق. دكتور تريو 🏥`,
   };
 
   return templates[type] ?? '';

@@ -325,7 +325,7 @@ export default function DoctorRegisterPage() {
                   [
                     { value: 'independent', label: 'Independent doctor (no clinic)' },
                     { value: 'own_clinic', label: 'I have my own clinic' },
-                    { value: 'existing_clinic', label: 'I work at a clinic or hospital on Triajji' },
+                    { value: 'existing_clinic', label: 'I work at a clinic or hospital on DoctorTrio' },
                   ] as { value: ClinicMode; label: string }[]
                 ).map((opt) => (
                   <label
@@ -453,7 +453,7 @@ function Navbar() {
     <nav className="bg-white border-b border-gray-100 px-4 py-3">
       <div className="max-w-md mx-auto flex items-center justify-between">
         <Link href="/" className="text-xl font-bold text-teal-600">
-          Triajji
+          DoctorTrio
         </Link>
         <Link
           href="/en/doctor/login"

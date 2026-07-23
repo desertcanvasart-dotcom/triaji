@@ -24,19 +24,19 @@ const CONTENT = {
       title: { ar: 'قبل الكشف', en: 'Before the Visit' },
       subtitle: { ar: 'أونلاين — من البيت', en: 'Online — From Home' },
       desc: {
-        ar: 'ترياڃي بيسمعك، بيحدد التخصص الصح، وبيوصلك للدكتور المناسب',
-        en: 'Triajji listens, determines the right specialty, and connects you to the right doctor',
+        ar: 'دكتور تريو بيسمعك، بيحدد التخصص الصح، وبيوصلك للدكتور المناسب',
+        en: 'DoctorTrio listens, determines the right specialty, and connects you to the right doctor',
       },
       checks: {
         ar: [
           'وصف أعراضك بالعربي أو بصوتك',
-          'ترياڃي يقيّم حالتك فوراً',
+          'دكتور تريو يقيّم حالتك فوراً',
           'اختيار الدكتور وحجز الموعد',
           'الدكتور بيستلم ملخص حالتك',
         ],
         en: [
           'Describe your symptoms in your own words or by voice',
-          'Triajji assesses your condition instantly',
+          'DoctorTrio assesses your condition instantly',
           'Choose your doctor and book your appointment',
           'Your doctor receives a summary of your case',
         ],
@@ -54,13 +54,13 @@ const CONTENT = {
       checks: {
         ar: [
           'الفحص الطبي الكامل',
-          'الروشتة والتحاليل والأشعة على ترياڃي',
+          'الروشتة والتحاليل والأشعة على دكتور تريو',
           'المستندات على واتساب فوراً',
           'كل حاجة في سجلك الطبي',
         ],
         en: [
           'Full medical examination',
-          'Prescriptions, labs, and imaging on Triajji',
+          'Prescriptions, labs, and imaging on DoctorTrio',
           'Documents delivered via WhatsApp instantly',
           'Everything in your medical record',
         ],

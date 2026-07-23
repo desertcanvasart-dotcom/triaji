@@ -27,7 +27,7 @@ interface HisDoctor {
   specialtyCode: string;
 }
 
-interface TriajjiDoctor {
+interface DoctorTrioDoctor {
   id: string;
   name_ar: string;
   name_en: string | null;
@@ -112,7 +112,7 @@ export default function HISPage() {
 
   // Doctor mapping
   const [hisDoctors, setHisDoctors] = useState<HisDoctor[]>([]);
-  const [triajiDoctors, setTriajjiDoctors] = useState<TriajjiDoctor[]>([]);
+  const [triajiDoctors, setDoctorTrioDoctors] = useState<DoctorTrioDoctor[]>([]);
   const [mappings, setMappings] = useState<Map<string, string | null>>(new Map());
   const [loadingDoctors, setLoadingDoctors] = useState(false);
   const [savingMappings, setSavingMappings] = useState(false);
@@ -291,16 +291,16 @@ export default function HISPage() {
 
       if (res.ok) {
         setHisDoctors(data.hisDoctors ?? []);
-        setTriajjiDoctors(data.triajiDoctors ?? []);
+        setDoctorTrioDoctors(data.triajiDoctors ?? []);
 
         // Initialize mappings with existing his_doctor_id values
         const initialMappings = new Map<string, string | null>();
-        for (const td of (data.triajiDoctors ?? []) as TriajjiDoctor[]) {
+        for (const td of (data.triajiDoctors ?? []) as DoctorTrioDoctor[]) {
           initialMappings.set(td.id, td.his_doctor_id);
         }
 
         // Auto-match by name similarity
-        for (const td of (data.triajiDoctors ?? []) as TriajjiDoctor[]) {
+        for (const td of (data.triajiDoctors ?? []) as DoctorTrioDoctor[]) {
           if (!initialMappings.get(td.id)) {
             const match = (data.hisDoctors as HisDoctor[]).find(
               (hd) => hd.nameAr === td.name_ar || similarNames(hd.nameAr, td.name_ar)
@@ -541,7 +541,7 @@ export default function HISPage() {
             className="card hover:border-teal-300 transition-colors text-left"
           >
             <h3 className="text-sm font-semibold text-gray-900">Doctor Mapping</h3>
-            <p className="text-xs text-gray-500 mt-1">Map Triajji doctors to HIS doctors</p>
+            <p className="text-xs text-gray-500 mt-1">Map DoctorTrio doctors to HIS doctors</p>
           </button>
           <button
             onClick={handleSync}
@@ -944,7 +944,7 @@ export default function HISPage() {
           </div>
 
           <p className="text-sm text-gray-500 mb-4">
-            Map each Triajji doctor to their corresponding HIS doctor record.
+            Map each DoctorTrio doctor to their corresponding HIS doctor record.
             Auto-matched doctors are pre-selected based on name similarity.
           </p>
 
@@ -960,7 +960,7 @@ export default function HISPage() {
                 <table className="min-w-full text-sm">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-right py-2 px-3 text-xs font-medium text-gray-500 uppercase">Triajji Doctor</th>
+                      <th className="text-right py-2 px-3 text-xs font-medium text-gray-500 uppercase">DoctorTrio Doctor</th>
                       <th className="text-right py-2 px-3 text-xs font-medium text-gray-500 uppercase">→</th>
                       <th className="text-right py-2 px-3 text-xs font-medium text-gray-500 uppercase">HIS Doctor</th>
                     </tr>

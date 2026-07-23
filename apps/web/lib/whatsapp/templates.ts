@@ -31,7 +31,7 @@ export function bookingConfirmationMessage(data: BookingTemplateData): string {
 
 للإلغاء أو الاستفسار، تواصل معنا.
 
-ترياچي — الدكتور الصح، في المكان الصح 🏥`;
+دكتور تريو — الدكتور الصح، في المكان الصح 🏥`;
 }
 
 export function reminder24hMessage(data: Pick<BookingTemplateData, 'doctorTitle' | 'doctorName' | 'dateAr' | 'timeAr' | 'clinicAddress'>): string {
@@ -41,7 +41,7 @@ ${data.doctorTitle} ${data.doctorName}
 ${data.dateAr} الساعة ${data.timeAr}
 ${data.clinicAddress}
 
-ترياچي 🏥`;
+دكتور تريو 🏥`;
 }
 
 export function reminder2hMessage(data: Pick<BookingTemplateData, 'doctorTitle' | 'doctorName' | 'timeAr'>): string {
@@ -51,11 +51,11 @@ ${data.doctorTitle} ${data.doctorName}
 الساعة ${data.timeAr}
 
 نتمنى لك الشفاء العاجل 🌿
-ترياچي`;
+دكتور تريو`;
 }
 
 export function smsConfirmationMessage(data: Pick<BookingTemplateData, 'doctorTitle' | 'doctorName' | 'dateAr' | 'timeAr' | 'clinicAddress'>): string {
-  return `ترياچي: تم حجز موعدك مع ${data.doctorTitle} ${data.doctorName}
+  return `دكتور تريو: تم حجز موعدك مع ${data.doctorTitle} ${data.doctorName}
 ${data.dateAr} الساعة ${data.timeAr}
 ${data.clinicAddress}`;
 }
@@ -76,7 +76,7 @@ export function telehealthConfirmationMessage(data: BookingTemplateData & { tele
 
 رابط الاستشارة سيُرسل إليك قبل الموعد بساعة.
 
-ترياچي — الدكتور الصح، في المكان الصح`;
+دكتور تريو — الدكتور الصح، في المكان الصح`;
 }
 
 export function telehealthReminderMessage(data: {
@@ -95,7 +95,7 @@ ${data.telehealthLink}
 
 تأكد من تجهيز الكاميرا والميكروفون قبل الموعد
 
-ترياچي`;
+دكتور تريو`;
 }
 
 // ─── Invoice With Payment Templates (Bilingual) ────────────────────────────────
@@ -109,7 +109,7 @@ export interface InvoicePaymentTemplateData {
   paymentReference: string;
 }
 
-const PAYMENT_RETURN_BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://triajji.com';
+const PAYMENT_RETURN_BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://doctortrio.online';
 
 /**
  * Clinic invoice with optional online payment link.
@@ -132,7 +132,7 @@ export function getClinicInvoiceWithPaymentTemplate(
     }
 
     msg += `\n\n💳 ادفع أونلاين:\n${PAYMENT_RETURN_BASE_URL}/ar/pay/${data.paymentReference}`;
-    msg += '\n\nترياچي 🏥';
+    msg += '\n\nدكتور تريو 🏥';
     return msg;
   }
 
@@ -148,7 +148,7 @@ Your invoice from ${data.providerName} is ready:
   }
 
   msg += `\n\n💳 Pay Online:\n${PAYMENT_RETURN_BASE_URL}/en/pay/${data.paymentReference}`;
-  msg += '\n\nTriajji 🏥';
+  msg += '\n\nDoctorTrio 🏥';
   return msg;
 }
 
@@ -172,7 +172,7 @@ export function getPharmacyInvoiceWithPaymentTemplate(
     }
 
     msg += `\n\n💳 ادفع أونلاين:\n${PAYMENT_RETURN_BASE_URL}/ar/pay/${data.paymentReference}`;
-    msg += '\n\nترياچي 🏥';
+    msg += '\n\nدكتور تريو 🏥';
     return msg;
   }
 
@@ -188,7 +188,7 @@ Your invoice from ${data.providerName} Pharmacy is ready:
   }
 
   msg += `\n\n💳 Pay Online:\n${PAYMENT_RETURN_BASE_URL}/en/pay/${data.paymentReference}`;
-  msg += '\n\nTriajji 🏥';
+  msg += '\n\nDoctorTrio 🏥';
   return msg;
 }
 
@@ -212,7 +212,7 @@ export function getLabInvoiceWithPaymentTemplate(
     }
 
     msg += `\n\n💳 ادفع أونلاين:\n${PAYMENT_RETURN_BASE_URL}/ar/pay/${data.paymentReference}`;
-    msg += '\n\nترياچي 🏥';
+    msg += '\n\nدكتور تريو 🏥';
     return msg;
   }
 
@@ -228,7 +228,7 @@ Your invoice from ${data.providerName} Lab is ready:
   }
 
   msg += `\n\n💳 Pay Online:\n${PAYMENT_RETURN_BASE_URL}/en/pay/${data.paymentReference}`;
-  msg += '\n\nTriajji 🏥';
+  msg += '\n\nDoctorTrio 🏥';
   return msg;
 }
 
@@ -272,7 +272,7 @@ export function bookingPaymentExpiredMessage(
 تم تحرير الموعد ويمكنك الحجز مرة أخرى من هنا:
 ${data.newBookingLink}
 
-ترياچي 🏥`;
+دكتور تريو 🏥`;
   }
 
   return `Hello ${data.patientName},
@@ -282,17 +282,17 @@ Your appointment with ${data.doctorName} was cancelled due to payment expiry.
 The slot has been released. You can book again here:
 ${data.newBookingLink}
 
-Triajji 🏥`;
+DoctorTrio 🏥`;
 }
 
 // ─── Phone Call Handoff Templates ────────────────────────────────────────────
 
 export function handoffPatientMessage(shortRef: string): string {
-  return `[ترياچي] تم تحويلك لأحد موظفينا.
+  return `[دكتور تريو] تم تحويلك لأحد موظفينا.
 رقمك المرجعي: ${shortRef}
 احتفظ بهذا الرقم للمتابعة.
 
-ترياچي — الدكتور الصح، في المكان الصح`;
+دكتور تريو — الدكتور الصح، في المكان الصح`;
 }
 
 export function handoffAgentMessage(data: {
@@ -305,7 +305,7 @@ export function handoffAgentMessage(data: {
   reason: string;
 }): string {
   const symptomsList = data.symptoms.length > 0 ? data.symptoms.join('، ') : 'غير محدد';
-  return `[ترياچي] تحويل مريض
+  return `[دكتور تريو] تحويل مريض
 
 الرقم المرجعي: ${data.shortRef}
 المتصل: ${data.phone}
@@ -318,5 +318,5 @@ export function handoffAgentMessage(data: {
 السبب: ${data.reason}
 
 ---
-يمكنك متابعة المحادثة في لوحة ترياچي.`;
+يمكنك متابعة المحادثة في لوحة دكتور تريو.`;
 }

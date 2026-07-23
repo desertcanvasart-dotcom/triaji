@@ -4,8 +4,11 @@ Guidance for working in this repository.
 
 ## What this is
 
-**Triaji** (ترياچي) — an Arabic-first, bilingual (Arabic-RTL / English-LTR) AI medical
-triage & booking SaaS for the Egyptian healthcare market. It connects patients, doctors,
+**DoctorTrio** (دكتور تريو) — an Arabic-first, bilingual (Arabic-RTL / English-LTR) AI medical
+triage & booking SaaS for the Egyptian healthcare market, live at **doctortrio.online**
+(app.doctortrio.online = web app, admin.doctortrio.online = provider panel). Formerly branded
+"Triaji/Triajji (ترياچي)" — internal identifiers (the `@triaji/*` package namespace, `triaji-`
+CSS prefixes, repo paths) intentionally keep the old name; user-facing strings use DoctorTrio. It connects patients, doctors,
 clinics, labs, pharmacies, insurers, and ICU registries in one platform. AI triage runs on
 Claude with a Cohere-embedded RAG knowledge base.
 

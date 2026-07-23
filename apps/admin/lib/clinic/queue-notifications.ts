@@ -14,7 +14,7 @@ export async function sendQueueRegisteredNotification(
     `رقمك في الطابور: #${queueNumber}\n` +
     `الوقت المتوقع للانتظار: ${estimatedWaitMinutes} دقيقة\n\n` +
     `سنرسل لك إشعار عندما يقترب دورك.\n` +
-    `ترياچي 🏥`;
+    `دكتور تريو 🏥`;
 
   return sendWhatsAppMessage(phone, message);
 }
@@ -27,7 +27,7 @@ export async function sendAlmostNextNotification(phone: string) {
   const message =
     `تنبيه — دورك قريب جداً! ⏰\n\n` +
     `يرجى التوجه إلى منطقة الانتظار والاستعداد.\n\n` +
-    `ترياچي 🏥`;
+    `دكتور تريو 🏥`;
 
   return sendWhatsAppMessage(phone, message);
 }
@@ -43,7 +43,7 @@ export async function sendCalledNotification(
   const message =
     `دورك الآن! 🔔\n\n` +
     `يرجى التوجه إلى: ${roomName}\n\n` +
-    `ترياچي 🏥`;
+    `دكتور تريو 🏥`;
 
   return sendWhatsAppMessage(phone, message);
 }

@@ -85,8 +85,8 @@ export async function notifyDoctorApiFallback(
 
   const message =
     lang === 'ar'
-      ? `تنبيه من ترياچي:\nلم نتمكن من إرسال طلب التحاليل إلى ${chain} عبر النظام الإلكتروني.\nالطلب يتم إرساله يدوياً الآن.\nرقم التوجيه: ${routingId}`
-      : `Triajji Alert:\nCould not send order to ${chain} via API. Proceeding manually.\nRouting ID: ${routingId}`;
+      ? `تنبيه من دكتور تريو:\nلم نتمكن من إرسال طلب التحاليل إلى ${chain} عبر النظام الإلكتروني.\nالطلب يتم إرساله يدوياً الآن.\nرقم التوجيه: ${routingId}`
+      : `DoctorTrio Alert:\nCould not send order to ${chain} via API. Proceeding manually.\nRouting ID: ${routingId}`;
 
   return sendWhatsAppMessage(doctorPhone, message);
 }
@@ -125,8 +125,8 @@ export async function notifyPatientChainBooking(
 
   const message =
     lang === 'ar'
-      ? `تأكيد حجز تحاليل - ${chain}\n\nرقم التأكيد: ${data.confirmationCode}\nالتاريخ: ${dateStr}${data.time ? `\nالوقت: ${data.time}` : ''}\nالمكان: ${locationLine}${testsLine ? `\n${testsLine}` : ''}\n\nترياچي`
-      : `Lab Booking Confirmed - ${chain}\n\nConfirmation: ${data.confirmationCode}\nDate: ${dateStr}${data.time ? `\nTime: ${data.time}` : ''}\nLocation: ${locationLine}${testsLine ? `\n${testsLine}` : ''}\n\nTriajji`;
+      ? `تأكيد حجز تحاليل - ${chain}\n\nرقم التأكيد: ${data.confirmationCode}\nالتاريخ: ${dateStr}${data.time ? `\nالوقت: ${data.time}` : ''}\nالمكان: ${locationLine}${testsLine ? `\n${testsLine}` : ''}\n\nدكتور تريو`
+      : `Lab Booking Confirmed - ${chain}\n\nConfirmation: ${data.confirmationCode}\nDate: ${dateStr}${data.time ? `\nTime: ${data.time}` : ''}\nLocation: ${locationLine}${testsLine ? `\n${testsLine}` : ''}\n\nDoctorTrio`;
 
   return sendWhatsAppMessage(phone, message);
 }
@@ -169,7 +169,7 @@ export async function notifyPatientChainResults(
       message += `\n\nعرض النتائج:\n${data.viewUrl}`;
     }
 
-    message += '\n\nترياچي';
+    message += '\n\nدكتور تريو';
   } else {
     message = `Lab Results Ready - ${chain}\n\nTests completed: ${data.testCount}`;
 
@@ -185,7 +185,7 @@ export async function notifyPatientChainResults(
       message += `\n\nView results:\n${data.viewUrl}`;
     }
 
-    message += '\n\nTriajji';
+    message += '\n\nDoctorTrio';
   }
 
   return sendWhatsAppMessage(phone, message);
@@ -211,8 +211,8 @@ export async function notifyDoctorChainResults(
 
   const message =
     lang === 'ar'
-      ? `ترياچي — نتائج تحاليل جاهزة\n\nالمريض: ${data.patientName}\nالمعمل: ${chain}\nعدد التحاليل: ${data.testCount}${data.abnormalCount > 0 ? `\nنتائج غير طبيعية: ${data.abnormalCount}` : ''}\nرقم التوجيه: ${data.routingId}`
-      : `Triajji — Lab Results Ready\n\nPatient: ${data.patientName}\nLab: ${chain}\nTests: ${data.testCount}${data.abnormalCount > 0 ? `\nAbnormal: ${data.abnormalCount}` : ''}\nRouting ID: ${data.routingId}`;
+      ? `دكتور تريو — نتائج تحاليل جاهزة\n\nالمريض: ${data.patientName}\nالمعمل: ${chain}\nعدد التحاليل: ${data.testCount}${data.abnormalCount > 0 ? `\nنتائج غير طبيعية: ${data.abnormalCount}` : ''}\nرقم التوجيه: ${data.routingId}`
+      : `DoctorTrio — Lab Results Ready\n\nPatient: ${data.patientName}\nLab: ${chain}\nTests: ${data.testCount}${data.abnormalCount > 0 ? `\nAbnormal: ${data.abnormalCount}` : ''}\nRouting ID: ${data.routingId}`;
 
   return sendWhatsAppMessage(doctorPhone, message);
 }

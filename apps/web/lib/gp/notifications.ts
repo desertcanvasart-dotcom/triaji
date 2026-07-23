@@ -30,7 +30,7 @@ export async function sendGPRequestNotification(
             `To accept or decline, click the link below:`,
             data.confirmUrl,
             ``,
-            `Triajji Healthcare`,
+            `DoctorTrio Healthcare`,
           ].join('\n')
         : [
             `الدكتور ${data.requesterName} يريد أن يكون طبيبك العام.`,
@@ -38,7 +38,7 @@ export async function sendGPRequestNotification(
             `للقبول أو الرفض، اضغط على الرابط:`,
             data.confirmUrl,
             ``,
-            `ترياچي للرعاية الصحية`,
+            `دكتور تريو للرعاية الصحية`,
           ].join('\n')
       : // initiated by patient → notify the doctor (always Arabic)
         [
@@ -47,7 +47,7 @@ export async function sendGPRequestNotification(
           `للقبول أو الرفض، اضغط على الرابط:`,
           data.confirmUrl,
           ``,
-          `ترياچي للرعاية الصحية`,
+          `دكتور تريو للرعاية الصحية`,
         ].join('\n');
 
   return sendWhatsAppMessage(phone, message);
@@ -73,14 +73,14 @@ export async function sendGPAcceptedNotification(
           ``,
           `Dr. ${data.doctorName} will now be notified about your lab results, prescriptions, and specialist visits.`,
           ``,
-          `Triajji Healthcare`,
+          `DoctorTrio Healthcare`,
         ].join('\n')
       : [
           `تم تأكيد علاقة الطبيب العام مع الدكتور ${data.doctorName}.`,
           ``,
           `سيتم إبلاغ الدكتور ${data.doctorName} بنتائج تحاليلك ووصفاتك الطبية وزياراتك للأخصائيين.`,
           ``,
-          `ترياچي للرعاية الصحية`,
+          `دكتور تريو للرعاية الصحية`,
         ].join('\n');
 
   return sendWhatsAppMessage(phone, message);
@@ -107,14 +107,14 @@ export async function sendGPEndedNotification(
           ``,
           `You can request a new GP at any time through the app.`,
           ``,
-          `Triajji Healthcare`,
+          `DoctorTrio Healthcare`,
         ].join('\n')
       : [
           `تم إنهاء علاقة الطبيب العام مع الدكتور ${data.doctorName}${data.endedBy === 'patient' ? ' بواسطتك' : ''}.`,
           ``,
           `يمكنك طلب طبيب عام جديد في أي وقت من خلال التطبيق.`,
           ``,
-          `ترياچي للرعاية الصحية`,
+          `دكتور تريو للرعاية الصحية`,
         ].join('\n');
 
   return sendWhatsAppMessage(phone, message);
@@ -142,7 +142,7 @@ export async function sendGPNewLabAlert(
     `التحليل: ${data.labTestName}${abnormalFlag}`,
     ``,
     `يرجى مراجعة النتائج من لوحة التحكم.`,
-    `ترياچي للرعاية الصحية`,
+    `دكتور تريو للرعاية الصحية`,
   ].join('\n');
 
   return sendWhatsAppMessage(phone, message);
@@ -169,7 +169,7 @@ export async function sendGPNewPrescriptionAlert(
     `الدواء: ${data.medicationName}`,
     ``,
     `يرجى مراجعة الوصفة من لوحة التحكم.`,
-    `ترياچي للرعاية الصحية`,
+    `دكتور تريو للرعاية الصحية`,
   ].join('\n');
 
   return sendWhatsAppMessage(phone, message);
@@ -196,7 +196,7 @@ export async function sendGPSpecialistVisitAlert(
     `الأخصائي: ${data.specialistName} (${data.specialtyAr})`,
     ``,
     `يرجى مراجعة تفاصيل الزيارة من لوحة التحكم.`,
-    `ترياچي للرعاية الصحية`,
+    `دكتور تريو للرعاية الصحية`,
   ].join('\n');
 
   return sendWhatsAppMessage(phone, message);

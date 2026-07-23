@@ -61,7 +61,7 @@ export default function Sidebar({ role, collapsed, onToggle }: SidebarProps) {
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-5 border-b border-white/10">
         {!collapsed && (
-          <h1 className="text-lg font-bold tracking-wide">Triajji Admin</h1>
+          <h1 className="text-lg font-bold tracking-wide">DoctorTrio Admin</h1>
         )}
         <button
           onClick={onToggle}
@@ -127,7 +127,7 @@ export default function Sidebar({ role, collapsed, onToggle }: SidebarProps) {
       {/* Footer */}
       {!collapsed && (
         <div className="px-4 py-3 border-t border-white/10 text-xs text-white/50">
-          Triajji v1.0
+          DoctorTrio v1.0
         </div>
       )}
     </aside>

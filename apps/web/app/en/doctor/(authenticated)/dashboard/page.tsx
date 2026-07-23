@@ -240,7 +240,7 @@ export default function DoctorDashboardPage() {
               ICU Bed Availability
             </h2>
             <p className="text-sm text-red-700 mt-1">
-              Find available ICU beds near you in real-time. Search across all Triajji-registered hospitals.
+              Find available ICU beds near you in real-time. Search across all DoctorTrio-registered hospitals.
             </p>
             <Link
               href="/en/icu"

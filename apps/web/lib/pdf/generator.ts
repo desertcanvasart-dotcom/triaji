@@ -22,8 +22,8 @@ const NAVY = rgb(0.102, 0.184, 0.290);
 const TEAL = rgb(0.051, 0.478, 0.478);
 const DARK_GRAY = rgb(0.2, 0.2, 0.2);
 const LIGHT_GRAY = rgb(0.75, 0.75, 0.75);
-const DISCLAIMER_AR = 'هذه الوثيقة صادرة من الطبيب المعالج وليست توصية من ترياڃي';
-const DISCLAIMER_EN = 'This document is issued by the treating physician and is not a Triajji recommendation';
+const DISCLAIMER_AR = 'هذه الوثيقة صادرة من الطبيب المعالج وليست توصية من دكتور تريو';
+const DISCLAIMER_EN = 'This document is issued by the treating physician and is not a DoctorTrio recommendation';
 
 const DOCUMENT_TITLES: Record<DocumentType, { ar: string; en: string }> = {
   prescription: { ar: 'روشتة طبية', en: 'Medical Prescription' },

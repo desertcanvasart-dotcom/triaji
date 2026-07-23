@@ -12,7 +12,7 @@ export interface TenantConfig {
 
 export interface UserConfig {
   tenantSlug: string;
-  primaryColor?: string; // Override from window.TriajjiConfig
+  primaryColor?: string; // Override from window.DoctorTrioConfig
   position?: 'bottom-right' | 'bottom-left';
   buttonLabel?: string; // Override Arabic button label
   apiUrl?: string; // Override API base URL (for development)
@@ -92,7 +92,7 @@ export type WidgetView =
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 export const DEFAULT_PRIMARY_COLOR = '#0D7A7A';
-export const DEFAULT_API_URL = 'https://app.triajji.com';
+export const DEFAULT_API_URL = 'https://app.doctortrio.online';
 
 // Captured synchronously at script load (IIFE build) — currentScript is null
 // once execution leaves the initial script evaluation.

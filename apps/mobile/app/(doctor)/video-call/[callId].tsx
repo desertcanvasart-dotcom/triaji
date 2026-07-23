@@ -16,7 +16,7 @@ import { useLang } from '@/hooks/useLang';
 import { s } from '@triaji/shared/i18n';
 import VideoCallScreen from '@/components/video-call/VideoCallScreen';
 
-const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.triajji.com';
+const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.doctortrio.online';
 const RINGING_TIMEOUT_MS = 60000;
 
 interface CallData {

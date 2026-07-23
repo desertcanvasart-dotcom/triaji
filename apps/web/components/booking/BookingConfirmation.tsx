@@ -95,12 +95,12 @@ function generateICS(props: {
 
   return `BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//Triajji//Booking//AR
+PRODID:-//DoctorTrio//Booking//AR
 BEGIN:VEVENT
 DTSTART:${fmt(dt)}
 DTEND:${fmt(endDt)}
 SUMMARY:موعد طبي - ${props.doctorNameAr}
-DESCRIPTION:${props.specialtyNameAr}\\nترياچي — الدكتور الصح في المكان الصح
+DESCRIPTION:${props.specialtyNameAr}\\nدكتور تريو — الدكتور الصح في المكان الصح
 LOCATION:${props.clinicAddressAr ?? ''}
 STATUS:CONFIRMED
 END:VEVENT

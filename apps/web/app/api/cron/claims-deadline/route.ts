@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
         }
 
         lines.push('من فضلك ارفع المطالبات المعلقة قبل انتهاء الموعد.');
-        lines.push('ترياچي للرعاية الصحية');
+        lines.push('دكتور تريو للرعاية الصحية');
 
         const whatsappResult = await sendWhatsAppMessage(tenantPhone, lines.join('\n'));
 

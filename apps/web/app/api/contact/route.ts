@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     console.log('[Contact] New message:', { name, phone, email, subject, message: message.slice(0, 100) });
 
     // In production, this would:
-    // 1. Send email to support@triajji.com
+    // 1. Send email to support@doctortrio.online
     // 2. Send WhatsApp acknowledgement to the patient
     // 3. Store in a contact_messages table
 

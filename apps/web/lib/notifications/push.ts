@@ -126,10 +126,10 @@ export async function sendOtpPush(
   code: string,
   lang: 'ar' | 'en' = 'ar'
 ): Promise<boolean> {
-  const title = lang === 'ar' ? 'رمز ترياچي' : 'Triajji Code';
+  const title = lang === 'ar' ? 'رمز دكتور تريو' : 'DoctorTrio Code';
   const body = lang === 'ar'
-    ? `رمز ترياچي: ${code}. صالح 10 دقائق.`
-    : `Triajji code: ${code}. Valid for 10 minutes.`;
+    ? `رمز دكتور تريو: ${code}. صالح 10 دقائق.`
+    : `DoctorTrio code: ${code}. Valid for 10 minutes.`;
 
   return sendPushNotification(token, title, body, { type: 'otp', code });
 }

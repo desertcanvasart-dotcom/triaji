@@ -512,7 +512,7 @@ function TranscriptDisplay({ transcript }: { transcript: string }) {
 
   const roleStyles: Record<TranscriptLine['role'], { bg: string; label: string; align: string }> = {
     patient: { bg: 'bg-blue-50 border-blue-200', label: 'Patient', align: 'mr-8' },
-    agent: { bg: 'bg-teal-50 border-teal-200', label: 'Triajji', align: 'ml-8' },
+    agent: { bg: 'bg-teal-50 border-teal-200', label: 'DoctorTrio', align: 'ml-8' },
     system: { bg: 'bg-gray-50 border-gray-200', label: 'System', align: 'mx-4' },
   };
 

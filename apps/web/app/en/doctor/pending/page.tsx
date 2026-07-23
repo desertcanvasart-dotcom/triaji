@@ -23,7 +23,7 @@ export default function DoctorPendingPage() {
       <nav className="bg-white border-b border-gray-100 px-4 py-3">
         <div className="max-w-md mx-auto flex items-center justify-between">
           <Link href="/" className="text-xl font-bold text-teal-600">
-            Triajji
+            DoctorTrio
           </Link>
           <button
             onClick={handleLogout}
@@ -52,7 +52,7 @@ export default function DoctorPendingPage() {
 
           <div className="space-y-4">
             <a
-              href="mailto:support@triajji.com"
+              href="mailto:support@doctortrio.online"
               className="inline-block w-full border-2 border-teal-600 text-teal-600 font-semibold py-3 rounded-xl hover:bg-teal-50 transition-colors"
             >
               Contact us

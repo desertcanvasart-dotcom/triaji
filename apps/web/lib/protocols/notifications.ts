@@ -36,7 +36,7 @@ export async function sendCriticalThresholdAlert(
         `Please consult your doctor as soon as possible.`,
         `If you feel unwell, call emergency services at 123.`,
         ``,
-        `Triajji Healthcare`,
+        `DoctorTrio Healthcare`,
       ].filter(Boolean).join('\n')
     : [
         `تنبيه صحي مهم`,
@@ -48,7 +48,7 @@ export async function sendCriticalThresholdAlert(
         `من فضلك تواصل مع طبيبك في أقرب وقت.`,
         `لو حاسس بأي أعراض خطيرة، اتصل بالطوارئ على 123.`,
         ``,
-        `ترياچي للرعاية الصحية`,
+        `دكتور تريو للرعاية الصحية`,
       ].filter(Boolean).join('\n');
 
   return sendWhatsAppMessage(phone, message);
@@ -89,9 +89,9 @@ export async function sendWeeklyProtocolDigest(
         ...alertLines,
         ``,
         `Staying on track with your health plan makes a big difference.`,
-        `If you need help, contact your GP through Triajji.`,
+        `If you need help, contact your GP through DoctorTrio.`,
         ``,
-        `Triajji Healthcare`,
+        `DoctorTrio Healthcare`,
       ].join('\n')
     : [
         `ملخص صحي أسبوعي`,
@@ -101,9 +101,9 @@ export async function sendWeeklyProtocolDigest(
         ...alertLines,
         ``,
         `الالتزام بخطتك الصحية بيفرق معاك كتير.`,
-        `لو محتاج مساعدة، تواصل مع طبيبك من خلال ترياچي.`,
+        `لو محتاج مساعدة، تواصل مع طبيبك من خلال دكتور تريو.`,
         ``,
-        `ترياچي للرعاية الصحية`,
+        `دكتور تريو للرعاية الصحية`,
       ].join('\n');
 
   return sendWhatsAppMessage(phone, message);

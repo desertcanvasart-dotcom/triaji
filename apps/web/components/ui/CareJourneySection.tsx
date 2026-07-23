@@ -14,8 +14,8 @@ const SECTION = {
     en: 'From symptoms to appointment — in simple steps',
   },
   subheading: {
-    ar: 'ترياڃي بيسمعك، بيلاقيلك الدكتور الصح، وبتختار رحلتك العلاجية',
-    en: 'Triajji listens, finds you the right doctor, and you choose your care journey',
+    ar: 'دكتور تريو بيسمعك، بيلاقيلك الدكتور الصح، وبتختار رحلتك العلاجية',
+    en: 'DoctorTrio listens, finds you the right doctor, and you choose your care journey',
   },
 };
 
@@ -23,12 +23,12 @@ const STEPS = {
   step1: {
     title: { ar: 'احكِ عن أعراضك', en: 'Describe your symptoms' },
     desc: {
-      ar: 'بالكتابة أو الصوت — بالعربي العادي، من غير مصطلحات طبية.\nترياڃي بيسمعك ويقيّم حالتك فوراً.',
-      en: 'By text or voice — in your own words, no medical jargon needed.\nTriajji listens and assesses your condition instantly.',
+      ar: 'بالكتابة أو الصوت — بالعربي العادي، من غير مصطلحات طبية.\nدكتور تريو بيسمعك ويقيّم حالتك فوراً.',
+      en: 'By text or voice — in your own words, no medical jargon needed.\nDoctorTrio listens and assesses your condition instantly.',
     },
   },
   step2: {
-    title: { ar: 'ترياڃي يلاقيلك الدكتور', en: 'Triajji finds you a doctor' },
+    title: { ar: 'دكتور تريو يلاقيلك الدكتور', en: 'DoctorTrio finds you a doctor' },
     desc: {
       ar: 'بناءً على أعراضك، بنحدد التخصص الصح ونعرضلك\nدكاترة قريبين منك وبيقبلوا تأمينك.',
       en: 'Based on your symptoms, we determine the right specialty\nand show you nearby doctors who accept your insurance.',
@@ -56,8 +56,8 @@ const STANDARD = {
     subtitle: { ar: 'مع دكتور متخصص — من البيت', en: 'With a specialized doctor — from home' },
     more: { ar: 'تعرف أكتر', en: 'Learn more' },
     expanded: {
-      ar: 'مناسب لأول استشارة أو للمتابعة.\nالدكتور بيشوفك على فيديو، بيسمعك، وبيكتب الروشتة على ترياڃي.',
-      en: 'Suitable for a first consultation or follow-up.\nThe doctor sees you on video, listens, and writes the prescription on Triajji.',
+      ar: 'مناسب لأول استشارة أو للمتابعة.\nالدكتور بيشوفك على فيديو، بيسمعك، وبيكتب الروشتة على دكتور تريو.',
+      en: 'Suitable for a first consultation or follow-up.\nThe doctor sees you on video, listens, and writes the prescription on DoctorTrio.',
     },
   },
   clinic: {
@@ -82,7 +82,7 @@ const TRIO = {
     {
       title: { ar: 'قبل الكشف', en: 'Before the Visit' },
       mode: { ar: 'أونلاين', en: 'Online' },
-      desc: { ar: 'ترياڃي بيسمعك ويلاقيلك الدكتور', en: 'Triajji listens and finds you a doctor' },
+      desc: { ar: 'دكتور تريو بيسمعك ويلاقيلك الدكتور', en: 'DoctorTrio listens and finds you a doctor' },
     },
     {
       title: { ar: 'عند الدكتور', en: 'At the Doctor' },

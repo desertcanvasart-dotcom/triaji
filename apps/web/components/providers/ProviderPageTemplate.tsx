@@ -27,7 +27,7 @@ export interface ProviderPageProps {
 
 const LABELS = {
   painPoints: { ar: '\u0627\u0644\u062A\u062D\u062F\u064A\u0627\u062A', en: 'Challenges' },
-  solution: { ar: '\u0643\u064A\u0641 \u064A\u0633\u0627\u0639\u062F \u062A\u0631\u064A\u0627\u0686\u064A', en: 'How Triajji Helps' },
+  solution: { ar: '\u0643\u064A\u0641 \u064A\u0633\u0627\u0639\u062F \u062A\u0631\u064A\u0627\u0686\u064A', en: 'How DoctorTrio Helps' },
   steps: { ar: '\u0643\u064A\u0641 \u062A\u0628\u062F\u0623\u061F', en: 'How to Start?' },
   ctaTitle: { ar: '\u0627\u0628\u062F\u0623 \u0627\u0644\u0622\u0646', en: 'Start Now' },
   ctaSubtitle: {

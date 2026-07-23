@@ -22,7 +22,7 @@ import type { IcuSearchResult } from '@triaji/shared/types/icu';
 import { s } from '@triaji/shared/i18n';
 import type { Lang } from '@triaji/shared/i18n';
 
-const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.triajji.com';
+const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.doctortrio.online';
 
 interface TransferRequestSheetProps {
   result: IcuSearchResult;

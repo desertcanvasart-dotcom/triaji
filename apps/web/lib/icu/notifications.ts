@@ -60,7 +60,7 @@ export async function sendTransferRequestNotification(
           etaStr,
           ``,
           `Please respond promptly.`,
-          `Triajji Healthcare`,
+          `DoctorTrio Healthcare`,
         ]
           .filter(Boolean)
           .join('\n')
@@ -76,7 +76,7 @@ export async function sendTransferRequestNotification(
           etaStr,
           ``,
           `يرجى الرد في أقرب وقت.`,
-          `ترياچي للرعاية الصحية`,
+          `دكتور تريو للرعاية الصحية`,
         ]
           .filter(Boolean)
           .join('\n');
@@ -109,7 +109,7 @@ export async function sendTransferAcceptedNotification(
           `Contact: ${data.contactPhone}`,
           ``,
           `Head to the hospital now.`,
-          `Triajji Healthcare`,
+          `DoctorTrio Healthcare`,
         ].join('\n')
       : [
           `✅ تم قبول التحويل`,
@@ -120,7 +120,7 @@ export async function sendTransferAcceptedNotification(
           `للتواصل: ${data.contactPhone}`,
           ``,
           `توجّه للمستشفى الآن.`,
-          `ترياچي للرعاية الصحية`,
+          `دكتور تريو للرعاية الصحية`,
         ].join('\n');
 
   return sendWhatsAppMessage(doctorPhone, message);
@@ -147,7 +147,7 @@ export async function sendTransferDeclinedNotification(
           `Reason: ${data.reason}`,
           ``,
           `Search for other hospitals.`,
-          `Triajji Healthcare`,
+          `DoctorTrio Healthcare`,
         ].join('\n')
       : [
           `❌ تم رفض التحويل`,
@@ -156,7 +156,7 @@ export async function sendTransferDeclinedNotification(
           `السبب: ${data.reason}`,
           ``,
           `ابحث عن مستشفيات أخرى.`,
-          `ترياچي للرعاية الصحية`,
+          `دكتور تريو للرعاية الصحية`,
         ].join('\n');
 
   return sendWhatsAppMessage(doctorPhone, message);
@@ -190,14 +190,14 @@ export async function sendTransferStatusNotification(
           ``,
           `Patient: ${data.patientName}`,
           ``,
-          `Triajji Healthcare`,
+          `DoctorTrio Healthcare`,
         ].join('\n')
       : [
           `🚑 ${statusText}`,
           ``,
           `المريض: ${data.patientName}`,
           ``,
-          `ترياچي للرعاية الصحية`,
+          `دكتور تريو للرعاية الصحية`,
         ].join('\n');
 
   return sendWhatsAppMessage(hospitalPhone, message);

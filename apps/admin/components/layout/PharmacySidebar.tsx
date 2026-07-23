@@ -102,7 +102,7 @@ export default function PharmacySidebar({ role, collapsed, onToggle }: PharmacyS
       {/* Footer */}
       <div className="px-4 py-3 border-t border-white/10">
         {!collapsed && (
-          <p className="text-xs text-white/50">Triajji Pharmacy</p>
+          <p className="text-xs text-white/50">DoctorTrio Pharmacy</p>
         )}
       </div>
     </aside>

@@ -108,7 +108,7 @@ export default function InsuranceSidebar({ role, collapsed, onToggle }: Insuranc
       {/* Footer */}
       <div className="px-4 py-3 border-t border-white/10">
         {!collapsed && (
-          <p className="text-xs text-white/50">Triajji Insurance</p>
+          <p className="text-xs text-white/50">DoctorTrio Insurance</p>
         )}
       </div>
     </aside>

@@ -1,5 +1,5 @@
 /**
- * Triajji UI Strings — Arabic + English
+ * DoctorTrio UI Strings — Arabic + English
  * Simple typed constants for internationalisation.
  * No i18n library needed — just two languages.
  */
@@ -8,7 +8,7 @@ export type Lang = 'ar' | 'en';
 
 const UI_STRINGS = {
   common: {
-    appName: { ar: 'ترياچي', en: 'Triajji' },
+    appName: { ar: 'دكتور تريو', en: 'DoctorTrio' },
     tagline: { ar: 'الدكتور الصح، للأعراض الصح', en: 'From your symptoms to your appointment.' },
     loading: { ar: 'جاري التحميل...', en: 'Loading...' },
     error: { ar: 'حدث خطأ', en: 'An error occurred' },
@@ -23,8 +23,8 @@ const UI_STRINGS = {
     download: { ar: 'تحميل', en: 'Download' },
     emergencyNumber: { ar: '123', en: '123' },
     disclaimer: {
-      ar: 'ترياچي مرشد طبي ذكي — مش بديل عن الدكتور',
-      en: 'Triajji is a smart medical guide — not a substitute for a doctor',
+      ar: 'دكتور تريو مرشد طبي ذكي — مش بديل عن الدكتور',
+      en: 'DoctorTrio is a smart medical guide — not a substitute for a doctor',
     },
     switchToArabic: { ar: 'العربية', en: 'العربية' },
     switchToEnglish: { ar: 'English', en: 'English' },
@@ -34,8 +34,8 @@ const UI_STRINGS = {
     subtitle: { ar: 'مرشد طبي ذكي', en: 'Smart Medical Guide' },
     warningTitle: { ar: 'تنبيه مهم', en: 'Important Notice' },
     warningBody: {
-      ar: 'ترياچي مرشد طبي ذكي — مش بديل عن الدكتور. مش بيشخّص ولا بيكتب علاج.',
-      en: 'Triajji is a smart medical guide — not a substitute for a doctor. It does not diagnose or prescribe treatment.',
+      ar: 'دكتور تريو مرشد طبي ذكي — مش بديل عن الدكتور. مش بيشخّص ولا بيكتب علاج.',
+      en: 'DoctorTrio is a smart medical guide — not a substitute for a doctor. It does not diagnose or prescribe treatment.',
     },
     emergencyWarning: {
       ar: 'لو عندك حالة طوارئ، اتصل بـ',
@@ -62,8 +62,8 @@ const UI_STRINGS = {
     uploading: { ar: 'جاري رفع الصورة...', en: 'Uploading image...' },
     newSession: { ar: 'بدء محادثة جديدة', en: 'Start new conversation' },
     welcome: {
-      ar: 'أهلًا بيك في ترياچي! أنا مرشد طبي ذكي هساعدك توصل للتخصص المناسب.\n\nقولّي إيه اللي حاسس بيه أو إيه اللي بيوجعك؟\n\n📷 تقدر ترفع صور لو عندك أعراض ظاهرة.',
-      en: "Welcome to Triajji! I'm Nour, your smart medical guide. I'll help you find the right specialist.\n\nTell me what you're feeling or what's bothering you.\n\n📷 You can upload photos if you have visible symptoms.",
+      ar: 'أهلًا بيك في دكتور تريو! أنا مرشد طبي ذكي هساعدك توصل للتخصص المناسب.\n\nقولّي إيه اللي حاسس بيه أو إيه اللي بيوجعك؟\n\n📷 تقدر ترفع صور لو عندك أعراض ظاهرة.',
+      en: "Welcome to DoctorTrio! I'm Nour, your smart medical guide. I'll help you find the right specialist.\n\nTell me what you're feeling or what's bothering you.\n\n📷 You can upload photos if you have visible symptoms.",
     },
     sessionError: {
       ar: 'حصل مشكلة في بدء المحادثة. حاول تاني.',
@@ -145,8 +145,8 @@ const UI_STRINGS = {
     title: { ar: 'تسجيل الدخول', en: 'Sign In' },
     subtitle: { ar: 'سجلك الطبي', en: 'Your Medical Record' },
     description: {
-      ar: 'سجّل دخولك لعرض تاريخك الطبي في ترياچي',
-      en: 'Sign in to view your medical history on Triajji',
+      ar: 'سجّل دخولك لعرض تاريخك الطبي في دكتور تريو',
+      en: 'Sign in to view your medical history on DoctorTrio',
     },
     phoneLabel: { ar: 'رقم الموبايل', en: 'Mobile Number' },
     sendOtp: { ar: 'إرسال رمز التحقق', en: 'Send Verification Code' },
@@ -212,7 +212,7 @@ const UI_STRINGS = {
   },
 
   telehealth: {
-    header: { ar: 'ترياچي — استشارة أونلاين', en: 'Triajji — Online Consultation' },
+    header: { ar: 'دكتور تريو — استشارة أونلاين', en: 'DoctorTrio — Online Consultation' },
     waitingRoom: { ar: 'غرفة الانتظار', en: 'Waiting Room' },
     readyToJoin: { ar: 'جاهز للانضمام', en: 'Ready to Join' },
     joinConsultation: { ar: 'انضم للاستشارة', en: 'Join Consultation' },
@@ -503,7 +503,7 @@ const UI_STRINGS = {
 
   icu: {
     pageTitle: { ar: 'العناية المركزة المتاحة', en: 'Available ICU Beds' },
-    pageSubtitle: { ar: 'الأسرة المتاحة في مستشفيات ترياچي القريبة منك', en: 'Available beds in nearby Triajji hospitals' },
+    pageSubtitle: { ar: 'الأسرة المتاحة في مستشفيات دكتور تريو القريبة منك', en: 'Available beds in nearby DoctorTrio hospitals' },
     searchNearby: { ar: 'ابحث عن أسرة قريبة', en: 'Search nearby beds' },
     myLocation: { ar: 'موقعي الحالي', en: 'My current location' },
     enterAddress: { ar: 'أدخل عنواناً', en: 'Enter an address' },
@@ -647,7 +647,7 @@ const UI_STRINGS = {
 
   doctor: {
     landingHeadline: { ar: 'وصّل مع مرضاك بشكل أذكى', en: 'Connect with your patients smarter' },
-    landingSubheadline: { ar: 'ترياچي بيوفرلك ملخص طبي شامل لكل مريض قبل الكشف', en: 'Triajji gives you a complete patient summary before every consultation' },
+    landingSubheadline: { ar: 'دكتور تريو بيوفرلك ملخص طبي شامل لكل مريض قبل الكشف', en: 'DoctorTrio gives you a complete patient summary before every consultation' },
     registerFree: { ar: 'سجّل كطبيب مجاناً', en: 'Register as a doctor — free' },
     login: { ar: 'دخول الأطباء', en: 'Doctor login' },
     fullName: { ar: 'الاسم بالكامل', en: 'Full name' },
@@ -797,7 +797,7 @@ const UI_STRINGS = {
     noAccount: { ar: 'مش معانا لسه؟', en: 'Not registered yet?' },
     registerLink: { ar: 'سجّل كطبيب', en: 'Register as a doctor' },
     registerTitle: { ar: 'تسجيل طبيب جديد', en: 'Doctor Registration' },
-    registerSubtitle: { ar: 'سجّل حسابك للانضمام لشبكة ترياچي الطبية', en: 'Register to join the Triajji medical network' },
+    registerSubtitle: { ar: 'سجّل حسابك للانضمام لشبكة دكتور تريو الطبية', en: 'Register to join the DoctorTrio medical network' },
     fullName: { ar: 'الاسم بالكامل', en: 'Full name' },
     fullNamePlaceholder: { ar: 'د. محمد أحمد', en: 'Dr. Mohamed Ahmed' },
     specialty: { ar: 'التخصص الرئيسي', en: 'Primary specialty' },
@@ -1416,7 +1416,7 @@ const UI_STRINGS = {
   },
 
   healthAssistant: {
-    title:            { ar: 'ترياچي يسألك',                       en: 'Ask Triajji' },
+    title:            { ar: 'دكتور تريو يسألك',                       en: 'Ask DoctorTrio' },
     subtitle:         { ar: 'اسألني عن سجلك الطبي',              en: 'Ask me about your health records' },
     greeting:         { ar: 'مرحباً {name} 👋',                   en: 'Hello {name} 👋' },
     greetingSubtitle: { ar: 'أنا هنا أساعدك تفهم سجلك الطبي. اسألني عن تحاليلك أو أدويتك أو أي حاجة في سجلك.',
@@ -1425,20 +1425,20 @@ const UI_STRINGS = {
     send:             { ar: 'إرسال',                              en: 'Send' },
     suggestions:      { ar: 'اقتراحات:',                         en: 'Suggestions:' },
     history:          { ar: 'سجل المحادثة',                       en: 'Chat history' },
-    contextBanner:    { ar: 'المعلومات اللي بيعتمد عليها ترياچي',  en: 'Information Triajji is using' },
+    contextBanner:    { ar: 'المعلومات اللي بيعتمد عليها دكتور تريو',  en: 'Information DoctorTrio is using' },
     lastLabResults:   { ar: 'آخر تحاليل',                         en: 'Last lab results' },
     lastVisit:        { ar: 'آخر زيارة',                          en: 'Last visit' },
     activeMeds:       { ar: 'أدوية نشطة',                         en: 'Active medications' },
     viewFullRecord:   { ar: 'عرض السجل الطبي الكامل',            en: 'View full medical record' },
     typing:           { ar: 'جاري الكتابة...',                    en: 'Typing...' },
     noHistory:        { ar: 'لا توجد محادثات سابقة',             en: 'No previous conversations' },
-    askTriajji:        { ar: 'اسأل ترياچي',                         en: 'Ask Triajji' },
-    disclaimer:       { ar: 'ترياچي مش بديل عن الطبيب — هو بس بيساعدك تفهم بياناتك',
-                        en: 'Ask Triajji is not a substitute for a doctor — it helps you understand your data' },
-    limitedData:      { ar: 'سجلك الطبي في ترياچي لسه محدود — كلما أضفت معلومات أكتر، كانت الإجابات أدق',
-                        en: 'Your Triajji records are still limited — the more you add, the more accurate the answers' },
-    emptyRecord:      { ar: 'سجلك الطبي في ترياچي لسه فاضي. ابدأ باستخدام ترياچي لحجز مواعيد ومتابعة تحاليلك، وهنقدر نساعدك تفهم بياناتك أكتر.',
-                        en: 'Your Triajji health record is still empty. Start using Triajji to book appointments and track your results, and we\'ll be able to help you understand your health data better.' },
+    askDoctorTrio:        { ar: 'اسأل دكتور تريو',                         en: 'Ask DoctorTrio' },
+    disclaimer:       { ar: 'دكتور تريو مش بديل عن الطبيب — هو بس بيساعدك تفهم بياناتك',
+                        en: 'Ask DoctorTrio is not a substitute for a doctor — it helps you understand your data' },
+    limitedData:      { ar: 'سجلك الطبي في دكتور تريو لسه محدود — كلما أضفت معلومات أكتر، كانت الإجابات أدق',
+                        en: 'Your DoctorTrio records are still limited — the more you add, the more accurate the answers' },
+    emptyRecord:      { ar: 'سجلك الطبي في دكتور تريو لسه فاضي. ابدأ باستخدام دكتور تريو لحجز مواعيد ومتابعة تحاليلك، وهنقدر نساعدك تفهم بياناتك أكتر.',
+                        en: 'Your DoctorTrio health record is still empty. Start using DoctorTrio to book appointments and track your results, and we\'ll be able to help you understand your health data better.' },
     voiceInput:       { ar: 'تسجيل صوتي',                        en: 'Voice input' },
     messagesCount:    { ar: 'رسائل',                              en: 'messages' },
     openSession:      { ar: 'فتح',                               en: 'Open' },
@@ -1446,13 +1446,13 @@ const UI_STRINGS = {
 
   // ─── Sign-Up Gate (mid-conversation) ────────────────────────────────────────
   signUpGate: {
-    aiPause:          { ar: 'فاهم أعراضك كويس. عشان أكمل تقييمك وأوصلك للدكتور المناسب، محتاج تسجّل حسابك في ترياچي — بثانية واحدة برقم موبايلك.',
-                        en: 'I have a good understanding of your symptoms. To complete your assessment and connect you with the right doctor, please create your Triajji account — just your phone number.' },
-    cardTitle:        { ar: 'أكمل مع ترياچي',                   en: 'Continue with Triajji' },
+    aiPause:          { ar: 'فاهم أعراضك كويس. عشان أكمل تقييمك وأوصلك للدكتور المناسب، محتاج تسجّل حسابك في دكتور تريو — بثانية واحدة برقم موبايلك.',
+                        en: 'I have a good understanding of your symptoms. To complete your assessment and connect you with the right doctor, please create your DoctorTrio account — just your phone number.' },
+    cardTitle:        { ar: 'أكمل مع دكتور تريو',                   en: 'Continue with DoctorTrio' },
     phoneLabel:       { ar: 'رقم موبايلك',                      en: 'Mobile number' },
     phonePlaceholder: { ar: '01X-XXXX-XXXX',                    en: 'Your phone number' },
-    consentText:      { ar: 'أوافق إن ترياچي يحتفظ بمعلومات حالتي الصحية بشكل آمن وسري لاستكمال التقييم والمساعدة في حجز الدكتور المناسب.',
-                        en: 'I agree that Triajji may securely store my health information to complete this assessment and help book the right doctor for me.' },
+    consentText:      { ar: 'أوافق إن دكتور تريو يحتفظ بمعلومات حالتي الصحية بشكل آمن وسري لاستكمال التقييم والمساعدة في حجز الدكتور المناسب.',
+                        en: 'I agree that DoctorTrio may securely store my health information to complete this assessment and help book the right doctor for me.' },
     privacyLink:      { ar: 'سياسة الخصوصية',                   en: 'Privacy Policy' },
     submitOTP:        { ar: 'أرسل كود التأكيد',                  en: 'Send verification code' },
     guestButton:      { ar: 'متابعة بدون تسجيل',                en: 'Continue without signing up' },
@@ -1477,7 +1477,7 @@ type StringNode = { ar: string; en: string };
 /**
  * Resolve a nested key path to a localized string.
  * @example t('chat.send', 'en') → 'Send'
- * @example t('common.appName', 'ar') → 'ترياچي'
+ * @example t('common.appName', 'ar') → 'دكتور تريو'
  */
 export function t(key: string, lang: Lang): string {
   const parts = key.split('.');

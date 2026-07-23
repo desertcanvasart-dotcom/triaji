@@ -6,7 +6,7 @@
  * server via instrumentation.ts (runs once on server start).
  *
  * Architecture:
- *   Twilio -> wss://app.triajji.com/api/phone/stream -> this handler
+ *   Twilio -> wss://app.doctortrio.online/api/phone/stream -> this handler
  *   -> CallSession (STT + Triage + TTS) -> audio back to Twilio
  *
  * Audio format: mulaw 8kHz mono (Twilio default)

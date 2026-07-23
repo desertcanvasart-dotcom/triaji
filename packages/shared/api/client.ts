@@ -1,5 +1,5 @@
 /**
- * Triajji API Client — shared between web and mobile apps.
+ * DoctorTrio API Client — shared between web and mobile apps.
  * Calls the same API routes with typed request/response shapes.
  */
 
@@ -101,7 +101,7 @@ export interface TranscriptionResult {
   language: string;
 }
 
-export class TriajjiApiClient {
+export class DoctorTrioApiClient {
   private baseUrl: string;
   private getToken: () => string | null;
 

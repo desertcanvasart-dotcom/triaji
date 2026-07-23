@@ -22,7 +22,7 @@ export async function sendSMS(
 ): Promise<SMSResult> {
   const gatewayUrl = process.env.SMS_GATEWAY_URL;
   const apiKey = process.env.SMS_GATEWAY_API_KEY;
-  const senderName = process.env.SMS_SENDER_NAME ?? 'ترياچي';
+  const senderName = process.env.SMS_SENDER_NAME ?? 'دكتور تريو';
 
   // DEV_MODE — log instead of sending
   if (!gatewayUrl || !apiKey) {

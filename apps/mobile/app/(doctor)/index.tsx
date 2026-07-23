@@ -20,7 +20,7 @@ import { s } from '@triaji/shared/i18n';
 import BookingCard from '@/components/doctor/BookingCard';
 import OverdueAlert from '@/components/doctor/OverdueAlert';
 
-const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.triajji.com';
+const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.doctortrio.online';
 
 interface DashboardBooking {
   id: string;

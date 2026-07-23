@@ -21,7 +21,7 @@ import type { IcuSearchResult, IcuUnitType } from '@triaji/shared/types/icu';
 import IcuResultCard from '@/components/icu/IcuResultCard';
 import { createClient } from '@supabase/supabase-js';
 
-const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.triajji.com';
+const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.doctortrio.online';
 const SUPABASE_URL = process.env['EXPO_PUBLIC_SUPABASE_URL'] ?? '';
 const SUPABASE_ANON_KEY = process.env['EXPO_PUBLIC_SUPABASE_ANON_KEY'] ?? '';
 

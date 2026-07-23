@@ -93,16 +93,16 @@ const HANDOFF_TRIGGER_PHRASES_EN: readonly string[] = [
 // ─── Greeting Messages ─────────────────────────────────────────────────────
 
 const GREETING_MESSAGE =
-  'أهلاً بك في ترياچي. للتحدث مع المساعد الذكي اضغط واحد. للتحدث مع أحد موظفينا اضغط اثنين. لسماع هذه القائمة مرة أخرى اضغط تسعة.';
+  'أهلاً بك في دكتور تريو. للتحدث مع المساعد الذكي اضغط واحد. للتحدث مع أحد موظفينا اضغط اثنين. لسماع هذه القائمة مرة أخرى اضغط تسعة.';
 
 const GREETING_MESSAGE_BILINGUAL =
-  'أهلاً بك في ترياچي. Welcome to Triajji. Please speak in Arabic or English. للتحدث مع المساعد الذكي اضغط واحد. للتحدث مع أحد موظفينا اضغط اثنين.';
+  'أهلاً بك في دكتور تريو. Welcome to DoctorTrio. Please speak in Arabic or English. للتحدث مع المساعد الذكي اضغط واحد. للتحدث مع أحد موظفينا اضغط اثنين.';
 
 const TRIAGE_START_MESSAGE_AR =
-  'أهلاً بك، أنا نور، المساعد الطبي الذكي من ترياچي. إزاي أقدر أساعدك النهارده؟';
+  'أهلاً بك، أنا نور، المساعد الطبي الذكي من دكتور تريو. إزاي أقدر أساعدك النهارده؟';
 
 const TRIAGE_START_MESSAGE_EN =
-  'Hello, I am Nour, your Triajji medical guide. How can I help you today?';
+  'Hello, I am Nour, your DoctorTrio medical guide. How can I help you today?';
 
 /** Bilingual language prompt (played when language cannot be detected) */
 const LANGUAGE_PROMPT =
@@ -334,7 +334,7 @@ export class CallSession {
       const emergencyInstructions = result.emergency.instructionsAr;
       await sendWhatsAppMessage(
         this.state.callerPhone,
-        `${this.state.lang === 'en' ? 'Emergency alert from Triajji' : 'تنبيه طوارئ من ترياچي'}:\n${emergencyInstructions}`
+        `${this.state.lang === 'en' ? 'Emergency alert from DoctorTrio' : 'تنبيه طوارئ من دكتور تريو'}:\n${emergencyInstructions}`
       ).catch((err) => {
         console.error('[CallSession] Failed to send emergency WhatsApp:', err);
       });

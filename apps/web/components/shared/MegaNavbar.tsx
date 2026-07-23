@@ -12,7 +12,7 @@ interface MegaMenu { label: string; id: string; columns?: Column[]; simple?: boo
 
 const C = {
   ar: {
-    logo: '\u062a\u0631\u064a\u0627\u0686\u064a',
+    logo: '\u062f\u0643\u062a\u0648\u0631 \u062a\u0631\u064a\u0648',
     logoTag: '\u0645\u0646\u0635\u0629 \u0627\u0644\u0631\u0639\u0627\u064a\u0629 \u0627\u0644\u0635\u062d\u064a\u0629 \u0627\u0644\u0630\u0643\u064a\u0629',
     menus: [
       {
@@ -28,7 +28,7 @@ const C = {
             { icon: '\u{1F468}\u200D\u2695\uFE0F', title: '\u0637\u0628\u064a\u0628\u0643 \u0627\u0644\u0623\u0633\u0627\u0633\u064a', description: 'GP \u0645\u062e\u0635\u0635 \u0648\u0645\u0643\u0627\u0644\u0645\u0627\u062a \u0641\u064a\u062f\u064a\u0648', href: '/ar/gp' },
             { icon: '\u{1F6A8}', title: '\u0627\u0644\u0628\u062d\u062b \u0639\u0646 \u0633\u0631\u064a\u0631 \u0639\u0646\u0627\u064a\u0629', description: '\u0627\u0644\u0623\u0648\u0644 \u0645\u0646 \u0646\u0648\u0639\u0647 \u0641\u064a \u0645\u0635\u0631', href: '/ar/icu', badge: '\u0627\u0644\u0623\u0648\u0644 \u0641\u064a \u0645\u0635\u0631', badgeColor: 'red' },
             { icon: '\u{1F476}', title: '\u0645\u0644\u0641\u0627\u062a \u0627\u0644\u0623\u0637\u0641\u0627\u0644', description: '\u0646\u0645\u0648\u060c \u062a\u0637\u0639\u064a\u0645\u0627\u062a\u060c \u0648\u0645\u0631\u0627\u062d\u0644 \u062a\u0637\u0648\u0631', href: '/ar/paediatrics' },
-            { icon: '\u{1F916}', title: '\u062a\u0631\u064a\u0627\u0686\u064a \u064a\u0633\u0623\u0644\u0643', description: '\u0645\u0633\u0627\u0639\u062f\u0643 \u0627\u0644\u0635\u062d\u064a \u0627\u0644\u0634\u062e\u0635\u064a \u0628\u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a', href: '/ar/health-assistant', badge: '\u062c\u062f\u064a\u062f', badgeColor: 'teal' },
+            { icon: '\u{1F916}', title: '\u062f\u0643\u062a\u0648\u0631 \u062a\u0631\u064a\u0648 \u064a\u0633\u0623\u0644\u0643', description: '\u0645\u0633\u0627\u0639\u062f\u0643 \u0627\u0644\u0635\u062d\u064a \u0627\u0644\u0634\u062e\u0635\u064a \u0628\u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a', href: '/ar/health-assistant', badge: '\u062c\u062f\u064a\u062f', badgeColor: 'teal' },
           ]},
         ],
         cta: { label: '\u0627\u0628\u062f\u0623 \u0627\u0644\u0641\u0631\u0632 \u0627\u0644\u0637\u0628\u064a \u0645\u062c\u0627\u0646\u0627\u064b', href: '/ar/chat' },
@@ -72,7 +72,7 @@ const C = {
     learnMore: '\u0627\u0639\u0631\u0641 \u0623\u0643\u062a\u0631',
   },
   en: {
-    logo: 'Triajji',
+    logo: 'DoctorTrio',
     logoTag: 'Smart Healthcare Platform',
     menus: [
       {
@@ -88,7 +88,7 @@ const C = {
             { icon: '\u{1F468}\u200D\u2695\uFE0F', title: 'Your Primary Doctor', description: 'Dedicated GP and video calls', href: '/en/gp' },
             { icon: '\u{1F6A8}', title: 'ICU Bed Finder', description: 'First of its kind in Egypt', href: '/en/icu', badge: 'First in Egypt', badgeColor: 'red' },
             { icon: '\u{1F476}', title: 'Paediatric Profiles', description: 'Growth, vaccines, and milestones', href: '/en/paediatrics' },
-            { icon: '\u{1F916}', title: 'Ask Triajji', description: 'Your personal AI health companion', href: '/en/health-assistant', badge: 'New', badgeColor: 'teal' },
+            { icon: '\u{1F916}', title: 'Ask DoctorTrio', description: 'Your personal AI health companion', href: '/en/health-assistant', badge: 'New', badgeColor: 'teal' },
           ]},
         ],
         cta: { label: 'Start free medical triage', href: '/en/chat' },
@@ -186,7 +186,7 @@ export default function MegaNavbar({ lang }: { lang: Lang }) {
         <div className="bg-white border-b border-gray-200 shadow-xl shadow-gray-200/60 animate-[fadeInDown_0.2s_ease_forwards]" onMouseEnter={() => handleEnter(menu.id)} onMouseLeave={handleLeave}>
           <div className="max-w-3xl mx-auto px-6 py-6">
             <p className="text-gray-400 text-xs font-semibold tracking-widest mb-4">
-              {lang === 'ar' ? '\u0633\u062c\u0651\u0644 \u0645\u0624\u0633\u0633\u062a\u0643 \u0627\u0644\u0635\u062d\u064a\u0629 \u0641\u064a \u062a\u0631\u064a\u0627\u0686\u064a' : 'Register your healthcare institution on Triajji'}
+              {lang === 'ar' ? '\u0633\u062c\u0651\u0644 \u0645\u0624\u0633\u0633\u062a\u0643 \u0627\u0644\u0635\u062d\u064a\u0629 \u0641\u064a \u062f\u0643\u062a\u0648\u0631 \u062a\u0631\u064a\u0648' : 'Register your healthcare institution on DoctorTrio'}
             </p>
             <div className="grid grid-cols-3 gap-3">
               {menu.items.map((item, i) => (

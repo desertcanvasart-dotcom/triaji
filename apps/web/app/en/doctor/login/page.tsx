@@ -135,7 +135,7 @@ function Navbar() {
     <nav className="bg-white border-b border-gray-100 px-4 py-3">
       <div className="max-w-md mx-auto flex items-center justify-between">
         <Link href="/" className="text-xl font-bold text-teal-600">
-          Triajji
+          DoctorTrio
         </Link>
         <Link
           href="/en/doctor/login"

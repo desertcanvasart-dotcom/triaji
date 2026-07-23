@@ -110,7 +110,7 @@ export async function PUT(
         minute: '2-digit',
       });
 
-      const cancellationMsg = `عذراً، تم إلغاء موعدك مع ${doctor.title_ar} ${doctor.name_ar}\nبتاريخ ${dateAr} الساعة ${timeAr}\n\nلحجز موعد جديد، استخدم ترياچي.\nترياچي 🏥`;
+      const cancellationMsg = `عذراً، تم إلغاء موعدك مع ${doctor.title_ar} ${doctor.name_ar}\nبتاريخ ${dateAr} الساعة ${timeAr}\n\nلحجز موعد جديد، استخدم دكتور تريو.\nدكتور تريو 🏥`;
 
       console.log('[DEV_MODE] Cancellation notification:');
       console.log(`[DEV_MODE] To: ${patientPhone}`);

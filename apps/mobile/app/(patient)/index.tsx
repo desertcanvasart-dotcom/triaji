@@ -21,7 +21,7 @@ import { isAuthenticated } from '@/lib/storage';
 import { s } from '@triaji/shared/i18n';
 import AlertCard from '@/components/shared/AlertCard';
 
-const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.triajji.com';
+const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.doctortrio.online';
 
 interface EligibilityResult {
   eligible: boolean;
@@ -200,24 +200,24 @@ export default function PatientHomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Ask Triajji — Health Assistant (shown when eligible) */}
+        {/* Ask DoctorTrio — Health Assistant (shown when eligible) */}
         {assistantEligible && (
           <TouchableOpacity
-            style={styles.askTriajjiCard}
+            style={styles.askDoctorTrioCard}
             onPress={() => router.push('/(patient)/health-assistant')}
             activeOpacity={0.8}
           >
-            <View style={[styles.askTriajjiRow, isRtl && styles.rowRtl]}>
-              <Text style={styles.askTriajjiEmoji}>{'\u2728'}</Text>
-              <View style={styles.askTriajjiContent}>
-                <Text style={[styles.askTriajjiTitle, isRtl && styles.textRtl]}>
-                  {s.healthAssistant.askTriajji[lang]}
+            <View style={[styles.askDoctorTrioRow, isRtl && styles.rowRtl]}>
+              <Text style={styles.askDoctorTrioEmoji}>{'\u2728'}</Text>
+              <View style={styles.askDoctorTrioContent}>
+                <Text style={[styles.askDoctorTrioTitle, isRtl && styles.textRtl]}>
+                  {s.healthAssistant.askDoctorTrio[lang]}
                 </Text>
-                <Text style={[styles.askTriajjiSub, isRtl && styles.textRtl]}>
+                <Text style={[styles.askDoctorTrioSub, isRtl && styles.textRtl]}>
                   {s.healthAssistant.subtitle[lang]}
                 </Text>
               </View>
-              <Text style={styles.askTriajjiArrow}>{isRtl ? '←' : '→'}</Text>
+              <Text style={styles.askDoctorTrioArrow}>{isRtl ? '←' : '→'}</Text>
             </View>
           </TouchableOpacity>
         )}
@@ -472,8 +472,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // Ask Triajji card
-  askTriajjiCard: {
+  // Ask DoctorTrio card
+  askDoctorTrioCard: {
     backgroundColor: '#0D7A7A',
     borderRadius: 16,
     padding: 16,
@@ -484,30 +484,30 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
-  askTriajjiRow: {
+  askDoctorTrioRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-  askTriajjiEmoji: {
+  askDoctorTrioEmoji: {
     fontSize: 28,
   },
-  askTriajjiContent: {
+  askDoctorTrioContent: {
     flex: 1,
   },
-  askTriajjiTitle: {
+  askDoctorTrioTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: '#FFFFFF',
     fontFamily: 'Cairo-Bold',
   },
-  askTriajjiSub: {
+  askDoctorTrioSub: {
     fontSize: 12,
     color: 'rgba(255,255,255,0.8)',
     fontFamily: 'Cairo',
     marginTop: 2,
   },
-  askTriajjiArrow: {
+  askDoctorTrioArrow: {
     fontSize: 18,
     color: 'rgba(255,255,255,0.7)',
   },

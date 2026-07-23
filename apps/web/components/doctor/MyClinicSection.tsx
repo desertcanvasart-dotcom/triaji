@@ -12,10 +12,10 @@ interface ClinicTenant {
 
 const STRINGS = {
   ar: {
-    title: 'عيادتي على ترياچي',
+    title: 'عيادتي على دكتور تريو',
     linkedTo: 'حسابك مرتبط بـ',
-    manageHint: 'تقدر تدير العيادة (المواعيد، الاستقبال، الفواتير) من لوحة تحكم ترياچي للمنشآت بنفس بيانات الدخول.',
-    intro: 'لسه معندكش عيادة على ترياچي؟ أنشئ صفحة لعيادتك ولوحة تحكم خاصة بيها.',
+    manageHint: 'تقدر تدير العيادة (المواعيد، الاستقبال، الفواتير) من لوحة تحكم دكتور تريو للمنشآت بنفس بيانات الدخول.',
+    intro: 'لسه معندكش عيادة على دكتور تريو؟ أنشئ صفحة لعيادتك ولوحة تحكم خاصة بيها.',
     nameLabel: 'اسم العيادة (بالعربي)',
     nameEnLabel: 'اسم العيادة (بالإنجليزي — اختياري)',
     addressLabel: 'عنوان العيادة (اختياري)',
@@ -25,10 +25,10 @@ const STRINGS = {
     success: 'تم إنشاء عيادتك! تقدر دلوقتي تديرها من لوحة تحكم المنشآت بنفس بيانات دخولك.',
   },
   en: {
-    title: 'My clinic on Triajji',
+    title: 'My clinic on DoctorTrio',
     linkedTo: 'Your account is linked to',
-    manageHint: 'Manage the clinic (appointments, reception, billing) from the Triajji provider dashboard with this same login.',
-    intro: 'No clinic on Triajji yet? Create your clinic page and its own admin dashboard.',
+    manageHint: 'Manage the clinic (appointments, reception, billing) from the DoctorTrio provider dashboard with this same login.',
+    intro: 'No clinic on DoctorTrio yet? Create your clinic page and its own admin dashboard.',
     nameLabel: 'Clinic name (Arabic)',
     nameEnLabel: 'Clinic name (English — optional)',
     addressLabel: 'Clinic address (optional)',

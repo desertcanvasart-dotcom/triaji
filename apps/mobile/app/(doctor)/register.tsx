@@ -20,7 +20,7 @@ import { router } from 'expo-router';
 import { useLang } from '@/hooks/useLang';
 import { s } from '@triaji/shared/i18n';
 
-const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.triajji.com';
+const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.doctortrio.online';
 
 const SPECIALTIES: { ar: string; en: string }[] = [
   { ar: 'باطنة', en: 'Internal Medicine' },

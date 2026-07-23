@@ -23,7 +23,7 @@ import { s } from '@triaji/shared/i18n';
 import PatientSummary from '@/components/doctor/PatientSummary';
 import PrescriptionForm from '@/components/doctor/PrescriptionForm';
 
-const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.triajji.com';
+const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.doctortrio.online';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

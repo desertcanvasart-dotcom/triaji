@@ -64,7 +64,7 @@ export async function POST(request: Request) {
 // ─── DTMF Response Builder ──────────────────────────────────────────────────
 
 function buildDtmfResponse(digit: DtmfDigit): string {
-  const baseUrl = process.env.TWILIO_WEBHOOK_BASE_URL || 'https://app.triajji.com';
+  const baseUrl = process.env.TWILIO_WEBHOOK_BASE_URL || 'https://app.doctortrio.online';
   const wsUrl = baseUrl.replace('https://', 'wss://').replace('http://', 'ws://');
 
   switch (digit) {
@@ -123,7 +123,7 @@ function buildGatherInner(baseUrl: string): string {
   return `
   <Gather action="${escapeXml(baseUrl)}/api/phone/dtmf" method="POST" numDigits="1" timeout="10">
     <Say language="ar-EG" voice="Polly.Hala">
-      أهلاً بيك في ترياچي.
+      أهلاً بيك في دكتور تريو.
       لو عايز فحص ذكي بالصوت، اضغط واحد.
       لو عايز تتكلم مع موظف، اضغط اتنين.
       لو عايز تسمع القائمة تاني، اضغط تسعة.

@@ -41,7 +41,7 @@ export async function sendReferralSentToPatient(
           `Reason: ${data.reasonAr}`,
           ``,
           `We'll notify you when a specialist accepts your referral.`,
-          `Triajji Healthcare`,
+          `DoctorTrio Healthcare`,
         ].join('\n')
       : [
           `الدكتور ${data.referringDoctorName} حولك لأخصائي ${data.specialtyAr}.`,
@@ -50,7 +50,7 @@ export async function sendReferralSentToPatient(
           `السبب: ${data.reasonAr}`,
           ``,
           `هنبلغك لما الأخصائي يقبل التحويل.`,
-          `ترياچي للرعاية الصحية`,
+          `دكتور تريو للرعاية الصحية`,
         ].join('\n');
 
   return sendWhatsAppMessage(phone, message);
@@ -88,7 +88,7 @@ export async function sendReferralToDoctor(
     `السبب: ${data.reasonAr}`,
     ``,
     `يرجى قبول أو رفض التحويل من لوحة التحكم.`,
-    `ترياچي للرعاية الصحية`,
+    `دكتور تريو للرعاية الصحية`,
   ].join('\n');
 
   return sendWhatsAppMessage(phone, message);
@@ -114,13 +114,13 @@ export async function sendReferralAcceptedToPatient(
           `Great news! Dr. ${data.acceptingDoctorName} (${data.specialtyEn ?? data.specialtyAr}) has accepted your referral.`,
           ``,
           `You can now book an appointment with the specialist.`,
-          `Triajji Healthcare`,
+          `DoctorTrio Healthcare`,
         ].join('\n')
       : [
           `خبر سار! الدكتور ${data.acceptingDoctorName} (${data.specialtyAr}) قبل التحويل الخاص بك.`,
           ``,
           `يمكنك الآن حجز موعد مع الأخصائي.`,
-          `ترياچي للرعاية الصحية`,
+          `دكتور تريو للرعاية الصحية`,
         ].join('\n');
 
   return sendWhatsAppMessage(phone, message);
@@ -148,7 +148,7 @@ export async function sendReferralDeclinedToReferrer(
     data.reasonAr ? `السبب: ${data.reasonAr}` : '',
     `تم تحويل الطلب تلقائياً إلى المستوى الأول (أي أخصائي ${data.specialtyAr} متاح).`,
     ``,
-    `ترياچي للرعاية الصحية`,
+    `دكتور تريو للرعاية الصحية`,
   ]
     .filter(Boolean)
     .join('\n');
@@ -177,7 +177,7 @@ export async function sendReferralOutcomeToReferrer(
     `الملخص: ${data.outcomeSummaryAr}`,
     ``,
     `يرجى مراجعة التفاصيل الكاملة من لوحة التحكم.`,
-    `ترياچي للرعاية الصحية`,
+    `دكتور تريو للرعاية الصحية`,
   ].join('\n');
 
   return sendWhatsAppMessage(phone, message);

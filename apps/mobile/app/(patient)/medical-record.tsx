@@ -373,7 +373,7 @@ export default function MedicalRecordScreen() {
         </View>
       </ScrollView>
 
-      {/* Ask Triajji FAB */}
+      {/* Ask DoctorTrio FAB */}
       <TouchableOpacity
         style={[styles.fab, isRtl ? styles.fabRtl : styles.fabLtr]}
         onPress={() => router.push('/(patient)/health-assistant')}
@@ -381,7 +381,7 @@ export default function MedicalRecordScreen() {
       >
         <Text style={styles.fabEmoji}>{'\u2728'}</Text>
         <Text style={styles.fabText}>
-          {s.healthAssistant.askTriajji[lang]}
+          {s.healthAssistant.askDoctorTrio[lang]}
         </Text>
       </TouchableOpacity>
 

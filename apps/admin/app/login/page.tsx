@@ -129,7 +129,7 @@ function LoginForm() {
           <div className="w-12 h-12 bg-teal-600 rounded-xl flex items-center justify-center mx-auto mb-4">
             <span className="text-white text-xl font-bold">T</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Triajji Admin</h1>
+          <h1 className="text-2xl font-bold text-gray-900">DoctorTrio Admin</h1>
           <p className="text-sm text-gray-500 mt-1">Sign in to manage your clinic</p>
         </div>
 

@@ -1,6 +1,6 @@
 /**
  * POST /api/admin/his/map-doctors — Save doctor ID mappings
- * Maps Triajji doctor IDs to HIS doctor IDs.
+ * Maps DoctorTrio doctor IDs to HIS doctor IDs.
  */
 
 import { NextRequest, NextResponse } from 'next/server';

@@ -18,7 +18,7 @@ import { useLang } from '@/hooks/useLang';
 import { useAuth } from '@/hooks/useAuth';
 import { s } from '@triaji/shared/i18n';
 
-const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.triajji.com';
+const API_BASE_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'https://app.doctortrio.online';
 
 interface AccessGrant {
   id: string;

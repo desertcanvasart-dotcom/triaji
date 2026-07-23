@@ -88,8 +88,8 @@ const PRIVACY: Record<Lang, PolicyContent> = {
       {
         title: '\u0627\u0644\u062A\u0648\u0627\u0635\u0644 \u0645\u0639\u0646\u0627',
         content: [
-          '\u0644\u0623\u064A \u0627\u0633\u062A\u0641\u0633\u0627\u0631 \u0639\u0646 \u062E\u0635\u0648\u0635\u064A\u062A\u0643: privacy@triajji.com',
-          '\u0644\u0644\u0634\u0643\u0627\u0648\u0649 \u0623\u0648 \u0627\u0644\u0637\u0644\u0628\u0627\u062A: support@triajji.com',
+          '\u0644\u0623\u064A \u0627\u0633\u062A\u0641\u0633\u0627\u0631 \u0639\u0646 \u062E\u0635\u0648\u0635\u064A\u062A\u0643: privacy@doctortrio.online',
+          '\u0644\u0644\u0634\u0643\u0627\u0648\u0649 \u0623\u0648 \u0627\u0644\u0637\u0644\u0628\u0627\u062A: support@doctortrio.online',
         ],
       },
     ],
@@ -97,7 +97,7 @@ const PRIVACY: Record<Lang, PolicyContent> = {
   en: {
     title: 'Privacy Policy',
     lastUpdated: 'Last updated: March 2026',
-    intro: 'Triajji is committed to protecting your privacy. This page clearly explains what information we collect, why, and how we protect it.',
+    intro: 'DoctorTrio is committed to protecting your privacy. This page clearly explains what information we collect, why, and how we protect it.',
     sections: [
       {
         title: 'What information do we collect?',
@@ -135,7 +135,7 @@ const PRIVACY: Record<Lang, PolicyContent> = {
           'Strict database-level security policy (Row Level Security)',
           'Two-factor verification for all access operations',
           'Regular security audits by independent external parties',
-          'No Triajji employee can access your health data',
+          'No DoctorTrio employee can access your health data',
         ],
       },
       {
@@ -152,7 +152,7 @@ const PRIVACY: Record<Lang, PolicyContent> = {
         title: 'Very important notice',
         important: true,
         content: [
-          'Triajji is an organisational platform, not a medical platform.',
+          'DoctorTrio is an organisational platform, not a medical platform.',
           'We do not provide medical diagnoses or prescribe medications.',
           'All medical decisions remain exclusively with the licensed physician.',
           'In emergencies, call an ambulance: 123',
@@ -161,8 +161,8 @@ const PRIVACY: Record<Lang, PolicyContent> = {
       {
         title: 'Contact us',
         content: [
-          'For privacy enquiries: privacy@triajji.com',
-          'For complaints or requests: support@triajji.com',
+          'For privacy enquiries: privacy@doctortrio.online',
+          'For complaints or requests: support@doctortrio.online',
         ],
       },
     ],
@@ -246,25 +246,25 @@ const TERMS: Record<Lang, PolicyContent> = {
   en: {
     title: 'Terms of Use',
     lastUpdated: 'Last updated: March 2026',
-    intro: 'By using Triajji, you agree to these terms. Please read them carefully.',
+    intro: 'By using DoctorTrio, you agree to these terms. Please read them carefully.',
     sections: [
       {
         title: '1. Nature of the Service \u2014 Most Important',
         important: true,
         content: [
-          'Triajji is an organisational platform that helps patients access healthcare \u2014 it is not a medical platform.',
-          'Triajji does not provide medical diagnoses, prescribe medications, or offer medical opinions.',
-          'The medical triage provided by Triajji is general guidance, not a diagnosis.',
+          'DoctorTrio is an organisational platform that helps patients access healthcare \u2014 it is not a medical platform.',
+          'DoctorTrio does not provide medical diagnoses, prescribe medications, or offer medical opinions.',
+          'The medical triage provided by DoctorTrio is general guidance, not a diagnosis.',
           'The final medical decision always and exclusively rests with the licensed physician.',
           'In medical emergencies, call an ambulance (123) immediately \u2014 do not wait.',
-          'Triajji is not responsible for any medical decision made by the user based on platform information.',
+          'DoctorTrio is not responsible for any medical decision made by the user based on platform information.',
         ],
       },
       {
         title: '2. User consent to data sharing',
         consent: true,
         content: [
-          'By registering with Triajji, you explicitly agree that Triajji may retain your health information.',
+          'By registering with DoctorTrio, you explicitly agree that DoctorTrio may retain your health information.',
           'You agree to share your information with doctors you book appointments with for treatment purposes.',
           'You agree to share your information with labs you request tests from.',
           'You agree to share your information with pharmacies you choose to send your prescription to.',
@@ -280,29 +280,29 @@ const TERMS: Record<Lang, PolicyContent> = {
           'Consult a licensed doctor before making any medical decision.',
           'Keep your login credentials confidential.',
           'Do not share your account with other people.',
-          'Notify Triajji immediately upon discovering any unauthorised use of your account.',
+          'Notify DoctorTrio immediately upon discovering any unauthorised use of your account.',
         ],
       },
       {
         title: '4. Limitation of liability',
         content: [
-          'Triajji is not responsible for any harm resulting from relying on platform information as a medical diagnosis.',
-          'Triajji is not responsible for the quality of medical service provided by doctors, labs, or pharmacies.',
-          'Triajji operates solely as an organisational intermediary between the patient and service providers.',
+          'DoctorTrio is not responsible for any harm resulting from relying on platform information as a medical diagnosis.',
+          'DoctorTrio is not responsible for the quality of medical service provided by doctors, labs, or pharmacies.',
+          'DoctorTrio operates solely as an organisational intermediary between the patient and service providers.',
           'In case of service interruption, please contact your healthcare provider directly.',
         ],
       },
       {
         title: '5. Intellectual property',
         content: [
-          'All Triajji content \u2014 text, images, code, and design \u2014 is protected by intellectual property rights.',
-          'Copying or distributing any content without prior written permission from Triajji is prohibited.',
+          'All DoctorTrio content \u2014 text, images, code, and design \u2014 is protected by intellectual property rights.',
+          'Copying or distributing any content without prior written permission from DoctorTrio is prohibited.',
         ],
       },
       {
         title: '6. Amendment of terms',
         content: [
-          'Triajji reserves the right to amend these terms at any time.',
+          'DoctorTrio reserves the right to amend these terms at any time.',
           'You will be notified of any material amendments via your registered mobile number.',
           'Continued use of the platform after amendment implies your acceptance of the new terms.',
         ],
@@ -336,8 +336,8 @@ const LABELS = {
     langToggle: '\u0639\u0631\u0628\u064A',
     langPath: 'ar',
     emergencyDisclaimer:
-      'Triajji is an organisational platform, not a medical platform. In emergencies call an ambulance: 123',
-    copyright: 'All rights reserved \u00A9 2026 Triajji',
+      'DoctorTrio is an organisational platform, not a medical platform. In emergencies call an ambulance: 123',
+    copyright: 'All rights reserved \u00A9 2026 DoctorTrio',
   },
 };
 

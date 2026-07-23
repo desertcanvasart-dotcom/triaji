@@ -1,6 +1,6 @@
 /**
  * GET /api/payments/[reference]
- * Check payment status by Triajji reference.
+ * Check payment status by DoctorTrio reference.
  * NO AUTH REQUIRED — reference-as-token pattern (accessible from WhatsApp links).
  */
 

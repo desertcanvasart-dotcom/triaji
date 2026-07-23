@@ -4,7 +4,7 @@ import type { ProviderContent } from '@/components/providers/ProviderPageTemplat
 const CONTENT: ProviderContent = {
   hero: {
     badge: 'For Radiology Centers',
-    title: 'Connect Your Center to All Triajji Doctors — Radiology Appointments Without Phone Calls',
+    title: 'Connect Your Center to All DoctorTrio Doctors — Radiology Appointments Without Phone Calls',
     subtitle: 'The doctor orders the scan, the patient books their appointment with you, and the report goes back to the doctor automatically',
     cta: 'Register Your Center Now',
     ctaHref: '/en/register/provider',
@@ -19,7 +19,7 @@ const CONTENT: ProviderContent = {
     { icon: '📅', title: 'Smart Appointment Scheduling', description: 'Patients see available times and book what suits them — 24/7' },
     { icon: '🖼️', title: 'Digital Report Delivery', description: 'Reports and images are sent to the doctor and patient automatically' },
     { icon: '💰', title: 'Pre-Payment Online', description: 'Patients pay at booking time — no wasted time at the cashier' },
-    { icon: '🔗', title: 'Connected to the Referral Network', description: 'Every doctor on Triajji can refer their patients to your center directly' },
+    { icon: '🔗', title: 'Connected to the Referral Network', description: 'Every doctor on DoctorTrio can refer their patients to your center directly' },
     { icon: '📊', title: 'Revenue Reports', description: 'Daily and monthly revenue and performance per machine — all in one dashboard' },
   ],
   steps: [

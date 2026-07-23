@@ -50,7 +50,7 @@ export async function sendFollowUpCreatedNotification(
         data.reasonAr ? `Reason: ${data.reasonAr}` : '',
         ``,
         `We'll send you a reminder before your appointment.`,
-        `Triajji Healthcare`,
+        `DoctorTrio Healthcare`,
       ].filter(Boolean).join('\n')
     : [
         `حدد لك الدكتور ${data.doctorName} موعد متابعة`,
@@ -59,7 +59,7 @@ export async function sendFollowUpCreatedNotification(
         data.reasonAr ? `السبب: ${data.reasonAr}` : '',
         ``,
         `هنبعتلك تذكير قبل الموعد.`,
-        `ترياچي للرعاية الصحية`,
+        `دكتور تريو للرعاية الصحية`,
       ].filter(Boolean).join('\n');
 
   return sendWhatsAppMessage(patientPhone, message);
@@ -91,7 +91,7 @@ export async function sendFollowUpReminder(
         data.reasonAr ? `Reason: ${data.reasonAr}` : '',
         ``,
         `Please book your appointment if you haven't already.`,
-        `Triajji Healthcare`,
+        `DoctorTrio Healthcare`,
       ].filter(Boolean).join('\n')
     : [
         `تذكير: موعد المتابعة مع الدكتور ${data.doctorName} بعد ${daysText.ar}.`,
@@ -100,7 +100,7 @@ export async function sendFollowUpReminder(
         data.reasonAr ? `السبب: ${data.reasonAr}` : '',
         ``,
         `لو لسه محجزتش، احجز موعدك دلوقتي.`,
-        `ترياچي للرعاية الصحية`,
+        `دكتور تريو للرعاية الصحية`,
       ].filter(Boolean).join('\n');
 
   return sendWhatsAppMessage(patientPhone, message);
@@ -127,7 +127,7 @@ export async function sendOverdueReminder(
         data.reasonAr ? `Reason: ${data.reasonAr}` : '',
         ``,
         `Your doctor is concerned about your health. Please schedule a follow-up visit as soon as possible.`,
-        `Triajji Healthcare`,
+        `DoctorTrio Healthcare`,
       ].filter(Boolean).join('\n')
     : [
         `أهلاً ${data.patientName}، موعد المتابعة مع الدكتور ${data.doctorName} كان المفروض يوم ${formatDateAr(data.followUpDate)}.`,
@@ -135,7 +135,7 @@ export async function sendOverdueReminder(
         data.reasonAr ? `السبب: ${data.reasonAr}` : '',
         ``,
         `الدكتور بيسأل عليك. من فضلك احجز أقرب موعد متابعة.`,
-        `ترياچي للرعاية الصحية`,
+        `دكتور تريو للرعاية الصحية`,
       ].filter(Boolean).join('\n');
 
   return sendWhatsAppMessage(patientPhone, message);

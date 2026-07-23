@@ -87,8 +87,8 @@ export async function GET(request: NextRequest) {
     const childName = childPatient?.name_ar ?? '';
 
     const message = guardianLang === 'ar'
-      ? `تذكير تطعيم من ترياچي:\n${childName} عنده تطعيم ${vaccineName} (جرعة ${vacc.dose_number}) يوم ${vacc.due_date}.\nاحجز موعد مع طبيب الأطفال.`
-      : `Triajji Vaccine Reminder:\n${childName} has a ${vaccineName} (dose ${vacc.dose_number}) due on ${vacc.due_date}.\nBook an appointment with your paediatrician.`;
+      ? `تذكير تطعيم من دكتور تريو:\n${childName} عنده تطعيم ${vaccineName} (جرعة ${vacc.dose_number}) يوم ${vacc.due_date}.\nاحجز موعد مع طبيب الأطفال.`
+      : `DoctorTrio Vaccine Reminder:\n${childName} has a ${vaccineName} (dose ${vacc.dose_number}) due on ${vacc.due_date}.\nBook an appointment with your paediatrician.`;
 
     await sendWhatsAppMessage(guardian.phone_number, message);
 
@@ -168,8 +168,8 @@ export async function GET(request: NextRequest) {
     const count = vaccs.length;
 
     const message = guardianLang === 'ar'
-      ? `تنبيه من ترياچي:\n${childName} عنده ${count} تطعيم متأخر. برجاء مراجعة طبيب الأطفال في أقرب وقت.`
-      : `Triajji Alert:\n${childName} has ${count} overdue vaccination(s). Please see your paediatrician as soon as possible.`;
+      ? `تنبيه من دكتور تريو:\n${childName} عنده ${count} تطعيم متأخر. برجاء مراجعة طبيب الأطفال في أقرب وقت.`
+      : `DoctorTrio Alert:\n${childName} has ${count} overdue vaccination(s). Please see your paediatrician as soon as possible.`;
 
     await sendWhatsAppMessage(guardian.phone_number, message);
     overdueAlertsSent++;
@@ -222,8 +222,8 @@ export async function GET(request: NextRequest) {
     const childName = childPatient?.name_ar ?? '';
 
     const message = guardianLang === 'ar'
-      ? `ترياچي — إشعار مهم:\nطفلك ${childName} على وشك بلوغ 18 سنة. سجله الطبي سينتقل قريباً لحساب مستقل. تواصل معنا لتفاصيل الانتقال.`
-      : `Triajji — Important Notice:\nYour child ${childName} is about to turn 18. Their medical record will soon transition to an independent account. Contact us for transition details.`;
+      ? `دكتور تريو — إشعار مهم:\nطفلك ${childName} على وشك بلوغ 18 سنة. سجله الطبي سينتقل قريباً لحساب مستقل. تواصل معنا لتفاصيل الانتقال.`
+      : `DoctorTrio — Important Notice:\nYour child ${childName} is about to turn 18. Their medical record will soon transition to an independent account. Contact us for transition details.`;
 
     await sendWhatsAppMessage(guardian.phone_number, message);
 

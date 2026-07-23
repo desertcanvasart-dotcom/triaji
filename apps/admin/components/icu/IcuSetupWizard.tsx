@@ -334,7 +334,7 @@ export default function IcuSetupWizard() {
           <div className="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
             <p className="mb-1 font-medium">Important</p>
             <ul className="list-disc list-inside space-y-1 text-blue-700">
-              <li>Verified Triajji doctors will be able to see your available beds in real time.</li>
+              <li>Verified DoctorTrio doctors will be able to see your available beds in real time.</li>
               <li>Bed counts will show as 0 until your team updates them.</li>
             </ul>
           </div>
