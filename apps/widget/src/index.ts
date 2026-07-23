@@ -11,7 +11,7 @@ import ReactDOM from 'react-dom/client';
 import { TriajjiWidget } from './widget';
 import { trackEvent } from './analytics';
 import type { TenantConfig, UserConfig } from './config';
-import { DEFAULT_API_URL } from './config';
+import { getApiUrl } from './config';
 
 // Import CSS as string (Vite inlines this with ?inline)
 import widgetCSS from './styles/widget.css?inline';
@@ -44,7 +44,7 @@ declare global {
     apiUrl: config.apiUrl,
   };
 
-  const apiUrl = userConfig.apiUrl ?? DEFAULT_API_URL;
+  const apiUrl = getApiUrl(userConfig);
 
   // Fetch validated tenant config from Triajji API
   let tenantConfig: TenantConfig;

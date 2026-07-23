@@ -94,8 +94,19 @@ export type WidgetView =
 export const DEFAULT_PRIMARY_COLOR = '#0D7A7A';
 export const DEFAULT_API_URL = 'https://app.triajji.com';
 
+// Captured synchronously at script load (IIFE build) — currentScript is null
+// once execution leaves the initial script evaluation.
+const SCRIPT_ORIGIN: string | null = (() => {
+  try {
+    const src = (document.currentScript as HTMLScriptElement | null)?.src;
+    return src ? new URL(src).origin : null;
+  } catch {
+    return null;
+  }
+})();
+
 export function getApiUrl(userConfig: UserConfig): string {
-  return userConfig.apiUrl ?? DEFAULT_API_URL;
+  return userConfig.apiUrl ?? SCRIPT_ORIGIN ?? DEFAULT_API_URL;
 }
 
 export function getPrimaryColor(
