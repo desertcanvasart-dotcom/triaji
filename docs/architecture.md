@@ -2,7 +2,7 @@
 
 ## The monorepo
 
-Triaji is a **pnpm workspace** monorepo. Four apps sit on top of eight shared packages, all over a
+DoctorTrio is a **pnpm workspace** monorepo. Four apps sit on top of eight shared packages, all over a
 single Supabase backend.
 
 ```
@@ -22,7 +22,7 @@ triaji/
 │   ├── lab-chain-adapters    — Al-Borg / Al-Mokhtabar / Alfa
 │   └── stt-bench             — speech-to-text benchmark harness (standalone tool)
 └── supabase/
-    ├── migrations/           — 63 ordered SQL migrations
+    ├── migrations/           — 65 ordered SQL migrations
     └── seed/                 — KB, doctors, availability seeders
 ```
 

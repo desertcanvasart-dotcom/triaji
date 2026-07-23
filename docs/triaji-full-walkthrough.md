@@ -1,4 +1,4 @@
-# Triaji — Complete Application Walkthrough
+# DoctorTrio — Complete Application Walkthrough
 # Every Page, Every Feature, Every Flow
 
 ---
@@ -35,24 +35,24 @@
 
 ## 1. Platform Overview
 
-### What is Triaji?
+### What is DoctorTrio?
 
-Triaji is Egypt's first comprehensive healthcare platform. It connects patients, doctors, clinics, laboratories, pharmacies, and insurance companies through a single integrated system. Built bilingual (Arabic/English) with Arabic-first design using Egyptian colloquial Arabic.
+DoctorTrio is Egypt's first comprehensive healthcare platform. It connects patients, doctors, clinics, laboratories, pharmacies, and insurance companies through a single integrated system. Built bilingual (Arabic/English) with Arabic-first design using Egyptian colloquial Arabic.
 
 ### Three Applications
 
-| App | URL | Purpose | Language |
-|-----|-----|---------|----------|
-| Patient Web App | `localhost:3000` | Patient-facing + doctor portal | Arabic + English |
-| Admin Panel | `localhost:3001` | Provider management | English only |
-| Mobile App | Expo Go / EAS Build | Patients + doctors on mobile | Arabic + English |
+| App | URL (local) | URL (production) | Purpose | Language |
+|-----|-------------|-------------------|---------|----------|
+| Patient Web App | `localhost:3000` | `app.doctortrio.online` | Patient-facing + doctor portal | Arabic + English |
+| Admin Panel | `localhost:3001` | `admin.doctortrio.online` | Provider management | English only |
+| Mobile App | Expo Go / EAS Build | App stores (pending release) | Patients + doctors on mobile | Arabic + English |
 
 ### User Types
 
 | User Type | Authentication | Access |
 |-----------|---------------|--------|
 | Patient | Phone number + OTP | Web app + mobile app |
-| Doctor | Syndicate number + password | Doctor portal (web + mobile) |
+| Doctor | Email + password (web) / syndicate number + password (mobile — resolved to the same account) | Doctor portal (web + mobile) |
 | Platform Admin | Email + password | Full admin panel |
 | Clinic Owner | Email + password | Clinic admin section |
 | Clinic Receptionist | Email + password | Reception + queue |
@@ -243,7 +243,7 @@ Triaji is Egypt's first comprehensive healthcare platform. It connects patients,
 - **Protocol compliance:** For diabetes, hypertension, etc. — shows overdue tests
 - **GP section:** Primary care doctor name + contact
 - **Insurance:** Coverage status, remaining limit
-- **"Ask Triaji" button:** Links to health AI assistant
+- **"Ask DoctorTrio" button:** Links to health AI assistant
 
 **Sections (paediatric patient — when child profile selected):**
 All adult sections PLUS:
@@ -280,14 +280,14 @@ Each entry shows:
 **What it shows:** A read-only shareable view of the patient's medical record.
 - Generated via a time-limited token
 - Shows: demographics, conditions, allergies, medications, recent labs, vaccination status
-- Can be shared with any doctor (even outside Triaji) via link
+- Can be shared with any doctor (even outside DoctorTrio) via link
 - PDF download available
 
 ---
 
 ## 5. Patient Web App — Health AI Assistant
 
-### `/ar/health-assistant` & `/en/health-assistant` — Ask Triaji
+### `/ar/health-assistant` & `/en/health-assistant` — Ask DoctorTrio
 **What it shows:** Personal health AI companion grounded strictly in the patient's own records.
 
 **Layout:**
@@ -301,7 +301,7 @@ Each entry shows:
 - Voice input (Deepgram)
 - Context banner: "Last labs: 15 Mar | Last visit: 15 Mar | 3 active meds"
 - Conversation history sidebar (last 30 days)
-- Disclaimer: "Ask Triaji is not a substitute for a doctor"
+- Disclaimer: "Ask DoctorTrio is not a substitute for a doctor"
 
 **The one rule:** Every answer anchored to patient's personal data.
 
@@ -463,7 +463,7 @@ Each entry shows:
   - **Paymob (Card):** Visa, Mastercard, Meeza, Apple Pay → redirects to Paymob iframe
   - **Fawry:** Shows Fawry reference code (large, copyable) + kiosk instructions + 24h expiry + card redirect option
   - **Vodafone Cash:** Phone number input → waiting screen "Waiting for approval on your phone..."
-- Security notice: "Triaji never stores your card details"
+- Security notice: "DoctorTrio never stores your card details"
 - 44px minimum touch targets, full-width buttons on mobile
 
 **Fawry flow:**
@@ -592,20 +592,30 @@ Always ends with "Talk to your paediatrician" + booking link to paediatrics.
 ### `/ar/doctor` & `/en/doctor` — Doctor Landing Page
 **What it shows:** Marketing page for doctors.
 - "Connect with your patients smarter"
-- "Triaji gives you a complete patient summary before every consultation"
+- "DoctorTrio gives you a complete patient summary before every consultation"
 - "Register as a doctor — free" CTA
 - "Doctor login" link
 
 ### `/ar/doctor/register` & `/en/doctor/register` — Doctor Registration
 **What it shows:** Registration form.
-- Full name, medical syndicate number, primary specialty (dropdown)
-- Governorate, clinic/hospital name, mobile number, email
-- Password + confirmation
-- On submit: account created with status "pending_verification"
-- Platform admin verifies syndicate number (24–48 hours)
+- Full name, medical syndicate number, primary specialty (dropdown), governorate
+- **Where do you practice?** — three radio options that shape what approval provisions:
+  - *Independent doctor (no clinic)* — nothing else created; just the doctor portal.
+  - *I have my own clinic* — reveals clinic name (Arabic + optional English) and address fields.
+    On approval, DoctorTrio provisions a full clinic tenant (public page, booking widget, default
+    config) and grants this same login `clinic_owner` admin-panel access.
+  - *I work at a clinic or hospital on DoctorTrio* — reveals a dropdown of active clinic/hospital
+    tenants (`GET /api/clinics`). On approval, the doctor's profile is linked to that facility
+    (staff access, not ownership).
+- Mobile number, email, password + confirmation
+- On submit: account created with status "pending" (`doctor_accounts.verification_status`), the
+  chosen practice-location intent stored alongside it
+- Platform admin verifies syndicate number and approves (24–48 hours) — see the Doctor Verification
+  Queue in §15, which now shows what each pending registration will provision
 
 ### `/ar/doctor/login` & `/en/doctor/login` — Doctor Login
-**What it shows:** Syndicate number + password login.
+**What it shows:** Email + password login (the mobile app instead asks for syndicate number and
+resolves it to the same email-based account server-side).
 - On success: redirect to dashboard
 - If pending verification: redirect to pending page
 
@@ -674,6 +684,15 @@ Always ends with "Talk to your paediatrician" + booking link to paediatrics.
 - Doctor can add interpretation notes
 - Linked to the ordering health record
 
+### Doctor Settings — "My Facilities" section
+**What it shows:** Every facility the doctor's account is affiliated with (`GET
+/api/doctor/clinic`), the primary one badged. If the doctor doesn't already own a clinic
+(`clinic_owner` admin access), a form here lets them provision one on the spot — same effect as
+choosing "I have my own clinic" at registration, but available any time post-verification, and
+independent of any existing affiliation (a hospital-employed doctor can still create their own
+clinic; the hospital stays their primary affiliation). Duplicate clinic creation is blocked — a
+doctor can own only one clinic, though they can be *affiliated* with several.
+
 ---
 
 ## 15. Admin Panel — Platform Administration
@@ -703,7 +722,20 @@ Always ends with "Talk to your paediatrician" + booking link to paediatrics.
 
 ### `/tenants/[id]` — Tenant Detail
 **What it shows:** Individual tenant management.
-- Configuration, staff, settings
+- Configuration, doctor roster (primary + any multi-facility affiliates), settings
+
+### `/users` — Admin User Management
+**What it shows:** Every `admin_users` account across the platform (platform admins, plus every
+provider role — clinic/lab/pharmacy/insurance/ICU/chain).
+- List with name, email, role badge, tenant/chain scope, active status
+- **Invite User** — pick a role (grouped by provider type) and the matching tenant/chain; DoctorTrio
+  creates the Supabase Auth user + `admin_users` row and returns a **one-time set-password link** to
+  copy and send however you like. This is the only way to create provider-staff logins — there is
+  no self-registration for admin roles (unlike patients and doctors).
+- Per-row **New link** (regenerate a set-password/recovery link) and **Activate/Deactivate** (a
+  platform admin cannot deactivate their own account)
+- Landing page for the invite link: `/set-password` — public, adopts the invite session from the
+  URL, lets the user choose a password, then sends them to `/login`
 
 ### `/knowledge-base` — RAG Knowledge Base
 **What it shows:** Medical knowledge documents used by the triage AI.
@@ -726,8 +758,14 @@ Always ends with "Talk to your paediatrician" + booking link to paediatrics.
 ### `/doctor-verification` — Doctor Verification Queue
 **What it shows:** Pending doctor registration verifications.
 - Doctor name, syndicate number, specialty, registration date
+- A **badge per registration** showing what approval will provision: *Independent*, *+ New clinic:
+  <name>*, or *Joins: <facility>* — reflecting the clinic-affiliation choice made at registration
+  (see §14's Doctor Registration entry)
 - "Verify" / "Reject" buttons
-- On verify: doctor account activated
+- On verify: doctor account activated; the `doctors` directory row is created (or, for an
+  already-matched doctor, left as is); if the registration requested a new clinic, the clinic
+  tenant + `clinic_owner` admin access are provisioned in the same step; if it requested to join an
+  existing facility, the doctor is linked to it
 
 ### `/clinical-documents` — Clinical Document Templates
 **What it shows:** Template management for prescriptions, lab orders, etc.
@@ -1019,7 +1057,7 @@ On save: creates new tenant with chain_id, copies config, creates doctor assignm
 
 ### Home Screen (4-tab layout: Home, Records, History, Profile)
 - **Triage CTA:** "ابدأ الفرز الطبي" — links to chat
-- **Ask Triaji button:** Prominent teal card (NOT a 5th tab) — links to health assistant
+- **Ask DoctorTrio button:** Prominent teal card (NOT a 5th tab) — links to health assistant
 - **Upcoming appointments** cards
 - **Alert cards:** overdue follow-ups, overdue vaccinations, abnormal lab results
 - **Profile switcher:** horizontal chips [Me] [Child1] [Child2] [+]
@@ -1032,7 +1070,7 @@ On save: creates new tenant with chain_id, copies config, creates doctor assignm
 ### Medical Record Screen
 - Same dashboard as web but React Native components
 - **Victory Native** vital trend charts (the standout feature — HbA1c trend on phone)
-- Floating "Ask Triaji" FAB button
+- Floating "Ask DoctorTrio" FAB button
 
 ### History Screen
 - Timeline with all visits, labs, prescriptions
@@ -1224,6 +1262,6 @@ On save: creates new tenant with chain_id, copies config, creates doctor assignm
 
 ---
 
-*Triaji — Complete Application Walkthrough*
+*DoctorTrio — Complete Application Walkthrough*
 *30 phases, 53 migrations, 196 pages, 3 applications*
 *Built with: Next.js 15, React Native (Expo), Supabase, Claude AI, LiveKit, Deepgram, PostGIS*

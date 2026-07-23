@@ -1,7 +1,8 @@
 # Data Model
 
-The Postgres/Supabase schema, built across **63 ordered migrations** in
-[`supabase/migrations/`](../supabase/migrations/) (run `001` … `063` in numeric order). Multi-tenant
+The Postgres/Supabase schema, built across **65 ordered migrations** in
+[`supabase/migrations/`](../supabase/migrations/) (run `001` … `065` in numeric order — check the
+directory for the current highest number). Multi-tenant
 and Arabic-first. This is a reference map, not every column — see the migrations for exact DDL, and
 **verify against the live DB** when in doubt (some columns have drifted from the migrations).
 
@@ -44,13 +45,23 @@ and Arabic-first. This is a reference map, not every column — see the migratio
 - **health_assistant_sessions** — the standalone Arabic health-Q&A assistant ("تريجي يسألك").
 
 ### Doctors & bookings
-- **doctors** — provider directory: `tenant_id` (NULL = platform-level), `specialty_id`,
-  `governorate_id`, PostGIS `location` (GIST-indexed), `consultation_fee_egp`, `accepts_insurance`,
-  ratings, `offers_telehealth`, `his_doctor_id`.
+- **doctors** — provider directory: `tenant_id` (NULL = platform-level; the doctor's **primary**
+  affiliation), `specialty_id`, `governorate_id`, PostGIS `location` (GIST-indexed),
+  `consultation_fee_egp`, `accepts_insurance`, ratings, `offers_telehealth`, `his_doctor_id`.
+- **doctor_tenants** (migration 065) — a doctor's **complete** set of facility affiliations, since a
+  doctor can work at more than one (e.g. a hospital job plus a private clinic): `(doctor_id,
+  tenant_id)` composite PK, `is_primary` flags which row mirrors `doctors.tenant_id`. Backfilled from
+  every pre-existing `doctors.tenant_id`. Public `SELECT` (shown on clinic pages). The two PostGIS
+  matcher RPCs and `tenant_list_stats` (below) both consider every affiliation, not just the primary.
 - **doctor_availability** — bookable slots (`slot_datetime`, `is_booked`, `his_slot_id`).
 - **doctor_accounts** — doctor login (PK = `auth.users.id`), **distinct from `doctors`**;
   `doctor_id → doctors` (nullable until an admin matches), `syndicate_number` (unique),
   `verification_status`, clinical-document assets (signature/stamp), GP video-call config.
+  Migration 064 added the clinic-affiliation intent a doctor declares at registration:
+  `clinic_mode` (`independent` / `own_clinic` / `existing_clinic`), `requested_clinic_name_en`,
+  `requested_clinic_address_ar`, `requested_tenant_id` — read once, at admin approval, to decide
+  whether to provision a new clinic tenant or link the doctor into an existing one (see
+  [user-guide.md](user-guide.md) for the full flow).
 - **bookings** — appointments: `tenant_id`, `patient_id`, `doctor_id`, `session_id`, `slot_id`,
   `appointment_datetime`, `status`, `appointment_type` (in_person/telehealth), LiveKit fields.
 - **clinic_queue** — real-time walk-in numbered queue per doctor per day.
@@ -125,8 +136,10 @@ and Arabic-first. This is a reference map, not every column — see the migratio
   referencing an option catalog by `code`). `guardian_relationships` links two patients for paeds.
 - **Triage ↔ booking circular FK:** `triage_sessions.booking_id ↔ bookings.session_id` — the
   `reserve_slot()` RPC writes both sides atomically.
-- **Two doctor identities:** `doctors` (public directory) vs `doctor_accounts` (auth login), linked
-  by `doctor_accounts.doctor_id`. Clinical tables reference both.
+- **Three doctor concepts:** `doctors` (public directory, one row per doctor) vs `doctor_accounts`
+  (auth login, linked by `doctor_accounts.doctor_id`) vs `doctor_tenants` (the doctor's full set of
+  facility affiliations — `doctors.tenant_id` is only the primary one). Clinical tables reference
+  `doctors`/`doctor_accounts`; tenant-scoped rosters and search should also check `doctor_tenants`.
 - **Clinical documents:** `health_records` is the hub — line items cascade off it, and
   `lab_order_routing` / `prescription_routing` reference it as both source order and result record.
 - **Insurance flow:** `patient_insurance_policies → pre_authorization_requests → insurance_claims →
@@ -152,8 +165,8 @@ public policies — reachable only via service-role.
 | RPC | Migration | Purpose |
 |-----|-----------|---------|
 | `match_kb_documents` | 009 | pgvector cosine search over `kb_embeddings` (RAG retrieval) |
-| `find_doctors_near` | 009/013 | PostGIS nearest matching doctors by specialty within a radius |
-| `find_doctors_by_governorate` | 013 | fallback doctor search (no lat/lng), by rating |
+| `find_doctors_near` | 009/013/065 | PostGIS nearest matching doctors by specialty within a radius (065: also matches via `doctor_tenants`) |
+| `find_doctors_by_governorate` | 013/065 | fallback doctor search (no lat/lng), by rating (065: also matches via `doctor_tenants`) |
 | `reserve_slot` | 016 | **atomic** slot booking (`FOR UPDATE`) — prevents double-booking, links session |
 | `next_queue_number` | 033 | next daily walk-in queue number per tenant+doctor |
 | `next_invoice_number` | 034 | clinic invoice number `INV-YYYY-NNNNN` |
@@ -164,7 +177,7 @@ public policies — reachable only via service-role.
 | `find_nearest_chain_branches` | 050 | PostGIS nearest lab-chain branches |
 | `find_labs_near` | 060 | PostGIS distance-sorted lab/radiology tenants (config as JSONB) |
 | `widget_analytics_summary` | 061 | pre-aggregated widget funnel/daily/top-pages as JSONB |
-| `tenant_list_stats` | 062 | batched per-tenant doctor + 30-day booking counts |
+| `tenant_list_stats` | 062/065 | batched per-tenant doctor + 30-day booking counts (065: counts `doctor_tenants` affiliates too) |
 | `next_clinical_document_number` | 063 | **atomic** `TRJ-YYYY-NNNNN` (single-row counter, row lock) |
 
 ## Extensions

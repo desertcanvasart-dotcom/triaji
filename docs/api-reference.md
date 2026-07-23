@@ -1,6 +1,6 @@
 # API Reference
 
-The complete API route catalog — **144 web routes** + **96 admin routes**, grouped by domain. Each
+The complete API route catalog — **146 web routes** + **97 admin routes**, grouped by domain. Each
 entry is `METHOD /api/path — purpose`. Some routes expose multiple verbs on one path.
 
 ## Auth styles
@@ -59,7 +59,8 @@ entry is `METHOD /api/path — purpose`. Some routes expose multiple verbs on on
 - `GET /api/child/[id]/vaccines/certificate` — vaccination certificate
 
 ## doctor/* — Doctor portal (doctor Bearer)
-- `POST /api/doctor/auth/login` · `POST /api/doctor/auth/logout` · `GET /api/doctor/auth/me` · `POST /api/doctor/auth/register`
+- `POST /api/doctor/auth/login` · `POST /api/doctor/auth/logout` · `GET /api/doctor/auth/me` · `POST /api/doctor/auth/register` — register accepts a `clinic_mode` (`independent`/`own_clinic`/`existing_clinic`) declaring the doctor's facility intent; read at admin approval
+- `GET,POST /api/doctor/clinic` — the verified doctor's facility affiliations; POST provisions a new clinic tenant if they don't already own one (works alongside any existing affiliation — a doctor can be hospital-employed *and* run their own clinic)
 - `GET /api/doctor/dashboard/appointments` — appointment list
 - `GET /api/doctor/consultation/[bookingId]` — consultation detail (ownership-checked)
 - `PUT /api/doctor/consultation/[bookingId]/notes` — save notes
@@ -89,6 +90,7 @@ entry is `METHOD /api/path — purpose`. Some routes expose multiple verbs on on
 - `GET /api/booking/[bookingId]` — booking detail
 - `GET /api/doctors/[doctorId]/slots` — available slots for a doctor
 - `GET /api/chain/[slug]` — fetch clinic chain by slug (public)
+- `GET /api/clinics` — public list of active clinic/hospital tenants a registering doctor can request to join
 
 ## triage / session / chat — AI triage engine
 - `GET,POST,PATCH /api/session` — create / fetch / update a triage session
@@ -161,6 +163,11 @@ All require `authenticateAdmin` except the auth endpoints.
 ## auth
 - `POST,DELETE /api/admin/auth/session` — set / clear httpOnly session cookies
 - `GET /api/admin/auth/verify` — verify current admin session
+
+## users — Admin user management (platform_admin only)
+- `GET /api/admin/users` — list every admin user with role/scope/status
+- `POST /api/admin/users` — invite a new admin user: creates the Supabase Auth user + `admin_users` row, returns a one-time set-password link (re-posting an existing email issues a fresh recovery link)
+- `PATCH /api/admin/users` — activate/deactivate an admin user (a platform admin cannot deactivate themself)
 
 ## analytics & stats
 - `GET /api/admin/analytics` — platform analytics (SQL aggregation)

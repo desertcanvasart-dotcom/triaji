@@ -1,6 +1,6 @@
 # Getting Started
 
-How to install, configure, and run Triaji locally. See [architecture.md](architecture.md) for
+How to install, configure, and run DoctorTrio locally. See [architecture.md](architecture.md) for
 what you're running.
 
 ## Prerequisites
@@ -67,6 +67,9 @@ pnpm dev:widget     # embeddable widget dev
   doctor login at `/ar/doctor/login` (email + password).
 - **Admin** (`:3001`) — provider/platform panel. Login at `/login` (email + password), then
   role-based redirect.
+
+Production runs the same two apps at `app.doctortrio.online` and `admin.doctortrio.online` — see
+[deployment.md](deployment.md) for the Railway topology, custom domains, and go-live checklist.
 - **Mobile** — `cd apps/mobile && pnpm start` (Expo). It talks to the web API via
   `EXPO_PUBLIC_API_URL`. Needs an EAS dev build for native modules (LiveKit, maps); see
   [NEXT-SESSION.md](NEXT-SESSION.md) for the mobile build checklist.

@@ -24,12 +24,12 @@ Verify: branches appear in /chains admin page.
 
 ### Step 4: Import Test Code Mapping
 Receive test catalog from chain.
-Map each chain test code to Triaji lab_test_catalog.code.
+Map each chain test code to DoctorTrio lab_test_catalog.code.
 POST /api/admin/chains/{code}/import-tests
 Verify: test mappings appear in admin.
 
 ### Step 5: Configure Webhook URL
-Provide chain with Triaji webhook URL:
+Provide chain with DoctorTrio webhook URL:
 POST https://api.triaji.com/api/webhooks/lab-chain/{code}
 
 ### Step 6: Set has_api = true

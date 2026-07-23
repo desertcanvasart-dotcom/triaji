@@ -1,4 +1,4 @@
-# Triaji — Next Session: Start Here
+# DoctorTrio — Next Session: Start Here
 
 _Last updated 2026-07-21. Everything committed + pushed; `main` @ `2ca642f`, working tree clean.
 Full history/detail in [remaining-work.md](remaining-work.md). Goal on the table: **set a customer

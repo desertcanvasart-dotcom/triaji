@@ -1,10 +1,11 @@
-# Triaji — Documentation
+# DoctorTrio — Documentation
 
-**Triaji** (ترياچي) is an Arabic-first, bilingual (Arabic-RTL / English-LTR) AI medical **triage
-& booking** SaaS for the Egyptian healthcare market. It connects patients, doctors, clinics,
-labs, pharmacies, insurers, and ICU registries in one platform. AI triage runs on Claude with a
-Cohere-embedded RAG knowledge base, and the whole system is multi-tenant over Supabase (Postgres
-+ PostGIS + pgvector, RLS-gated).
+**DoctorTrio** (دكتور تريو) is an Arabic-first, bilingual (Arabic-RTL / English-LTR) AI medical **triage
+& booking** SaaS for the Egyptian healthcare market, live at **doctortrio.online**
+(`app.doctortrio.online` = patient/doctor web app, `admin.doctortrio.online` = provider panel). It
+connects patients, doctors, clinics, labs, pharmacies, insurers, and ICU registries in one
+platform. AI triage runs on Claude with a Cohere-embedded RAG knowledge base, and the whole system
+is multi-tenant over Supabase (Postgres + PostGIS + pgvector, RLS-gated).
 
 This folder is the developer documentation. For the **page-by-page product tour** (every screen
 and flow, written from the user's perspective) see
@@ -18,7 +19,7 @@ and flow, written from the user's perspective) see
 | [architecture.md](architecture.md) | The monorepo, the four apps, the backend, the request/auth model, external services, and how a triage request flows end-to-end. |
 | [modules.md](modules.md) | Every module — the 4 apps + widget and the 8 shared packages — with purpose, structure, and key files. |
 | [data-model.md](data-model.md) | The Postgres schema by domain, key relationships, the RLS access model, the PostGIS/pgvector RPCs, and migrations. |
-| [api-reference.md](api-reference.md) | The full API route catalog (240 routes) grouped by domain, with methods, purposes, and auth style. |
+| [api-reference.md](api-reference.md) | The full API route catalog (243 routes) grouped by domain, with methods, purposes, and auth style. |
 | [user-guide.md](user-guide.md) | How to use the app for each role — patient, doctor, and the provider/admin roles (clinic, lab, pharmacy, insurance, ICU, chain, platform). |
 | [deployment.md](deployment.md) | Production deployment runbook — topology, build/start, env, cron, provider webhooks, verification, rollback. |
 | [triaji-full-walkthrough.md](triaji-full-walkthrough.md) | The exhaustive product walkthrough (154 sections). |
