@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const PUBLIC_PATHS = ['/login', '/api/admin/auth/login', '/api/admin/auth/logout', '/api/admin/auth/session', '/api/admin/queue/position'];
+const PUBLIC_PATHS = ['/login', '/set-password', '/api/admin/auth/login', '/api/admin/auth/logout', '/api/admin/auth/session', '/api/admin/queue/position'];
 
 const CLINIC_ROLES = ['clinic_owner', 'clinic_receptionist', 'clinic_billing', 'clinic_doctor'];
 
