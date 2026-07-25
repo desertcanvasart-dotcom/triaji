@@ -22,11 +22,11 @@ export default async function PharmacySettingsPage() {
   const { data: config } = await supabase
     .from('tenant_config')
     .select(`
-      license_number,
+      license_number:pharmacy_license_number,
       pharmacist_name_ar,
       pharmacist_name_en,
       pharmacy_type,
-      delivery_enabled,
+      delivery_enabled:delivery_available,
       delivery_radius_km,
       delivery_fee_egp,
       accepts_insurance,

@@ -63,13 +63,15 @@ export default async function CallLogPage({
   // Fetch tenants list for platform admin filter
   let tenants: TenantOption[] = [];
   if (isGlobalAdmin) {
+    // `tenants` has no `name` column — it's name_ar/name_en. This panel is
+    // English-only, so prefer name_en and fall back.
     const { data: tenantRows } = await supabase
       .from('tenants')
-      .select('id, name')
-      .order('name');
+      .select('id, name_ar, name_en')
+      .order('name_en');
     tenants = (tenantRows ?? []).map((t) => ({
       id: t.id as string,
-      name: t.name as string,
+      name: (t.name_en as string) || (t.name_ar as string),
     }));
   }
 
@@ -110,11 +112,11 @@ export default async function CallLogPage({
     if (tenantIds.length > 0) {
       const { data: tenantData } = await supabase
         .from('tenants')
-        .select('id, name')
+        .select('id, name_ar, name_en')
         .in('id', tenantIds);
       if (tenantData) {
         tenantNameMap = Object.fromEntries(
-          tenantData.map((t) => [t.id, t.name as string])
+          tenantData.map((t) => [t.id, (t.name_en as string) || (t.name_ar as string)])
         );
       }
     }
