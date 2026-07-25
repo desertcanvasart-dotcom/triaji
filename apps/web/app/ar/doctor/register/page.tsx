@@ -12,24 +12,30 @@ interface ClinicOption {
   tier: string;
 }
 
+// `value` must match `specialties.name_ar` in the database — the admin approval
+// step looks the specialty up by name to link the doctor record. `label` is the
+// friendlier wording we show in the dropdown.
 const SPECIALTIES = [
-  'طب باطني',
-  'أمراض القلب',
-  'أمراض الأعصاب',
-  'عظام',
-  'جلدية',
-  'أنف وأذن وحنجرة',
-  'عيون',
-  'مسالك بولية',
-  'جهاز هضمي',
-  'أمراض صدرية',
-  'أطفال',
-  'نساء وتوليد',
-  'طب نفسي',
-  'جراحة عامة',
-  'طوارئ',
-  'طب الأسرة',
-  'أورام',
+  { value: 'باطنة', label: 'طب باطني' },
+  { value: 'قلب وأوعية دموية', label: 'أمراض القلب' },
+  { value: 'مخ وأعصاب', label: 'أمراض الأعصاب' },
+  { value: 'عظام', label: 'عظام' },
+  { value: 'جلدية', label: 'جلدية' },
+  { value: 'أنف وأذن وحنجرة', label: 'أنف وأذن وحنجرة' },
+  { value: 'عيون', label: 'عيون' },
+  { value: 'مسالك بولية', label: 'مسالك بولية' },
+  { value: 'جهاز هضمي', label: 'جهاز هضمي' },
+  { value: 'صدر', label: 'أمراض صدرية' },
+  { value: 'أطفال', label: 'أطفال' },
+  { value: 'نساء وتوليد', label: 'نساء وتوليد' },
+  { value: 'نفسية', label: 'طب نفسي' },
+  { value: 'جراحة عامة', label: 'جراحة عامة' },
+  { value: 'طوارئ', label: 'طوارئ' },
+  { value: 'طب الأسرة', label: 'طب الأسرة' },
+  { value: 'أورام', label: 'أورام' },
+  { value: 'غدد صماء', label: 'غدد صماء' },
+  { value: 'أسنان', label: 'طب الأسنان' },
+  { value: 'علاج طبيعي', label: 'علاج طبيعي' },
 ] as const;
 
 const GOVERNORATES = [
@@ -303,7 +309,7 @@ export default function DoctorRegisterPage() {
               onChange={(v) => updateField('specialty', v)}
               error={errors.specialty}
               placeholder="اختر التخصص"
-              options={SPECIALTIES.map((s) => ({ value: s, label: s }))}
+              options={SPECIALTIES.map((s) => ({ value: s.value, label: s.label }))}
             />
 
             <SelectField
@@ -442,6 +448,13 @@ export default function DoctorRegisterPage() {
             عندك حساب؟{' '}
             <Link href="/ar/doctor/login" className="text-teal-600 font-semibold hover:text-teal-700">
               سجّل دخول
+            </Link>
+            {' · '}
+            <Link
+              href="/ar/doctor/forgot-password"
+              className="text-teal-600 font-semibold hover:text-teal-700"
+            >
+              نسيت كلمة المرور؟
             </Link>
           </p>
         </div>
