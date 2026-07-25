@@ -415,6 +415,9 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.45.0
         version: 2.99.1
+      '@upstash/redis':
+        specifier: ^1.37.0
+        version: 1.37.0
     devDependencies:
       '@types/node':
         specifier: ^20.14.0

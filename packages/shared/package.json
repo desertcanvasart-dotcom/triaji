@@ -12,14 +12,18 @@
     "./constants/*": "./constants/*.ts",
     "./i18n": "./i18n/strings.ts",
     "./api": "./api/client.ts",
-    "./lib/whatsapp/client": "./lib/whatsapp/client.ts"
+    "./lib/whatsapp/client": "./lib/whatsapp/client.ts",
+    "./lib/sms/client": "./lib/sms/client.ts",
+    "./lib/cache/redis": "./lib/cache/redis.ts",
+    "./lib/auth/otp-store": "./lib/auth/otp-store.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.45.0"
+    "@supabase/supabase-js": "^2.45.0",
+    "@upstash/redis": "^1.37.0"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
