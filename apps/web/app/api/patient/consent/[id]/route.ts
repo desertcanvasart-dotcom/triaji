@@ -25,7 +25,7 @@ export async function DELETE(
 
   // Verify the grant belongs to this patient and is active
   const { data: grant } = await supabase
-    .from('access_grants')
+    .from('record_access_grants')
     .select('id, patient_id, is_active')
     .eq('id', grantId)
     .single();
@@ -44,7 +44,7 @@ export async function DELETE(
 
   // Revoke the grant
   const { error: updateError } = await supabase
-    .from('access_grants')
+    .from('record_access_grants')
     .update({
       is_active: false,
       revoked_at: new Date().toISOString(),

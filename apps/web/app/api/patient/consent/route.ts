@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@triaji/shared/supabase';
 import { getAuthenticatedPatient } from '@/lib/auth/get-patient';
+import { toUiScope } from '@/lib/consent/scopes';
 import { verifyPatientToken } from '@/lib/auth/patient-token';
 
 export const dynamic = 'force-dynamic';
@@ -71,7 +72,8 @@ export async function GET() {
       return {
         id: g.id,
         doctorAccountId: g.granted_to_account,
-        scope: g.scope,
+        // Back into the privacy screen's vocabulary so its labels resolve.
+        scope: toUiScope(g.scope as string),
         conditionsFilter: g.conditions_filter,
         grantedAt: g.granted_at,
         expiresAt: g.expires_at,
