@@ -68,10 +68,22 @@ export async function GET() {
           .limit(10)
       : Promise.resolve({ data: [] as Record<string, unknown>[] }),
 
-    // Overdue follow-ups
+    // Overdue follow-ups. The specialty isn't stored on the row — it comes from
+    // the doctor the follow-up is with.
     supabase
-      .from('follow_up_entries')
-      .select('id, specialty_ar, specialty_en, follow_up_date, reason_ar, reason_en')
+      .from('follow_up_schedule')
+      .select(`
+        id,
+        follow_up_date,
+        reason_ar,
+        reason_en,
+        doctors:doctor_id (
+          specialties:specialty_id (
+            name_ar,
+            name_en
+          )
+        )
+      `)
       .eq('patient_id', patient.patientId)
       .eq('status', 'scheduled')
       .lt('follow_up_date', now.split('T')[0])
@@ -107,11 +119,16 @@ export async function GET() {
       const daysOverdue = Math.floor(
         (Date.now() - new Date(fu.follow_up_date).getTime()) / (1000 * 60 * 60 * 24)
       );
+      // Supabase returns an embed as an object or a single-element array.
+      const doctor = Array.isArray(fu.doctors) ? fu.doctors[0] : fu.doctors;
+      const specialty = (
+        Array.isArray(doctor?.specialties) ? doctor?.specialties[0] : doctor?.specialties
+      ) as { name_ar?: string; name_en?: string } | null | undefined;
       alerts.push({
         id: `fu-${fu.id}`,
         type: 'overdue_followup',
-        title_ar: `موعد متابعة متأخر — ${fu.specialty_ar ?? ''}`,
-        title_en: `Overdue follow-up — ${fu.specialty_en ?? fu.specialty_ar ?? ''}`,
+        title_ar: `موعد متابعة متأخر — ${specialty?.name_ar ?? ''}`,
+        title_en: `Overdue follow-up — ${specialty?.name_en ?? specialty?.name_ar ?? ''}`,
         description_ar: `${fu.reason_ar ?? 'موعد المتابعة'} متأخر ${daysOverdue} يوم`,
         description_en: `${fu.reason_en ?? fu.reason_ar ?? 'Follow-up'} is ${daysOverdue} days overdue`,
         severity: daysOverdue > 14 ? 'error' : 'warning',

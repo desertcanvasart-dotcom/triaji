@@ -116,7 +116,7 @@ export async function GET(request: NextRequest) {
     // ── Recent transfers (last 24h) ──
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const { count: recentTransfers } = await supabase
-      .from('icu_transfers')
+      .from('icu_transfer_requests')
       .select('id', { count: 'exact', head: true })
       .gte('created_at', twentyFourHoursAgo);
 
