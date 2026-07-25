@@ -95,7 +95,7 @@ export default function PaymentStatsPanel({ tenantId }: { tenantId: string }) {
         .from('payment_transactions')
         .select(`
           id, triaji_reference, amount_egp, provider, payable_type, created_at,
-          patients:patient_id ( full_name_ar, phone )
+          patients:patient_id ( name_ar, phone_number )
         `)
         .eq('status', 'pending')
         .eq('tenant_id', tenantId)
@@ -112,8 +112,8 @@ export default function PaymentStatsPanel({ tenantId }: { tenantId: string }) {
               amount_egp: Number(txn.amount_egp),
               provider: txn.provider as string,
               payable_type: txn.payable_type as string,
-              patient_name: patient?.full_name_ar ?? '-',
-              patient_phone: patient?.phone ?? '',
+              patient_name: patient?.name_ar ?? '-',
+              patient_phone: patient?.phone_number ?? '',
               created_at: txn.created_at as string,
             };
           }),

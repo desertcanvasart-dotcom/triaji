@@ -20,12 +20,14 @@ export default async function LabSettingsPage() {
 
   // Fetch current lab config
   const { data: labConfig } = await supabase
-    .from('tenants')
+    // Lab config lives on tenant_config (migration 035); three of these are
+    // stored under different names. Aliased back to what the form expects.
+    .from('tenant_config')
     .select(
-      'lab_type, accreditation_number, medical_director, turnaround_hours, urgent_turnaround_hours, accepts_walk_ins, home_collection, home_collection_fee, collection_notes'
+      'lab_type, accreditation_number, medical_director:medical_director_ar, turnaround_hours, urgent_turnaround_hours, accepts_walk_ins, home_collection, home_collection_fee:home_collection_fee_egp, collection_notes:collection_notes_ar'
     )
-    .eq('id', tenantId)
-    .single();
+    .eq('tenant_id', tenantId)
+    .maybeSingle();
 
   const config = labConfig ?? {};
 

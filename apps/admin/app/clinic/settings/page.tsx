@@ -17,14 +17,15 @@ export default async function ClinicSettingsPage() {
 
   const supabase = createAdminClient();
 
-  // Fetch current tenant config
+  // These all live on tenant_config, not tenants, and four of them under
+  // clinic_-prefixed names. Aliased back to what the form expects.
   const { data: tenant } = await supabase
-    .from('tenants')
+    .from('tenant_config')
     .select(
-      'opening_time, closing_time, working_days, estimated_minutes_per_patient, queue_whatsapp_enabled, queue_sms_fallback, specialty_ar, specialty_en, floor_address, phone'
+      'opening_time, closing_time, working_days, estimated_minutes_per_patient, queue_whatsapp_enabled, queue_sms_fallback, specialty_ar:clinic_specialty_ar, specialty_en:clinic_specialty_en, floor_address:clinic_floor_ar, phone:clinic_phone'
     )
-    .eq('id', tenantId)
-    .single();
+    .eq('tenant_id', tenantId)
+    .maybeSingle();
 
   const config = tenant ?? {};
 
