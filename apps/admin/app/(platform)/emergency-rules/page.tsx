@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { TableSkeleton } from '@/components/ui/LoadingSkeleton';
 import EmptyState from '@/components/ui/EmptyState';
+import LoadError from '@/components/ui/LoadError';
 import { showToast } from '@/components/ui/Toast';
 
 interface EmergencyRule {
@@ -26,6 +27,7 @@ const ESCALATION_COLORS: Record<string, string> = {
 export default function EmergencyRulesPage() {
   const [rules, setRules] = useState<EmergencyRule[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   // Test panel
   const [testSymptoms, setTestSymptoms] = useState('');
@@ -39,12 +41,23 @@ export default function EmergencyRulesPage() {
 
   const fetchRules = useCallback(async () => {
     setLoading(true);
-    const res = await fetch('/api/admin/emergency-rules');
-    if (res.ok) {
-      const data = await res.json();
+    setLoadError('');
+    try {
+      const res = await fetch('/api/admin/emergency-rules');
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data) {
+        setLoadError(data?.error ?? 'Could not load emergency rules.');
+        setRules([]);
+        return;
+      }
       setRules(data.rules ?? []);
+    } catch {
+      setLoadError('Could not reach the server.');
+      setRules([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -95,6 +108,8 @@ export default function EmergencyRulesPage() {
 
       {loading ? (
         <TableSkeleton rows={6} cols={5} />
+      ) : loadError ? (
+        <LoadError message={loadError} onRetry={fetchRules} />
       ) : rules.length === 0 ? (
         <EmptyState
           icon="🚨"

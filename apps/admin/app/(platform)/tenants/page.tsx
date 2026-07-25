@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { TableSkeleton } from '@/components/ui/LoadingSkeleton';
 import EmptyState from '@/components/ui/EmptyState';
+import LoadError from '@/components/ui/LoadError';
 
 interface TenantRow {
   id: string;
@@ -26,19 +27,31 @@ const TIER_COLORS: Record<string, string> = {
 export default function TenantsPage() {
   const [tenants, setTenants] = useState<TenantRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [tierFilter, setTierFilter] = useState('');
 
   const fetchTenants = useCallback(async () => {
     setLoading(true);
-    const params = new URLSearchParams();
-    if (tierFilter) params.set('tier', tierFilter);
+    setLoadError('');
+    try {
+      const params = new URLSearchParams();
+      if (tierFilter) params.set('tier', tierFilter);
 
-    const res = await fetch(`/api/admin/tenants?${params.toString()}`);
-    if (res.ok) {
-      const data = await res.json();
+      const res = await fetch(`/api/admin/tenants?${params.toString()}`);
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data) {
+        setLoadError(data?.error ?? 'Could not load tenants.');
+        setTenants([]);
+        return;
+      }
       setTenants(data.tenants ?? []);
+    } catch {
+      setLoadError('Could not reach the server.');
+      setTenants([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [tierFilter]);
 
   useEffect(() => {
@@ -63,6 +76,8 @@ export default function TenantsPage() {
 
       {loading ? (
         <TableSkeleton rows={6} cols={7} />
+      ) : loadError ? (
+        <LoadError message={loadError} onRetry={fetchTenants} />
       ) : tenants.length === 0 ? (
         <EmptyState icon="🏢" title="No tenants" description="Add your first hospital or clinic tenant." actionLabel="Add Tenant" onAction={() => window.location.href = '/tenants/new'} />
       ) : (

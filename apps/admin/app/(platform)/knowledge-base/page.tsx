@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { TableSkeleton } from '@/components/ui/LoadingSkeleton';
 import EmptyState from '@/components/ui/EmptyState';
+import LoadError from '@/components/ui/LoadError';
 import { showToast } from '@/components/ui/Toast';
 
 interface KBDocument {
@@ -24,6 +25,7 @@ const COLLECTIONS = [
 export default function KnowledgeBasePage() {
   const [documents, setDocuments] = useState<KBDocument[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [collectionFilter, setCollectionFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
@@ -41,17 +43,28 @@ export default function KnowledgeBasePage() {
 
   const fetchDocs = useCallback(async () => {
     setLoading(true);
-    const params = new URLSearchParams();
-    if (collectionFilter) params.set('collection', collectionFilter);
-    if (statusFilter) params.set('status', statusFilter);
-    if (search) params.set('search', search);
+    setLoadError('');
+    try {
+      const params = new URLSearchParams();
+      if (collectionFilter) params.set('collection', collectionFilter);
+      if (statusFilter) params.set('status', statusFilter);
+      if (search) params.set('search', search);
 
-    const res = await fetch(`/api/admin/kb?${params.toString()}`);
-    if (res.ok) {
-      const data = await res.json();
+      const res = await fetch(`/api/admin/kb?${params.toString()}`);
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data) {
+        setLoadError(data?.error ?? 'Could not load knowledge base documents.');
+        setDocuments([]);
+        return;
+      }
       setDocuments(data.documents ?? []);
+    } catch {
+      setLoadError('Could not reach the server.');
+      setDocuments([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [collectionFilter, statusFilter, search]);
 
   useEffect(() => {
@@ -133,6 +146,8 @@ export default function KnowledgeBasePage() {
 
       {loading ? (
         <TableSkeleton rows={8} cols={5} />
+      ) : loadError ? (
+        <LoadError message={loadError} onRetry={fetchDocs} />
       ) : documents.length === 0 ? (
         <EmptyState
           icon="📚"
