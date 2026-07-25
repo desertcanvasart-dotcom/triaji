@@ -30,13 +30,23 @@ export default async function ClinicPage({ params }: Props) {
 
   const bookingMode = config?.clinic_booking_mode ?? 'walk_in_only';
 
-  // Fetch doctors
-  const { data: doctors } = await supabase
+  // Fetch doctors — primary affiliation plus doctor_tenants secondaries
+  // (multi-clinic doctors, migration 065; falls back to primary-only).
+  const { data: affiliations } = await supabase
+    .from('doctor_tenants')
+    .select('doctor_id')
+    .eq('tenant_id', tenant.id);
+  const affiliatedIds = (affiliations ?? []).map((a) => a.doctor_id);
+
+  let doctorsQuery = supabase
     .from('doctors')
     .select('id, name_ar, name_en, title_ar, photo_url, specialties(name_ar, name_en)')
-    .eq('tenant_id', tenant.id)
     .eq('is_active', true)
     .order('name_ar', { ascending: true });
+  doctorsQuery = affiliatedIds.length > 0
+    ? doctorsQuery.or(`tenant_id.eq.${tenant.id},id.in.(${affiliatedIds.join(',')})`)
+    : doctorsQuery.eq('tenant_id', tenant.id);
+  const { data: doctors } = await doctorsQuery;
 
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">

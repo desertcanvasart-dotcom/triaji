@@ -44,7 +44,18 @@ export async function GET(request: NextRequest) {
     .range(offset, offset + limit - 1);
 
   if (tenant) {
-    query = query.eq('tenant_id', tenant);
+    // Roster = primary affiliation (doctors.tenant_id) plus any secondary
+    // affiliations in doctor_tenants (multi-clinic doctors, migration 065).
+    const { data: affiliations } = await supabase
+      .from('doctor_tenants')
+      .select('doctor_id')
+      .eq('tenant_id', tenant);
+    const affiliatedIds = (affiliations ?? []).map((a) => a.doctor_id);
+    if (affiliatedIds.length > 0) {
+      query = query.or(`tenant_id.eq.${tenant},id.in.(${affiliatedIds.join(',')})`);
+    } else {
+      query = query.eq('tenant_id', tenant);
+    }
   }
 
   if (search) {
@@ -175,6 +186,16 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // Mirror the affiliation into doctor_tenants (no-op before migration 065).
+  if (tenantId && data) {
+    await supabase
+      .from('doctor_tenants')
+      .upsert(
+        { doctor_id: data.id, tenant_id: tenantId, is_primary: true },
+        { onConflict: 'doctor_id,tenant_id' }
+      );
   }
 
   return NextResponse.json({ doctor: data }, { status: 201 });
