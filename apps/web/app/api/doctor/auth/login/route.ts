@@ -69,6 +69,10 @@ export async function POST(request: NextRequest) {
       .eq('id', authData.user.id);
 
     const response = NextResponse.json({
+      // The login page routes on these two fields — keep them at the top level.
+      success: true,
+      verification_status: doctorAccount.verification_status,
+      rejection_reason: doctorAccount.rejection_reason,
       user: authData.user,
       doctorAccount,
       session: {
