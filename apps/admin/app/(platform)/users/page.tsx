@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { TableSkeleton } from '@/components/ui/LoadingSkeleton';
 import EmptyState from '@/components/ui/EmptyState';
+import LoadError from '@/components/ui/LoadError';
 import { getRoleBadge } from '@/lib/auth/types';
 import type { AdminRole } from '@/lib/auth/types';
 
@@ -14,6 +15,7 @@ interface AdminUserRow {
   role: AdminRole;
   name: string;
   email: string;
+  phone: string | null;
   is_active: boolean;
   created_at: string;
   tenant_name: string | null;
@@ -49,11 +51,13 @@ function roleNeedsTenant(role: AdminRole): boolean {
 export default function UsersPage() {
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [showInvite, setShowInvite] = useState(false);
 
   // Invite form state
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [role, setRole] = useState<AdminRole>('tenant_admin');
   const [tenantId, setTenantId] = useState('');
   const [chainId, setChainId] = useState('');
@@ -67,15 +71,29 @@ export default function UsersPage() {
   const [copied, setCopied] = useState(false);
   const [rowBusy, setRowBusy] = useState<string | null>(null);
   const [rowLink, setRowLink] = useState<{ id: string; link: string } | null>(null);
+  const [editingPhone, setEditingPhone] = useState<string | null>(null);
+  const [phoneDraft, setPhoneDraft] = useState('');
+  const [phoneError, setPhoneError] = useState('');
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
-    const res = await fetch('/api/admin/users');
-    if (res.ok) {
-      const data = await res.json();
+    setLoadError('');
+    try {
+      const res = await fetch('/api/admin/users');
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data) {
+        setLoadError(data?.error ?? 'Could not load users.');
+        setUsers([]);
+        return;
+      }
       setUsers(data.users ?? []);
+    } catch {
+      setLoadError('Could not reach the server.');
+      setUsers([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -109,6 +127,7 @@ export default function UsersPage() {
       body: JSON.stringify({
         name,
         email,
+        phone: phone.trim() || null,
         role,
         tenant_id: roleNeedsTenant(role) ? tenantId || null : null,
         chain_id: role === 'chain_owner' || role === 'branch_manager' ? chainId || null : null,
@@ -128,6 +147,7 @@ export default function UsersPage() {
     setInvitedEmail(email);
     setName('');
     setEmail('');
+    setPhone('');
     setTenantId('');
     setChainId('');
     setBranchTenantId('');
@@ -149,6 +169,9 @@ export default function UsersPage() {
       body: JSON.stringify({
         name: user.name,
         email: user.email,
+        // The invite upsert rewrites the row — carry the mobile through so
+        // regenerating a link doesn't wipe it.
+        phone: user.phone,
         role: user.role,
         tenant_id: user.tenant_id,
         chain_id: user.chain_id,
@@ -160,6 +183,24 @@ export default function UsersPage() {
     if (res.ok && data.invite_link) {
       setRowLink({ id: user.id, link: data.invite_link });
     }
+  }
+
+  async function savePhone(user: AdminUserRow) {
+    setRowBusy(user.id);
+    setPhoneError('');
+    const res = await fetch('/api/admin/users', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: user.id, phone: phoneDraft.trim() || null }),
+    });
+    const data = await res.json();
+    setRowBusy(null);
+    if (!res.ok) {
+      setPhoneError(data.error ?? 'Could not save the mobile.');
+      return;
+    }
+    setEditingPhone(null);
+    fetchUsers();
   }
 
   async function toggleActive(user: AdminUserRow) {
@@ -200,6 +241,14 @@ export default function UsersPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+            />
+            <input
+              className="input-field"
+              type="tel"
+              inputMode="tel"
+              placeholder="Mobile (optional) — 01XXXXXXXXX"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
             />
             <select
               className="input-field"
@@ -292,6 +341,8 @@ export default function UsersPage() {
 
       {loading ? (
         <TableSkeleton rows={5} />
+      ) : loadError ? (
+        <LoadError message={loadError} onRetry={fetchUsers} />
       ) : users.length === 0 ? (
         <EmptyState title="No users yet" description="Invite your first admin user." />
       ) : (
@@ -301,6 +352,7 @@ export default function UsersPage() {
               <tr className="border-b border-gray-200 text-left text-gray-500">
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Email</th>
+                <th className="px-4 py-3 font-medium">Mobile</th>
                 <th className="px-4 py-3 font-medium">Role</th>
                 <th className="px-4 py-3 font-medium">Scope</th>
                 <th className="px-4 py-3 font-medium">Status</th>
@@ -319,6 +371,55 @@ export default function UsersPage() {
                   <tr key={u.id} className="border-b border-gray-100 last:border-0">
                     <td className="px-4 py-3 font-medium text-gray-900">{u.name}</td>
                     <td className="px-4 py-3 text-gray-600">{u.email}</td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {editingPhone === u.id ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            className="input-field text-xs w-36"
+                            type="tel"
+                            inputMode="tel"
+                            placeholder="01XXXXXXXXX"
+                            value={phoneDraft}
+                            onChange={(e) => setPhoneDraft(e.target.value)}
+                            autoFocus
+                          />
+                          <button
+                            type="button"
+                            className="text-teal-700 hover:underline disabled:opacity-50"
+                            disabled={rowBusy === u.id}
+                            onClick={() => savePhone(u)}
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            className="text-gray-400 hover:underline"
+                            onClick={() => {
+                              setEditingPhone(null);
+                              setPhoneError('');
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          className="hover:underline"
+                          title="Password reset codes are sent to this number"
+                          onClick={() => {
+                            setEditingPhone(u.id);
+                            setPhoneDraft(u.phone ?? '');
+                            setPhoneError('');
+                          }}
+                        >
+                          {u.phone ?? <span className="text-gray-400">Add mobile</span>}
+                        </button>
+                      )}
+                      {editingPhone === u.id && phoneError && (
+                        <p className="text-xs text-red-600 mt-1">{phoneError}</p>
+                      )}
+                    </td>
                     <td className="px-4 py-3">
                       <span className={badge.className}>{badge.label}</span>
                     </td>

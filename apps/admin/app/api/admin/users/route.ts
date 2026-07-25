@@ -19,9 +19,24 @@ const ALL_ROLES: AdminRole[] = [
 
 const CHAIN_ROLES: AdminRole[] = ['chain_owner', 'branch_manager'];
 
+/** `phone` is optional here so the pre-migration-067 fallback select still fits. */
+interface AdminUserListRow {
+  id: string;
+  tenant_id: string | null;
+  chain_id: string | null;
+  branch_tenant_id: string | null;
+  role: AdminRole;
+  name: string;
+  email: string;
+  phone?: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
 interface InviteBody {
   email?: string;
   name?: string;
+  phone?: string | null;
   role?: AdminRole;
   tenant_id?: string | null;
   chain_id?: string | null;
@@ -37,6 +52,11 @@ function validateInvite(body: InviteBody): string | null {
   }
   if (!body.role || !ALL_ROLES.includes(body.role)) {
     return 'Invalid role.';
+  }
+  // Optional, but when given it has to be a real Egyptian mobile — it's the
+  // number password-reset codes get sent to.
+  if (body.phone && !/^01[0125]\d{8}$/.test(body.phone.trim())) {
+    return 'Mobile must be an Egyptian number starting 010, 011, 012 or 015.';
   }
   if (body.role === 'chain_owner' && !body.chain_id) {
     return 'chain_id is required for chain_owner.';
@@ -65,10 +85,27 @@ export async function GET(request: NextRequest) {
 
   const supabase = createAdminClient();
 
-  const { data: users, error } = await supabase
+  const BASE_COLUMNS = 'id, tenant_id, chain_id, branch_tenant_id, role, name, email, is_active, created_at';
+
+  const withPhone = await supabase
     .from('admin_users')
-    .select('id, tenant_id, chain_id, branch_tenant_id, role, name, email, is_active, created_at')
+    .select(`${BASE_COLUMNS}, phone`)
     .order('created_at', { ascending: false });
+
+  let users = withPhone.data as AdminUserListRow[] | null;
+  let error = withPhone.error;
+
+  // Graceful degradation until migration 067 is applied live: list users
+  // without the mobile column rather than failing the whole page.
+  if (error && /phone/.test(error.message)) {
+    console.warn('[admin/users] admin_users.phone missing (apply migration 067):', error.message);
+    const fallback = await supabase
+      .from('admin_users')
+      .select(BASE_COLUMNS)
+      .order('created_at', { ascending: false });
+    users = fallback.data as AdminUserListRow[] | null;
+    error = fallback.error;
+  }
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -103,6 +140,7 @@ export async function GET(request: NextRequest) {
 
   const enriched = (users ?? []).map((u) => ({
     ...u,
+    phone: u.phone ?? null,
     tenant_name: u.tenant_id ? (tenantNames.get(u.tenant_id) ?? null) : null,
     branch_tenant_name: u.branch_tenant_id ? (tenantNames.get(u.branch_tenant_id) ?? null) : null,
     chain_name: u.chain_id ? (chainNames.get(u.chain_id) ?? null) : null,
@@ -176,23 +214,33 @@ export async function POST(request: NextRequest) {
     actionLink = recoveryData.properties?.action_link ?? null;
   }
 
-  const { data: adminUser, error: upsertError } = await supabase
+  const baseRow = {
+    id: userId,
+    tenant_id: body.tenant_id ?? null,
+    chain_id: body.chain_id ?? null,
+    branch_tenant_id: body.branch_tenant_id ?? null,
+    role: body.role,
+    name: body.name!.trim(),
+    email,
+    is_active: true,
+  };
+
+  let { data: adminUser, error: upsertError } = await supabase
     .from('admin_users')
-    .upsert(
-      {
-        id: userId,
-        tenant_id: body.tenant_id ?? null,
-        chain_id: body.chain_id ?? null,
-        branch_tenant_id: body.branch_tenant_id ?? null,
-        role: body.role,
-        name: body.name!.trim(),
-        email,
-        is_active: true,
-      },
-      { onConflict: 'id' }
-    )
+    .upsert({ ...baseRow, phone: body.phone?.trim() || null }, { onConflict: 'id' })
     .select()
     .single();
+
+  // Graceful degradation until migration 067 is applied live: create the user
+  // without the mobile rather than failing the invite outright.
+  if (upsertError && /phone/.test(upsertError.message)) {
+    console.warn('[admin/users] admin_users.phone missing (apply migration 067):', upsertError.message);
+    ({ data: adminUser, error: upsertError } = await supabase
+      .from('admin_users')
+      .upsert(baseRow, { onConflict: 'id' })
+      .select()
+      .single());
+  }
 
   if (upsertError) {
     // Don't leave an orphaned auth user behind on a failed first-time invite.
@@ -209,7 +257,10 @@ export async function POST(request: NextRequest) {
   });
 }
 
-/** PATCH /api/admin/users — activate/deactivate an admin user (platform admin only) */
+/**
+ * PATCH /api/admin/users — activate/deactivate an admin user, or set the mobile
+ * their password-reset codes go to (platform admin only).
+ */
 export async function PATCH(request: NextRequest) {
   const authResult = await authenticateAdmin(request);
   if (authResult instanceof NextResponse) return authResult;
@@ -218,30 +269,53 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: 'Platform admin only.' }, { status: 403 });
   }
 
-  let body: { id?: string; is_active?: boolean };
+  let body: { id?: string; is_active?: boolean; phone?: string | null };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  if (!body.id || typeof body.is_active !== 'boolean') {
-    return NextResponse.json({ error: 'id and is_active are required.' }, { status: 400 });
+  const hasActive = typeof body.is_active === 'boolean';
+  const hasPhone = body.phone !== undefined;
+
+  if (!body.id || (!hasActive && !hasPhone)) {
+    return NextResponse.json(
+      { error: 'id and one of is_active or phone are required.' },
+      { status: 400 }
+    );
   }
 
-  if (body.id === authResult.admin.id && !body.is_active) {
+  const phone = body.phone?.trim() || null;
+  if (hasPhone && phone && !/^01[0125]\d{8}$/.test(phone)) {
+    return NextResponse.json(
+      { error: 'Mobile must be an Egyptian number starting 010, 011, 012 or 015.' },
+      { status: 400 }
+    );
+  }
+
+  if (body.id === authResult.admin.id && hasActive && !body.is_active) {
     return NextResponse.json({ error: 'You cannot deactivate your own account.' }, { status: 400 });
   }
 
   const supabase = createAdminClient();
   const { data: updated, error } = await supabase
     .from('admin_users')
-    .update({ is_active: body.is_active })
+    .update({
+      ...(hasActive ? { is_active: body.is_active } : {}),
+      ...(hasPhone ? { phone } : {}),
+    })
     .eq('id', body.id)
     .select()
     .single();
 
   if (error) {
+    if (hasPhone && /phone/.test(error.message)) {
+      return NextResponse.json(
+        { error: 'Mobile numbers need migration 067 applied to the database first.' },
+        { status: 503 }
+      );
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
