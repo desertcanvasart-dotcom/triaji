@@ -54,31 +54,80 @@ function slugify(input: string): string {
     .slice(0, 60);
 }
 
-async function currentClinic(supabase: SupabaseClient, doctorId: string | null) {
-  if (!doctorId) return null;
+interface AffiliatedTenant {
+  id: string;
+  name_ar: string;
+  name_en: string;
+  slug: string;
+  tier: string;
+  is_primary: boolean;
+}
+
+/**
+ * Every facility the doctor is affiliated with: the primary one on
+ * doctors.tenant_id plus any doctor_tenants rows (multi-clinic doctors,
+ * migration 065 — degrades to primary-only before it's applied).
+ */
+async function allAffiliations(
+  supabase: SupabaseClient,
+  doctorId: string | null
+): Promise<AffiliatedTenant[]> {
+  if (!doctorId) return [];
+
   const { data: doctor } = await supabase
     .from('doctors')
     .select('tenant_id')
     .eq('id', doctorId)
     .single();
-  if (!doctor?.tenant_id) return null;
-  const { data: tenant } = await supabase
+
+  const tenantIds = new Map<string, boolean>(); // id -> is_primary
+  if (doctor?.tenant_id) tenantIds.set(doctor.tenant_id, true);
+
+  const { data: joins } = await supabase
+    .from('doctor_tenants')
+    .select('tenant_id')
+    .eq('doctor_id', doctorId);
+  for (const j of joins ?? []) {
+    if (!tenantIds.has(j.tenant_id)) tenantIds.set(j.tenant_id, false);
+  }
+
+  if (tenantIds.size === 0) return [];
+
+  const { data: tenants } = await supabase
     .from('tenants')
     .select('id, name_ar, name_en, slug, tier')
-    .eq('id', doctor.tenant_id)
-    .single();
-  return tenant ?? null;
+    .in('id', [...tenantIds.keys()]);
+
+  return (tenants ?? []).map((t) => ({ ...t, is_primary: tenantIds.get(t.id) ?? false }));
 }
 
-/** GET /api/doctor/clinic — the verified doctor's current facility, if any */
+/** Does this login already own a clinic (clinic_owner admin access)? */
+async function ownsClinic(supabase: SupabaseClient, accountId: string): Promise<boolean> {
+  const { data } = await supabase
+    .from('admin_users')
+    .select('id')
+    .eq('id', accountId)
+    .eq('role', 'clinic_owner')
+    .eq('is_active', true)
+    .maybeSingle();
+  return !!data;
+}
+
+/** GET /api/doctor/clinic — all facilities the verified doctor belongs to */
 export async function GET(request: NextRequest) {
   const account = await authenticateDoctor(request);
   if (!account) {
     return NextResponse.json({ error: 'غير مسجل' }, { status: 401 });
   }
   const supabase = getServiceClient();
-  const clinic = await currentClinic(supabase, account.doctor_id);
-  return NextResponse.json({ clinic, canCreate: !clinic && !!account.doctor_id });
+  const clinics = await allAffiliations(supabase, account.doctor_id);
+  const owned = await ownsClinic(supabase, account.id);
+  const primary = clinics.find((c) => c.is_primary) ?? clinics[0] ?? null;
+  return NextResponse.json({
+    clinic: primary, // backwards-compatible single-clinic field
+    clinics,
+    canCreate: !!account.doctor_id && !owned,
+  });
 }
 
 /**
@@ -111,9 +160,9 @@ export async function POST(request: NextRequest) {
 
   const supabase = getServiceClient();
 
-  const existing = await currentClinic(supabase, account.doctor_id);
-  if (existing) {
-    return NextResponse.json({ error: 'أنت مرتبط بمنشأة بالفعل', clinic: existing }, { status: 409 });
+  // A doctor may belong to several facilities, but can own only one clinic.
+  if (await ownsClinic(supabase, account.id)) {
+    return NextResponse.json({ error: 'عندك عيادة خاصة بالفعل' }, { status: 409 });
   }
 
   const nameEn = body.clinic_name_en?.trim() || `Dr. ${account.syndicate_number} Clinic`;
@@ -163,13 +212,30 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  await supabase
+  // The new clinic becomes the primary affiliation only if the doctor has
+  // none yet; a hospital-affiliated doctor keeps the hospital as primary.
+  const { data: doctorRow } = await supabase
     .from('doctors')
-    .update({
-      tenant_id: tenant.id,
-      ...(body.address_ar?.trim() ? { clinic_address_ar: body.address_ar.trim() } : {}),
-    })
-    .eq('id', account.doctor_id);
+    .select('tenant_id')
+    .eq('id', account.doctor_id)
+    .single();
+  const becomesPrimary = !doctorRow?.tenant_id;
+
+  const doctorPatch = {
+    ...(becomesPrimary ? { tenant_id: tenant.id } : {}),
+    ...(body.address_ar?.trim() ? { clinic_address_ar: body.address_ar.trim() } : {}),
+  };
+  if (Object.keys(doctorPatch).length > 0) {
+    await supabase.from('doctors').update(doctorPatch).eq('id', account.doctor_id);
+  }
+
+  // Record the affiliation (no-op before migration 065).
+  await supabase
+    .from('doctor_tenants')
+    .upsert(
+      { doctor_id: account.doctor_id, tenant_id: tenant.id, is_primary: becomesPrimary },
+      { onConflict: 'doctor_id,tenant_id' }
+    );
 
   // Record the mode on the account too. PostgREST reports a missing column as
   // a result error, not a throw — ignored until migration 064 is live.

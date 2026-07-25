@@ -8,14 +8,16 @@ interface ClinicTenant {
   name_en: string;
   slug: string;
   tier: string;
+  is_primary?: boolean;
 }
 
 const STRINGS = {
   ar: {
-    title: 'عيادتي على دكتور تريو',
-    linkedTo: 'حسابك مرتبط بـ',
-    manageHint: 'تقدر تدير العيادة (المواعيد، الاستقبال، الفواتير) من لوحة تحكم دكتور تريو للمنشآت بنفس بيانات الدخول.',
-    intro: 'لسه معندكش عيادة على دكتور تريو؟ أنشئ صفحة لعيادتك ولوحة تحكم خاصة بيها.',
+    title: 'منشآتي على دكتور تريو',
+    affiliationsIntro: 'حسابك مرتبط بالمنشآت دي:',
+    primaryBadge: 'الرئيسية',
+    manageHint: 'لو عندك عيادة خاصة، تقدر تديرها (المواعيد، الاستقبال، الفواتير) من لوحة تحكم دكتور تريو للمنشآت بنفس بيانات الدخول.',
+    intro: 'لسه معندكش عيادة خاصة على دكتور تريو؟ أنشئ صفحة لعيادتك ولوحة تحكم خاصة بيها — حتى لو بتشتغل في مستشفى أو عيادة تانية.',
     nameLabel: 'اسم العيادة (بالعربي)',
     nameEnLabel: 'اسم العيادة (بالإنجليزي — اختياري)',
     addressLabel: 'عنوان العيادة (اختياري)',
@@ -25,10 +27,11 @@ const STRINGS = {
     success: 'تم إنشاء عيادتك! تقدر دلوقتي تديرها من لوحة تحكم المنشآت بنفس بيانات دخولك.',
   },
   en: {
-    title: 'My clinic on DoctorTrio',
-    linkedTo: 'Your account is linked to',
-    manageHint: 'Manage the clinic (appointments, reception, billing) from the DoctorTrio provider dashboard with this same login.',
-    intro: 'No clinic on DoctorTrio yet? Create your clinic page and its own admin dashboard.',
+    title: 'My facilities on DoctorTrio',
+    affiliationsIntro: 'Your account is linked to these facilities:',
+    primaryBadge: 'Primary',
+    manageHint: 'If you own a clinic, manage it (appointments, reception, billing) from the DoctorTrio provider dashboard with this same login.',
+    intro: 'No clinic of your own on DoctorTrio yet? Create your clinic page and its own admin dashboard — even if you also work at a hospital or another clinic.',
     nameLabel: 'Clinic name (Arabic)',
     nameEnLabel: 'Clinic name (English — optional)',
     addressLabel: 'Clinic address (optional)',
@@ -42,7 +45,7 @@ const STRINGS = {
 export default function MyClinicSection({ locale }: { locale: 'ar' | 'en' }) {
   const t = STRINGS[locale];
   const [loading, setLoading] = useState(true);
-  const [clinic, setClinic] = useState<ClinicTenant | null>(null);
+  const [clinics, setClinics] = useState<ClinicTenant[]>([]);
   const [canCreate, setCanCreate] = useState(false);
   const [nameAr, setNameAr] = useState('');
   const [nameEn, setNameEn] = useState('');
@@ -53,9 +56,9 @@ export default function MyClinicSection({ locale }: { locale: 'ar' | 'en' }) {
 
   useEffect(() => {
     fetch('/api/doctor/clinic')
-      .then((r) => (r.ok ? r.json() : { clinic: null, canCreate: false }))
+      .then((r) => (r.ok ? r.json() : { clinics: [], canCreate: false }))
       .then((d) => {
-        setClinic(d.clinic ?? null);
+        setClinics(d.clinics ?? (d.clinic ? [d.clinic] : []));
         setCanCreate(!!d.canCreate);
       })
       .catch(() => undefined)
@@ -85,28 +88,40 @@ export default function MyClinicSection({ locale }: { locale: 'ar' | 'en' }) {
       setError(data.error ?? 'Error');
       return;
     }
-    setClinic(data.clinic);
+    setClinics((prev) => [...prev, data.clinic]);
+    setCanCreate(false);
     setCreated(true);
   }
 
-  if (loading || (!clinic && !canCreate)) return null;
+  if (loading || (clinics.length === 0 && !canCreate)) return null;
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4">
       <h2 className="text-sm font-semibold text-[#1A2F4A] mb-3">{t.title}</h2>
 
-      {clinic ? (
-        <div>
+      {clinics.length > 0 && (
+        <div className="mb-3">
           {created && <p className="text-sm text-teal-700 mb-2">{t.success}</p>}
-          <p className="text-sm text-gray-700">
-            {t.linkedTo}{' '}
-            <span className="font-semibold">
-              {locale === 'ar' ? clinic.name_ar || clinic.name_en : clinic.name_en || clinic.name_ar}
-            </span>
-          </p>
-          <p className="text-xs text-gray-500 mt-1">{t.manageHint}</p>
+          <p className="text-sm text-gray-700 mb-2">{t.affiliationsIntro}</p>
+          <ul className="space-y-1.5">
+            {clinics.map((c) => (
+              <li key={c.id} className="flex items-center gap-2 text-sm">
+                <span className="font-semibold text-gray-900">
+                  {locale === 'ar' ? c.name_ar || c.name_en : c.name_en || c.name_ar}
+                </span>
+                {c.is_primary && (
+                  <span className="text-[10px] font-medium bg-teal-50 text-teal-700 border border-teal-200 rounded-full px-2 py-0.5">
+                    {t.primaryBadge}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-gray-500 mt-2">{t.manageHint}</p>
         </div>
-      ) : (
+      )}
+
+      {canCreate && (
         <form onSubmit={submit} className="space-y-3">
           <p className="text-xs text-gray-500">{t.intro}</p>
           <div>

@@ -197,6 +197,15 @@ export async function POST(
         .from('doctor_accounts')
         .update({ doctor_id: newDoctor.id })
         .eq('id', id);
+      // Mirror the affiliation into doctor_tenants (no-op before migration 065).
+      if (tenantId) {
+        await supabase
+          .from('doctor_tenants')
+          .upsert(
+            { doctor_id: newDoctor.id, tenant_id: tenantId, is_primary: true },
+            { onConflict: 'doctor_id,tenant_id' }
+          );
+      }
     } else {
       // doctors.specialty_id / governorate_id are NOT NULL — an unmatched
       // specialty name or a registration without a governorate lands here.
