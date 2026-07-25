@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getRoleBadge, type AdminRole } from '@/lib/auth/types';
 import { getSupabaseBrowser } from '@/lib/supabase/browser';
@@ -33,7 +34,13 @@ export default function TopBar({ name, role, sidebarCollapsed }: TopBarProps) {
       <div />
       <div className="flex items-center gap-4">
         <span className={`badge ${className}`}>{label}</span>
-        <span className="text-sm font-medium text-gray-700">{name}</span>
+        <Link
+          href="/account"
+          className="text-sm font-medium text-gray-700 hover:text-teal-600 transition-colors"
+          title="My account — set the mobile your password-reset codes go to"
+        >
+          {name}
+        </Link>
         <button
           onClick={handleSignOut}
           className="text-sm text-gray-500 hover:text-red-600 transition-colors"
