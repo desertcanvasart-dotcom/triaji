@@ -1,9 +1,12 @@
 /**
  * Image Upload for Triage Sessions
- * Client-side upload to Supabase Storage with compression.
+ *
+ * Compression happens here in the browser — it cuts what we send over the wire
+ * and is cheap on the client. The upload itself goes through our own API, which
+ * holds the service-role key: session-images is a private bucket of patient
+ * photos, and uploading direct from the browser would have needed a storage
+ * policy open to the public anon key.
  */
-
-import { createBrowserClient } from '@triaji/shared/supabase';
 
 export interface UploadedImage {
   url: string;
@@ -12,10 +15,11 @@ export interface UploadedImage {
   sizeBytes: number;
 }
 
+// Mirrored server-side in /api/patient/session-image — these checks are for a
+// quick, localised error, not a guarantee.
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 const COMPRESS_THRESHOLD = 2 * 1024 * 1024; // 2MB
-const BUCKET = 'session-images';
 
 /**
  * Compress an image using Canvas API if it exceeds threshold.
@@ -96,37 +100,29 @@ export async function uploadSessionImage(
   // Compress if needed
   const processedFile = await compressImage(file);
 
-  // Generate storage path
-  const ext = processedFile.type === 'image/png' ? 'png' : processedFile.type === 'image/webp' ? 'webp' : 'jpg';
-  const randomId = Math.random().toString(36).slice(2, 10);
-  const path = `${sessionId}/${Date.now()}-${randomId}.${ext}`;
+  const body = new FormData();
+  body.append('file', processedFile);
+  body.append('session_id', sessionId);
 
-  const supabase = createBrowserClient();
-
-  // Upload to Supabase Storage
-  const { error: uploadError } = await supabase.storage
-    .from(BUCKET)
-    .upload(path, processedFile, {
-      contentType: processedFile.type,
-      cacheControl: '3600',
-    });
-
-  if (uploadError) {
+  let res: Response;
+  try {
+    res = await fetch('/api/patient/session-image', { method: 'POST', body });
+  } catch {
     throw new Error('حدث خطأ في رفع الصورة، حاول مرة أخرى');
   }
 
-  // Get a signed URL (1 hour expiry)
-  const { data: signedData, error: signedError } = await supabase.storage
-    .from(BUCKET)
-    .createSignedUrl(path, 3600);
+  const data = (await res.json().catch(() => null)) as
+    | { success?: boolean; error?: string; url?: string; publicUrl?: string | null }
+    | null;
 
-  if (signedError || !signedData?.signedUrl) {
-    throw new Error('حدث خطأ في رفع الصورة، حاول مرة أخرى');
+  if (!res.ok || !data?.success || !data.url) {
+    // The route localises its own errors; fall back if it said nothing useful.
+    throw new Error(data?.error ?? 'حدث خطأ في رفع الصورة، حاول مرة أخرى');
   }
 
   return {
-    url: path,
-    publicUrl: signedData.signedUrl,
+    url: data.url,
+    publicUrl: data.publicUrl ?? '',
     mimeType: processedFile.type,
     sizeBytes: processedFile.size,
   };
