@@ -2,14 +2,18 @@ name: Schema drift (live DB)
 
 # The dominant historical bug class in this repo: code referencing DB
 # columns/tables that don't exist in the LIVE Supabase. Typecheck can't catch
-# it (queries are loosely typed); these scanners can. Runs nightly and on
-# demand. Requires two repo secrets: NEXT_PUBLIC_SUPABASE_URL and
-# SUPABASE_SERVICE_ROLE_KEY.
+# it (queries are loosely typed); these scanners can. Runs nightly, on demand,
+# and on pull requests. Requires two repo secrets: NEXT_PUBLIC_SUPABASE_URL and
+# SUPABASE_SERVICE_ROLE_KEY — without them the scan skips rather than fails.
 
 on:
   schedule:
     - cron: '0 3 * * *' # nightly, 03:00 UTC (05:00 Cairo)
   workflow_dispatch:
+  # Also on PRs: nightly-only meant drift was found long after it shipped.
+  # The live-select scan below is gated on a baseline, so it fails a PR only
+  # for drift that PR introduces.
+  pull_request:
 
 jobs:
   scan:
@@ -17,20 +21,51 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fetch live PostgREST schema
+      # Secrets aren't exposed to pull requests from forks. Skip there with a
+      # notice rather than failing every such PR; on the nightly run and on
+      # manual dispatch, missing secrets are a genuine misconfiguration.
+      - name: Check credentials
+        id: creds
         env:
           SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          if [ -z "$SUPABASE_URL" ] || [ -z "$SERVICE_KEY" ]; then
-            echo "::error::Set the NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY repo secrets."
-            exit 1
+          if [ -n "$SUPABASE_URL" ] && [ -n "$SERVICE_KEY" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              echo "::notice::Schema-drift scan skipped — no DB credentials available for this PR."
+            else
+              echo "::error::Set the NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY repo secrets."
+              exit 1
+            fi
           fi
+
+      - name: Fetch live PostgREST schema
+        if: steps.creds.outputs.available == 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
           curl -sf -H "apikey: $SERVICE_KEY" -H "Authorization: Bearer $SERVICE_KEY" \
             "$SUPABASE_URL/rest/v1/" -o /tmp/schema.json
 
       - name: Column drift (expect 0)
+        if: steps.creds.outputs.available == 'true'
         run: python3 docs/scan-drift.py --files --ci
 
       - name: Embedded-join drift (expect 0)
+        if: steps.creds.outputs.available == 'true'
         run: python3 docs/scan-embeds.py --files --ci
+
+      # Replays each select against the database rather than reasoning about
+      # the schema, so it sees what the two scanners above cannot: .tsx files,
+      # queries against tables that don't exist, and embeds. Fails only on
+      # drift missing from docs/schema-drift-baseline.txt.
+      - name: Live select replay (fails on NEW drift only)
+        if: steps.creds.outputs.available == 'true'
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python3 docs/scan-live-selects.py --ci
