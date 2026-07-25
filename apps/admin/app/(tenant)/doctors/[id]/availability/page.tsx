@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { showToast } from '@/components/ui/Toast';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import LoadError from '@/components/ui/LoadError';
 
 interface Slot {
   id: string;
@@ -33,6 +34,7 @@ export default function AvailabilityPage({ params }: { params: Promise<{ id: str
   const router = useRouter();
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [newTime, setNewTime] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [addingSlot, setAddingSlot] = useState(false);
@@ -54,14 +56,25 @@ export default function AvailabilityPage({ params }: { params: Promise<{ id: str
 
   const fetchSlots = useCallback(async () => {
     setLoading(true);
-    const from = today.toISOString();
-    const to = thirtyDaysLater.toISOString();
-    const res = await fetch(`/api/admin/doctors/${id}/slots?from=${from}&to=${to}`);
-    if (res.ok) {
-      const data = await res.json();
+    setLoadError('');
+    try {
+      const from = today.toISOString();
+      const to = thirtyDaysLater.toISOString();
+      const res = await fetch(`/api/admin/doctors/${id}/slots?from=${from}&to=${to}`);
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data) {
+        setLoadError(data?.error ?? 'Could not load availability.');
+        setSlots([]);
+        return;
+      }
       setSlots(data.slots ?? []);
+    } catch {
+      setLoadError('Could not reach the server.');
+      setSlots([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
@@ -279,6 +292,8 @@ export default function AvailabilityPage({ params }: { params: Promise<{ id: str
       {/* Calendar View */}
       {loading ? (
         <div className="text-center py-12 text-gray-500">Loading slots...</div>
+      ) : loadError ? (
+        <LoadError message={loadError} onRetry={fetchSlots} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
           {days.map((day) => {

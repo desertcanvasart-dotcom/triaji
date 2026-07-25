@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { TableSkeleton } from '@/components/ui/LoadingSkeleton';
 import EmptyState from '@/components/ui/EmptyState';
+import LoadError from '@/components/ui/LoadError';
 
 interface ClinicalDocumentRecord {
   id: string;
@@ -34,6 +35,7 @@ const TYPE_OPTIONS = [
 export default function ClinicalDocumentsAuditPage() {
   const [documents, setDocuments] = useState<ClinicalDocumentRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [typeFilter, setTypeFilter] = useState('all');
@@ -43,6 +45,7 @@ export default function ClinicalDocumentsAuditPage() {
 
   const fetchDocuments = useCallback(async () => {
     setLoading(true);
+    setLoadError('');
     const params = new URLSearchParams({
       page: String(page),
       limit: String(limit),
@@ -54,13 +57,25 @@ export default function ClinicalDocumentsAuditPage() {
       params.set('doctor_name', doctorSearch.trim());
     }
 
-    const res = await fetch(`/api/admin/clinical-documents?${params.toString()}`);
-    if (res.ok) {
-      const data = await res.json();
+    try {
+      const res = await fetch(`/api/admin/clinical-documents?${params.toString()}`);
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data) {
+        setLoadError(data?.error ?? 'Could not load clinical documents.');
+        setDocuments([]);
+        setTotal(0);
+        return;
+      }
       setDocuments(data.documents ?? []);
       setTotal(data.total ?? 0);
+    } catch {
+      setLoadError('Could not reach the server.');
+      setDocuments([]);
+      setTotal(0);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [page, typeFilter, doctorSearch]);
 
   useEffect(() => {
@@ -164,6 +179,8 @@ export default function ClinicalDocumentsAuditPage() {
 
       {loading ? (
         <TableSkeleton rows={8} cols={7} />
+      ) : loadError ? (
+        <LoadError message={loadError} onRetry={fetchDocuments} />
       ) : documents.length === 0 ? (
         <EmptyState
           icon={'\uD83D\uDCC4'}

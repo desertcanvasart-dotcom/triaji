@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { Fragment, useState, useEffect, useCallback } from 'react';
 import { showToast } from '@/components/ui/Toast';
 import { TableSkeleton } from '@/components/ui/LoadingSkeleton';
 import EmptyState from '@/components/ui/EmptyState';
+import DoctorDocumentsPanel from '@/components/doctors/DoctorDocumentsPanel';
 
 interface DoctorRegistration {
   id: string;
@@ -23,6 +24,8 @@ interface DoctorRegistration {
   self_registered: boolean;
   created_at: string;
   governorates: { name_ar: string; name_en: string } | null;
+  /** Present for pending rows; approval is gated on `ready`. */
+  document_readiness?: { required: number; approved: number; ready: boolean };
 }
 
 function clinicRequestBadge(reg: DoctorRegistration) {
@@ -46,21 +49,38 @@ function clinicRequestBadge(reg: DoctorRegistration) {
 export default function DoctorVerificationPage() {
   const [registrations, setRegistrations] = useState<DoctorRegistration[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [total, setTotal] = useState(0);
   const [statusFilter, setStatusFilter] = useState('pending');
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const fetchRegistrations = useCallback(async () => {
     setLoading(true);
-    const params = new URLSearchParams({ status: statusFilter });
-    const res = await fetch(`/api/admin/doctor-verification?${params.toString()}`);
-    if (res.ok) {
-      const data = await res.json();
+    setLoadError('');
+    try {
+      const params = new URLSearchParams({ status: statusFilter });
+      const res = await fetch(`/api/admin/doctor-verification?${params.toString()}`);
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data) {
+        setLoadError(data?.error ?? 'Could not load registrations.');
+        setRegistrations([]);
+        setTotal(0);
+        return;
+      }
+
       setRegistrations(data.registrations ?? []);
       setTotal(data.total ?? 0);
+    } catch {
+      setLoadError('Could not reach the server.');
+      setRegistrations([]);
+      setTotal(0);
+    } finally {
+      // Always clears — a throw here used to leave the page on its skeleton forever.
+      setLoading(false);
     }
-    setLoading(false);
   }, [statusFilter]);
 
   useEffect(() => {
@@ -77,6 +97,8 @@ export default function DoctorVerificationPage() {
     } else {
       const data = await res.json();
       showToast(data.error ?? 'Failed to verify doctor.', 'error');
+      // Blocked on documents — open the panel so the reviewer can act on it.
+      if (res.status === 409) setExpandedId(id);
     }
   }
 
@@ -154,6 +176,13 @@ export default function DoctorVerificationPage() {
 
       {loading ? (
         <TableSkeleton rows={5} cols={7} />
+      ) : loadError ? (
+        <div className="card p-6 text-center">
+          <p className="text-sm text-red-700 mb-3">{loadError}</p>
+          <button className="btn-primary" onClick={fetchRegistrations}>
+            Try again
+          </button>
+        </div>
       ) : registrations.length === 0 ? (
         <EmptyState
           icon="✅"
@@ -180,7 +209,8 @@ export default function DoctorVerificationPage() {
               </thead>
               <tbody>
                 {registrations.map((reg) => (
-                  <tr key={reg.id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <Fragment key={reg.id}>
+                  <tr className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div>
                         <p className="text-sm font-medium text-gray-900" dir="rtl">
@@ -205,27 +235,64 @@ export default function DoctorVerificationPage() {
                     </td>
                     <td className="table-cell">{statusBadge(reg.verification_status)}</td>
                     <td className="px-6 py-4">
-                      {reg.verification_status === 'pending' && (
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleApprove(reg.id)}
-                            className="text-green-600 hover:text-green-800 text-sm font-medium"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => setRejectingId(reg.id)}
-                            className="text-red-600 hover:text-red-800 text-sm font-medium"
-                          >
-                            Reject
-                          </button>
-                        </div>
-                      )}
-                      {reg.verification_status === 'rejected' && reg.rejection_reason && (
-                        <p className="text-xs text-red-600">{reg.rejection_reason}</p>
-                      )}
+                      <div className="flex flex-col gap-1 items-start">
+                        {reg.verification_status === 'pending' && (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleApprove(reg.id)}
+                              disabled={reg.document_readiness?.ready === false}
+                              title={
+                                reg.document_readiness?.ready === false
+                                  ? 'All required documents must be approved before verifying this doctor.'
+                                  : undefined
+                              }
+                              className="text-green-600 hover:text-green-800 text-sm font-medium disabled:text-gray-300 disabled:cursor-not-allowed disabled:hover:text-gray-300"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => setRejectingId(reg.id)}
+                              className="text-red-600 hover:text-red-800 text-sm font-medium"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        )}
+                        <button
+                          onClick={() => setExpandedId(expandedId === reg.id ? null : reg.id)}
+                          className="text-teal-700 hover:text-teal-900 text-sm font-medium"
+                        >
+                          {expandedId === reg.id ? 'Hide documents' : 'Documents'}
+                          {reg.document_readiness && (
+                            <span
+                              className={`ml-1.5 text-xs font-normal ${
+                                reg.document_readiness.ready ? 'text-green-600' : 'text-amber-600'
+                              }`}
+                            >
+                              {reg.document_readiness.approved}/{reg.document_readiness.required}
+                            </span>
+                          )}
+                        </button>
+                        {reg.verification_status === 'rejected' && reg.rejection_reason && (
+                          <p className="text-xs text-red-600">{reg.rejection_reason}</p>
+                        )}
+                      </div>
                     </td>
                   </tr>
+                  {expandedId === reg.id && (
+                    <tr>
+                      <td colSpan={8} className="p-0">
+                        <DoctorDocumentsPanel
+                          registrationId={reg.id}
+                          clinicMode={reg.clinic_mode}
+                          // Refresh the row so the docs badge and the Approve
+                          // gate reflect the review that just happened.
+                          onReviewed={fetchRegistrations}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                  </Fragment>
                 ))}
               </tbody>
             </table>

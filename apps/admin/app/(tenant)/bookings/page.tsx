@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { showToast } from '@/components/ui/Toast';
 import { TableSkeleton } from '@/components/ui/LoadingSkeleton';
 import EmptyState from '@/components/ui/EmptyState';
+import LoadError from '@/components/ui/LoadError';
 import Modal from '@/components/ui/Modal';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
@@ -41,6 +42,7 @@ export default function BookingsPage() {
   const [bookings, setBookings] = useState<BookingRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<BookingRow | null>(null);
@@ -49,17 +51,30 @@ export default function BookingsPage() {
 
   const fetchBookings = useCallback(async () => {
     setLoading(true);
-    const params = new URLSearchParams();
-    params.set('page', page.toString());
-    if (statusFilter) params.set('status', statusFilter);
+    setLoadError('');
+    try {
+      const params = new URLSearchParams();
+      params.set('page', page.toString());
+      if (statusFilter) params.set('status', statusFilter);
 
-    const res = await fetch(`/api/admin/bookings?${params.toString()}`);
-    if (res.ok) {
-      const data = await res.json();
+      const res = await fetch(`/api/admin/bookings?${params.toString()}`);
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data) {
+        setLoadError(data?.error ?? 'Could not load bookings.');
+        setBookings([]);
+        setTotal(0);
+        return;
+      }
       setBookings(data.bookings ?? []);
       setTotal(data.total ?? 0);
+    } catch {
+      setLoadError('Could not reach the server.');
+      setBookings([]);
+      setTotal(0);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [page, statusFilter]);
 
   useEffect(() => {
@@ -113,6 +128,8 @@ export default function BookingsPage() {
 
       {loading ? (
         <TableSkeleton rows={8} cols={6} />
+      ) : loadError ? (
+        <LoadError message={loadError} onRetry={fetchBookings} />
       ) : bookings.length === 0 ? (
         <EmptyState icon="📅" title="No bookings found" description="Bookings will appear here when patients make appointments." />
       ) : (

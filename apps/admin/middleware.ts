@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const PUBLIC_PATHS = ['/login', '/set-password', '/api/admin/auth/login', '/api/admin/auth/logout', '/api/admin/auth/session', '/api/admin/queue/position'];
+const PUBLIC_PATHS = ['/login', '/set-password', '/forgot-password', '/api/admin/auth/login', '/api/admin/auth/logout', '/api/admin/auth/session', '/api/admin/auth/forgot-password', '/api/admin/auth/reset-password', '/api/admin/queue/position'];
 
 const CLINIC_ROLES = ['clinic_owner', 'clinic_receptionist', 'clinic_billing', 'clinic_doctor'];
 
@@ -116,8 +116,35 @@ async function buildAuthCacheValue(
   return `${payloadB64}.${await hmac(payloadB64, secret)}`;
 }
 
+/**
+ * An auth failure answered in the caller's own language.
+ *
+ * Page navigations go to /login. API calls get JSON with a real status code —
+ * redirecting them served an HTML login page under a 200, so `res.ok` was true
+ * and `res.json()` then threw inside the caller, leaving pages stuck on their
+ * loading state instead of showing an error. Every *authorization* failure
+ * below already returns JSON; this makes authentication behave the same way.
+ */
+function denyRequest(
+  request: NextRequest,
+  isApiRoute: boolean,
+  opts: { error: string; status: number; redirectTo: string; clearSession?: boolean }
+): NextResponse {
+  const response = isApiRoute
+    ? NextResponse.json({ error: opts.error }, { status: opts.status })
+    : NextResponse.redirect(new URL(opts.redirectTo, request.url));
+
+  if (opts.clearSession) {
+    response.cookies.delete('sb-access-token');
+    response.cookies.delete('sb-refresh-token');
+    response.cookies.delete(AUTH_CACHE_COOKIE);
+  }
+  return response;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const isApiRoute = pathname.startsWith('/api/');
 
   // Allow public paths
   if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
@@ -136,9 +163,11 @@ export async function middleware(request: NextRequest) {
   const accessToken = request.cookies.get('sb-access-token')?.value;
 
   if (!accessToken) {
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(loginUrl);
+    return denyRequest(request, isApiRoute, {
+      error: 'Not signed in.',
+      status: 401,
+      redirectTo: `/login?redirect=${encodeURIComponent(pathname)}`,
+    });
   }
 
   const supabaseUrl = process.env['NEXT_PUBLIC_SUPABASE_URL'];
@@ -146,7 +175,11 @@ export async function middleware(request: NextRequest) {
   const supabaseServiceKey = process.env['SUPABASE_SERVICE_ROLE_KEY'];
 
   if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
-    return NextResponse.redirect(new URL('/login', request.url));
+    return denyRequest(request, isApiRoute, {
+      error: 'Server auth is not configured.',
+      status: 500,
+      redirectTo: '/login',
+    });
   }
 
   // Cache hit: skip the two Supabase round-trips below.
@@ -164,11 +197,12 @@ export async function middleware(request: NextRequest) {
     const { data: { user }, error } = await anonClient.auth.getUser(accessToken);
 
     if (error || !user) {
-      const response = NextResponse.redirect(new URL('/login', request.url));
-      response.cookies.delete('sb-access-token');
-      response.cookies.delete('sb-refresh-token');
-      response.cookies.delete(AUTH_CACHE_COOKIE);
-      return response;
+      return denyRequest(request, isApiRoute, {
+        error: 'Your session has expired. Please sign in again.',
+        status: 401,
+        redirectTo: '/login',
+        clearSession: true,
+      });
     }
 
     // Check admin role
@@ -184,11 +218,12 @@ export async function middleware(request: NextRequest) {
       .single();
 
     if (!adminRow) {
-      const response = NextResponse.redirect(new URL('/login?error=not_admin', request.url));
-      response.cookies.delete('sb-access-token');
-      response.cookies.delete('sb-refresh-token');
-      response.cookies.delete(AUTH_CACHE_COOKIE);
-      return response;
+      return denyRequest(request, isApiRoute, {
+        error: 'This account does not have admin access.',
+        status: 403,
+        redirectTo: '/login?error=not_admin',
+        clearSession: true,
+      });
     }
 
     adminUser = {
