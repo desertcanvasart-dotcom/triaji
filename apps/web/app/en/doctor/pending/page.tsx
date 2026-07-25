@@ -50,7 +50,21 @@ export default function DoctorPendingPage() {
             You will receive a confirmation email once approved.
           </p>
 
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-start">
+            <p className="text-sm text-amber-900 font-semibold mb-1">We need your verification documents</p>
+            <p className="text-sm text-amber-800 leading-relaxed">
+              To review your account, upload your syndicate card, national ID and medical degree.
+            </p>
+          </div>
+
           <div className="space-y-4">
+            <Link
+              href="/en/doctor/documents"
+              className="block w-full bg-teal-600 text-white font-semibold py-3 rounded-xl hover:bg-teal-700 transition-colors"
+            >
+              Upload documents
+            </Link>
+
             <a
               href="mailto:support@doctortrio.online"
               className="inline-block w-full border-2 border-teal-600 text-teal-600 font-semibold py-3 rounded-xl hover:bg-teal-50 transition-colors"
