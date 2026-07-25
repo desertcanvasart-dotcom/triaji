@@ -31,6 +31,10 @@ const DOCTOR_PROTECTED_ROUTES = [
 /** Doctor routes that only need login (any status) */
 const DOCTOR_AUTH_ROUTES = [
   '/ar/doctor/pending',
+  // Document upload is exactly what a *pending* doctor needs, so it sits here
+  // rather than behind the verified-only gate.
+  '/ar/doctor/documents',
+  '/en/doctor/documents',
 ];
 
 function isWidgetRoute(pathname: string): boolean {

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { authenticateAdmin } from '@/lib/auth/api-auth';
 import { createAdminClient } from '@/lib/supabase/server';
+import { getDocumentReadiness } from '@/lib/auth/document-readiness';
+import { documentLabel } from '@triaji/shared/constants/doctor-documents';
 
 export const dynamic = 'force-dynamic';
 
@@ -116,6 +118,38 @@ export async function POST(
     return NextResponse.json(
       { error: 'Doctor is already verified.' },
       { status: 400 }
+    );
+  }
+
+  // Every required document must have been looked at and approved first —
+  // approving on a typed syndicate number alone is what this gate exists to stop.
+  const readiness = await getDocumentReadiness(
+    supabase,
+    id,
+    doctorAccount.clinic_mode as string | null
+  );
+
+  if ('error' in readiness) {
+    return NextResponse.json(
+      { error: `Could not check verification documents: ${readiness.error}` },
+      { status: 500 }
+    );
+  }
+
+  if (!readiness.ready) {
+    const parts: string[] = [];
+    if (readiness.missing.length > 0) {
+      parts.push(`not uploaded: ${readiness.missing.map((t) => documentLabel(t, 'en')).join(', ')}`);
+    }
+    if (readiness.unapproved.length > 0) {
+      parts.push(`not approved: ${readiness.unapproved.map((t) => documentLabel(t, 'en')).join(', ')}`);
+    }
+    return NextResponse.json(
+      {
+        error: `Approve the required documents first — ${parts.join('; ')}.`,
+        readiness,
+      },
+      { status: 409 }
     );
   }
 
