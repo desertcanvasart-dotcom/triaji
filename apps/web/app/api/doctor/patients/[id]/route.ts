@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { sectionsForGp, sectionsForScope, toUiScope } from '@/lib/consent/scopes';
 
 export const dynamic = 'force-dynamic';
 
@@ -74,9 +75,9 @@ export async function GET(
         .eq('status', 'active')
         .maybeSingle(),
       supabase
-        .from('access_grants')
+        .from('record_access_grants')
         .select('id, scope')
-        .eq('doctor_account_id', doctorAccount.id)
+        .eq('granted_to_account', doctorAccount.id)
         .eq('patient_id', patientId)
         .eq('is_active', true)
         .gt('expires_at', new Date().toISOString())
@@ -89,6 +90,10 @@ export async function GET(
     if (!isGP && !hasGrant) {
       return NextResponse.json({ error: 'No access to this patient' }, { status: 403 });
     }
+
+    // A grant is for one part of the record, and the patient was shown exactly
+    // which part. Honour that here — the response below is filtered to it.
+    const sections = isGP ? sectionsForGp() : sectionsForScope(grantCheck.data?.scope as string);
 
     // Fetch full patient data in parallel
     const [
@@ -210,8 +215,10 @@ export async function GET(
         preferredLanguage: patientProfile?.preferred_language ?? 'ar',
       },
       accessType: isGP ? 'gp' : 'grant',
-      grantScope: grantCheck.data?.scope ?? null,
-      profile: profile
+      grantScope: isGP ? null : toUiScope(grantCheck.data?.scope as string),
+      /** Which sections this access actually opened, so the UI can say so. */
+      visibleSections: sections,
+      profile: profile && sections.profileBase
         ? {
             base: {
               age: profile.age,
@@ -229,16 +236,20 @@ export async function GET(
               risk_level: profile.risk_level,
               background_risk_score: profile.background_risk_score,
             },
-            allergies: profile.patient_allergies ?? [],
-            chronicConditions: profile.patient_chronic_conditions ?? [],
-            medications: profile.patient_medications ?? [],
-            surgeries: profile.patient_surgeries ?? [],
-            familyHistory: profile.patient_family_history ?? [],
+            allergies: sections.allergies ? (profile.patient_allergies ?? []) : [],
+            chronicConditions: sections.chronicConditions
+              ? (profile.patient_chronic_conditions ?? [])
+              : [],
+            medications: sections.medications ? (profile.patient_medications ?? []) : [],
+            surgeries: sections.chronicConditions ? (profile.patient_surgeries ?? []) : [],
+            familyHistory: sections.chronicConditions
+              ? (profile.patient_family_history ?? [])
+              : [],
           }
         : null,
-      vitals: vitalsResult.data ?? [],
-      followUps: followUpsResult.data ?? [],
-      labResults: (labResultsResult.data ?? []).map((lr: Record<string, unknown>) => ({
+      vitals: sections.vitals ? (vitalsResult.data ?? []) : [],
+      followUps: sections.followUps ? (followUpsResult.data ?? []) : [],
+      labResults: (sections.labResults ? (labResultsResult.data ?? []) : []).map((lr: Record<string, unknown>) => ({
         id: lr.id,
         labDate: lr.lab_date,
         labName: lr.lab_name,
@@ -246,8 +257,8 @@ export async function GET(
         summaryAr: lr.summary_ar,
         hasAbnormal: lr.has_abnormal_values,
       })),
-      prescriptions: prescriptionsResult.data ?? [],
-      protocols: (enrollmentsResult.data ?? []).map((e: Record<string, unknown>) => {
+      prescriptions: sections.prescriptions ? (prescriptionsResult.data ?? []) : [],
+      protocols: (sections.protocols ? (enrollmentsResult.data ?? []) : []).map((e: Record<string, unknown>) => {
         const proto = Array.isArray(e.disease_protocols) ? e.disease_protocols[0] : e.disease_protocols;
         return {
           id: e.id,
@@ -259,7 +270,7 @@ export async function GET(
           conditionCode: proto?.condition_code ?? null,
         };
       }),
-      alerts: (alertsResult.data ?? []).map((a: Record<string, unknown>) => ({
+      alerts: (sections.alerts ? (alertsResult.data ?? []) : []).map((a: Record<string, unknown>) => ({
         id: a.id,
         alertType: a.alert_type,
         severity: a.severity,
@@ -268,8 +279,8 @@ export async function GET(
         createdAt: a.created_at,
         resolvedAt: a.resolved_at,
       })),
-      gpNotes: gpNotesResult.data ?? [],
-      referrals: (referralsResult.data ?? []).map((r: Record<string, unknown>) => {
+      gpNotes: sections.gpNotes ? (gpNotesResult.data ?? []) : [],
+      referrals: (sections.referrals ? (referralsResult.data ?? []) : []).map((r: Record<string, unknown>) => {
         const spec = Array.isArray(r.specialties) ? r.specialties[0] : r.specialties;
         const specialty = spec as { name_ar?: string; name_en?: string } | null;
         return {
