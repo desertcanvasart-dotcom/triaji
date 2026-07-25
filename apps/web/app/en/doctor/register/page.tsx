@@ -12,24 +12,31 @@ interface ClinicOption {
   tier: string;
 }
 
+// `value` is the canonical `specialties.name_ar` — it lands in
+// `doctor_accounts.specialty_ar` and the admin approval step looks the specialty
+// up by that name. Only the label is localised; both register forms therefore
+// store the exact same value.
 const SPECIALTIES = [
-  'Internal Medicine',
-  'Cardiology',
-  'Neurology',
-  'Orthopedics',
-  'Dermatology',
-  'ENT',
-  'Ophthalmology',
-  'Urology',
-  'Gastroenterology',
-  'Pulmonology',
-  'Pediatrics',
-  'Obstetrics & Gynecology',
-  'Psychiatry',
-  'General Surgery',
-  'Emergency Medicine',
-  'Family Medicine',
-  'Oncology',
+  { value: 'باطنة', label: 'Internal Medicine' },
+  { value: 'قلب وأوعية دموية', label: 'Cardiology' },
+  { value: 'مخ وأعصاب', label: 'Neurology' },
+  { value: 'عظام', label: 'Orthopaedics' },
+  { value: 'جلدية', label: 'Dermatology' },
+  { value: 'أنف وأذن وحنجرة', label: 'ENT' },
+  { value: 'عيون', label: 'Ophthalmology' },
+  { value: 'مسالك بولية', label: 'Urology' },
+  { value: 'جهاز هضمي', label: 'Gastroenterology' },
+  { value: 'صدر', label: 'Pulmonology' },
+  { value: 'أطفال', label: 'Paediatrics' },
+  { value: 'نساء وتوليد', label: 'Obstetrics & Gynaecology' },
+  { value: 'نفسية', label: 'Psychiatry' },
+  { value: 'جراحة عامة', label: 'General Surgery' },
+  { value: 'طوارئ', label: 'Emergency Medicine' },
+  { value: 'طب الأسرة', label: 'Family Medicine' },
+  { value: 'أورام', label: 'Oncology' },
+  { value: 'غدد صماء', label: 'Endocrinology' },
+  { value: 'أسنان', label: 'Dentistry' },
+  { value: 'علاج طبيعي', label: 'Physiotherapy' },
 ] as const;
 
 const GOVERNORATES = [
@@ -303,7 +310,7 @@ export default function DoctorRegisterPage() {
               onChange={(v) => updateField('specialty', v)}
               error={errors.specialty}
               placeholder="Select specialty"
-              options={SPECIALTIES.map((s) => ({ value: s, label: s }))}
+              options={SPECIALTIES.map((s) => ({ value: s.value, label: s.label }))}
             />
 
             <SelectField
@@ -440,6 +447,13 @@ export default function DoctorRegisterPage() {
             Already have an account?{' '}
             <Link href="/en/doctor/login" className="text-teal-600 font-semibold hover:text-teal-700">
               Sign in
+            </Link>
+            {' · '}
+            <Link
+              href="/en/doctor/forgot-password"
+              className="text-teal-600 font-semibold hover:text-teal-700"
+            >
+              Forgot password?
             </Link>
           </p>
         </div>

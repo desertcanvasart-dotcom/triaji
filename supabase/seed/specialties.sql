@@ -1,4 +1,4 @@
--- Seed: 17 base medical specialties
+-- Seed: 19 base medical specialties
 INSERT INTO specialties (name_ar, name_en, urgency_default, icon_code, sort_order) VALUES
   ('باطنة',              'Internal Medicine',        'routine',   'internal',    1),
   ('قلب وأوعية دموية',   'Cardiology',               'urgent',    'cardiology',  2),
@@ -16,4 +16,7 @@ INSERT INTO specialties (name_ar, name_en, urgency_default, icon_code, sort_orde
   ('جراحة عامة',         'General Surgery',          'urgent',    'surgery',     14),
   ('طوارئ',              'Emergency Medicine',       'emergency', 'emergency',   15),
   ('طب الأسرة',          'Family Medicine',          'routine',   'family',      16),
-  ('أورام',              'Oncology',                 'urgent',    'oncology',    17);
+  ('أورام',              'Oncology',                 'urgent',    'oncology',    17),
+  -- 18 is Endocrinology, added by migration 012_doctors_seed.sql
+  ('أسنان',              'Dentistry',                'routine',   'dentistry',   19),
+  ('علاج طبيعي',         'Physiotherapy',            'routine',   'physiotherapy', 20);
