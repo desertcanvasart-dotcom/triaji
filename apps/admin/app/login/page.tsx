@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getSupabaseBrowser } from '@/lib/supabase/browser';
 import { getClinicRedirect, getLabRedirect, getPharmacyRedirect, getInsuranceRedirect, isIcuHospitalRole, getIcuRedirect, getChainRedirect } from '@/lib/auth/types';
@@ -157,9 +158,17 @@ function LoginForm() {
           </div>
 
           <div>
-            <label htmlFor="password" className="label">
-              Password
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="password" className="label">
+                Password
+              </label>
+              <Link
+                href="/forgot-password"
+                className="text-xs font-semibold text-teal-600 hover:text-teal-700"
+              >
+                Forgot password?
+              </Link>
+            </div>
             <input
               id="password"
               type="password"
