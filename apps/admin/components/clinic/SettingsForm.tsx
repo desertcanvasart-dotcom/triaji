@@ -73,6 +73,7 @@ export default function SettingsForm({
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState('');
 
   function updateField<K extends keyof TenantConfig>(key: K, value: TenantConfig[K]) {
     setConfig((prev) => ({ ...prev, [key]: value }));
@@ -91,6 +92,7 @@ export default function SettingsForm({
 
   async function handleSave() {
     setSaving(true);
+    setError('');
     try {
       const supabase = getSupabaseBrowser();
       const {
@@ -107,11 +109,15 @@ export default function SettingsForm({
         body: JSON.stringify(config),
       });
 
-      if (res.ok) {
-        setSaved(true);
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.success) {
+        // A failed save used to look identical to a successful one.
+        setError(data?.error ?? 'فشل حفظ الإعدادات، حاول تاني');
+        return;
       }
+      setSaved(true);
     } catch {
-      // Silently fail
+      setError('مفيش اتصال بالسيرفر، حاول تاني');
     } finally {
       setSaving(false);
     }
@@ -354,6 +360,7 @@ export default function SettingsForm({
         {saved && (
           <span className="text-sm text-green-600 font-medium">تم الحفظ بنجاح</span>
         )}
+        {error && <span className="text-sm text-red-600 font-medium">{error}</span>}
       </div>
     </div>
   );

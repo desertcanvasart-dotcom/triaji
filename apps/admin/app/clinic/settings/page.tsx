@@ -22,7 +22,7 @@ export default async function ClinicSettingsPage() {
   const { data: tenant } = await supabase
     .from('tenant_config')
     .select(
-      'opening_time, closing_time, working_days, estimated_minutes_per_patient, queue_whatsapp_enabled, queue_sms_fallback, specialty_ar:clinic_specialty_ar, specialty_en:clinic_specialty_en, floor_address:clinic_floor_ar, phone:clinic_phone'
+      'opening_time, closing_time, working_days, estimated_minutes_per_patient, queue_whatsapp_enabled, queue_sms_fallback, clinic_booking_mode, specialty_ar:clinic_specialty_ar, specialty_en:clinic_specialty_en, floor_address:clinic_floor_ar, phone:clinic_phone'
     )
     .eq('tenant_id', tenantId)
     .maybeSingle();
