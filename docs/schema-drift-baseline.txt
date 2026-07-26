@@ -2,7 +2,6 @@
 # Regenerate: python3 docs/scan-live-selects.py --update-baseline
 # This list should only ever get shorter.
 bookings|consultation_fee_egp,tenant_id
-bookings|id,appointment_datetime,appointment_type,status,patients!inner(phone_number,name_ar),triage_sessions(session_summaries(chief_complaint_ar,urgency_level,specialty_name_ar))
 bookings|id,doctor_id,appointment_datetime,status,patient_name,patient_phone
 bookings|id,patient_name,date_ar,time_ar,doctors:doctor_id(full_name_ar,full_name_en,title_ar,title_en,specialty_ar,specialty_en),tenants:tenant_id(name_ar,name_en,address_ar),fee_egp
 bookings|id,patient_name,patient_phone,appointment_datetime,status,created_at,doctors!inner(name_ar,name_en)
@@ -15,8 +14,6 @@ doctor_availability|name_ar,title_ar
 guardian_relationships|relation,child_patient_id,child:patients!guardian_relationships_child_patient_id_fkey(id,phone_number,name_ar),child_profile:patient_profiles!guardian_relationships_child_patient_id_fkey(id,date_of_birth,biological_sex,is_paediatric)
 invoices|tenant_id,total_amount,created_at
 invoices|total_amount
-lab_order_routing|id,health_record_id,lab_tenant_id,doctor_id,patient_id,is_urgent,status,routing_note_ar,doctors(name_ar,title_ar),health_records(record_type,lab_values,summary_ar)
-lab_order_routing|id,health_record_id,lab_tenant_id,doctor_id,patient_id,is_urgent,status,routing_note_ar,doctors(name_en,name_ar,title_ar),health_records(record_type,lab_values,summary_en)
 payment_transactions|phone_number,name_ar,patient_profiles(preferred_language)
 prescription_routing|id,status,routed_at,received_at,stock_checked_at,ready_at,collected_at,pharmacy_tenant_id,prescription_id,tenants!pharmacy_tenant_id(name_ar,name_en,slug,address_en,address_ar,phone),prescriptions(doctor_name_en,doctor_name_ar,patient_name)
 prescription_routing|id,status,routed_at,received_at,stock_checked_at,ready_at,collected_at,pharmacy_tenant_id,prescription_id,tenants!pharmacy_tenant_id(name_ar,slug,address_ar,phone),prescriptions(doctor_name_ar,patient_name)
