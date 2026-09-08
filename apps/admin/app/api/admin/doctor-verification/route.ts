@@ -86,7 +86,10 @@ export async function GET(request: NextRequest) {
 
       for (const r of registrations) {
         if (r['verification_status'] !== 'pending') continue;
-        const specs = specsForClinicMode(r['clinic_mode'] as string | null).filter((s) => s.required);
+        const specs = specsForClinicMode(
+          r['clinic_mode'] as string | null,
+          Boolean(r['foreign_degree']),
+        ).filter((s) => s.required);
         const statuses = byAccount.get(r['id'] as string) ?? new Map<string, string>();
         const approved = specs.filter((s) => statuses.get(s.type) === 'approved').length;
         r['document_readiness'] = {

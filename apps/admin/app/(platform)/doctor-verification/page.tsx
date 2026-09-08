@@ -16,6 +16,7 @@ interface DoctorRegistration {
   email: string;
   clinic_name_ar: string | null;
   clinic_mode?: 'independent' | 'own_clinic' | 'existing_clinic' | null;
+  foreign_degree?: boolean | null;
   requested_clinic_name_en?: string | null;
   requested_tenant_id?: string | null;
   tenants?: { name_en: string } | null;
@@ -285,6 +286,7 @@ export default function DoctorVerificationPage() {
                         <DoctorDocumentsPanel
                           registrationId={reg.id}
                           clinicMode={reg.clinic_mode}
+                          foreignDegree={Boolean(reg.foreign_degree)}
                           // Refresh the row so the docs badge and the Approve
                           // gate reflect the review that just happened.
                           onReviewed={fetchRegistrations}

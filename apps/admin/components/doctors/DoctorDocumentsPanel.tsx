@@ -25,6 +25,7 @@ interface DoctorDocumentRow {
 interface Props {
   registrationId: string;
   clinicMode: 'independent' | 'own_clinic' | 'existing_clinic' | null | undefined;
+  foreignDegree?: boolean;
   onReviewed?: () => void;
 }
 
@@ -33,7 +34,7 @@ interface Props {
  * Signed URLs come from the API and expire in five minutes, so the panel refetches
  * rather than caching them.
  */
-export default function DoctorDocumentsPanel({ registrationId, clinicMode, onReviewed }: Props) {
+export default function DoctorDocumentsPanel({ registrationId, clinicMode, foreignDegree, onReviewed }: Props) {
   const [documents, setDocuments] = useState<DoctorDocumentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -93,7 +94,7 @@ export default function DoctorDocumentsPanel({ registrationId, clinicMode, onRev
     onReviewed?.();
   }
 
-  const specs = specsForClinicMode(clinicMode);
+  const specs = specsForClinicMode(clinicMode, foreignDegree);
   const byType = new Map(documents.map((d) => [d.doc_type, d]));
   const missingRequired = specs.filter((s) => s.required && !byType.has(s.type));
 

@@ -126,7 +126,8 @@ export async function POST(
   const readiness = await getDocumentReadiness(
     supabase,
     id,
-    doctorAccount.clinic_mode as string | null
+    doctorAccount.clinic_mode as string | null,
+    Boolean(doctorAccount.foreign_degree)
   );
 
   if ('error' in readiness) {

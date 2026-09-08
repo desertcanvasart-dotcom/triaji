@@ -25,9 +25,10 @@ export interface DocumentReadiness {
 export async function getDocumentReadiness(
   supabase: SupabaseClient,
   doctorAccountId: string,
-  clinicMode: string | null | undefined
+  clinicMode: string | null | undefined,
+  foreignDegree: boolean = false
 ): Promise<DocumentReadiness | { error: string }> {
-  const specs = specsForClinicMode(clinicMode).filter((s) => s.required);
+  const specs = specsForClinicMode(clinicMode, foreignDegree).filter((s) => s.required);
 
   const { data, error } = await supabase
     .from('doctor_documents')

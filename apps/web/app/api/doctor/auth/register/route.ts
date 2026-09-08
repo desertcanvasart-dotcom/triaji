@@ -29,6 +29,7 @@ interface RegisterBody {
   requested_clinic_name_en?: string;
   requested_clinic_address_ar?: string;
   requested_tenant_id?: string;
+  foreign_degree?: boolean;
 }
 
 function validateBody(body: RegisterBody): string | null {
@@ -143,6 +144,9 @@ export async function POST(request: NextRequest) {
       requested_clinic_name_en: body.requested_clinic_name_en?.trim() || null,
       requested_clinic_address_ar: body.requested_clinic_address_ar?.trim() || null,
       requested_tenant_id: clinicMode === 'existing_clinic' ? body.requested_tenant_id : null,
+      // Turns the degree-equivalency document into a required one. Folded in with
+      // the clinic-intent columns so both share the migration-pending fallback.
+      foreign_degree: body.foreign_degree === true,
     };
 
     let { data: doctorAccount, error: insertError } = await supabase

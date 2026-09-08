@@ -85,7 +85,7 @@ export default function DocumentsClient({ lang }: Props) {
       }
       const data = await res.json();
       setDocuments(data.documents ?? []);
-      setSpecs(specsForClinicMode(data.clinic_mode));
+      setSpecs(specsForClinicMode(data.clinic_mode, Boolean(data.foreign_degree)));
       setVerificationStatus(data.verification_status ?? 'pending');
       setError(data.migration_pending ? COPY.migrationPending[lang] : '');
     } catch {
