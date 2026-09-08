@@ -50,6 +50,24 @@ export async function GET(request: NextRequest) {
   if (!account) return NextResponse.json({ error: T.unauthorised[l] }, { status: 401 });
 
   const supabase = getDoctorServiceClient();
+
+  // Whether the degree is foreign decides if the equivalency document is asked
+  // for. Fetched defensively: the column only exists once migration 071 is
+  // applied, and a pending doctor should still see their checklist before then.
+  let foreignDegree = false;
+  {
+    const { data: acct, error: acctError } = await supabase
+      .from('doctor_accounts')
+      .select('foreign_degree')
+      .eq('id', account.id)
+      .single();
+    if (acctError) {
+      console.warn('[doctor/documents] foreign_degree missing (apply migration 071):', acctError.message);
+    } else {
+      foreignDegree = Boolean(acct?.foreign_degree);
+    }
+  }
+
   const { data, error } = await supabase
     .from('doctor_documents')
     .select('id, doc_type, file_name, mime_type, size_bytes, status, review_note, uploaded_at, reviewed_at')
@@ -64,6 +82,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         documents: [],
         clinic_mode: account.clinic_mode ?? 'independent',
+        foreign_degree: foreignDegree,
         verification_status: account.verification_status,
         migration_pending: true,
       });
@@ -74,6 +93,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     documents: data ?? [],
     clinic_mode: account.clinic_mode ?? 'independent',
+    foreign_degree: foreignDegree,
     verification_status: account.verification_status,
   });
 }

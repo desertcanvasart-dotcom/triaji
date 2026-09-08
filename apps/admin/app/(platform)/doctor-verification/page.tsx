@@ -16,6 +16,7 @@ interface DoctorRegistration {
   email: string;
   clinic_name_ar: string | null;
   clinic_mode?: 'independent' | 'own_clinic' | 'existing_clinic' | null;
+  foreign_degree?: boolean | null;
   requested_clinic_name_en?: string | null;
   requested_tenant_id?: string | null;
   tenants?: { name_en: string } | null;
@@ -99,6 +100,31 @@ export default function DoctorVerificationPage() {
       showToast(data.error ?? 'Failed to verify doctor.', 'error');
       // Blocked on documents — open the panel so the reviewer can act on it.
       if (res.status === 409) setExpandedId(id);
+    }
+  }
+
+  // Special-case override: verify a doctor whose documents don't fit the
+  // standard checklist. Requires a reason, which is recorded on the account.
+  async function handleApproveOverride(id: string) {
+    const note = window.prompt(
+      'Verify this doctor as a special case despite the standard documents not being complete.\n\nType the reason (recorded on the account):',
+    );
+    if (note === null) return; // cancelled
+    if (!note.trim()) {
+      showToast('A reason is required to override.', 'error');
+      return;
+    }
+    const res = await fetch(`/api/admin/doctor-verification/${id}/approve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ override: true, note: note.trim() }),
+    });
+    if (res.ok) {
+      showToast('Doctor verified (special case).', 'success');
+      fetchRegistrations();
+    } else {
+      const data = await res.json();
+      showToast(data.error ?? 'Failed to verify doctor.', 'error');
     }
   }
 
@@ -237,25 +263,36 @@ export default function DoctorVerificationPage() {
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-1 items-start">
                         {reg.verification_status === 'pending' && (
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleApprove(reg.id)}
-                              disabled={reg.document_readiness?.ready === false}
-                              title={
-                                reg.document_readiness?.ready === false
-                                  ? 'All required documents must be approved before verifying this doctor.'
-                                  : undefined
-                              }
-                              className="text-green-600 hover:text-green-800 text-sm font-medium disabled:text-gray-300 disabled:cursor-not-allowed disabled:hover:text-gray-300"
-                            >
-                              Approve
-                            </button>
-                            <button
-                              onClick={() => setRejectingId(reg.id)}
-                              className="text-red-600 hover:text-red-800 text-sm font-medium"
-                            >
-                              Reject
-                            </button>
+                          <div className="flex flex-col gap-1">
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleApprove(reg.id)}
+                                disabled={reg.document_readiness?.ready === false}
+                                title={
+                                  reg.document_readiness?.ready === false
+                                    ? 'Approve every required document (in Documents) before verifying this doctor.'
+                                    : 'Verify this doctor and let them sign in.'
+                                }
+                                className="text-green-600 hover:text-green-800 text-sm font-medium disabled:text-gray-300 disabled:cursor-not-allowed disabled:hover:text-gray-300"
+                              >
+                                Approve doctor
+                              </button>
+                              <button
+                                onClick={() => setRejectingId(reg.id)}
+                                className="text-red-600 hover:text-red-800 text-sm font-medium"
+                              >
+                                Reject
+                              </button>
+                            </div>
+                            {reg.document_readiness?.ready === false && (
+                              <button
+                                onClick={() => handleApproveOverride(reg.id)}
+                                title="Verify despite the standard documents not being complete — for special cases. A reason is required."
+                                className="text-amber-600 hover:text-amber-800 text-xs font-medium text-start"
+                              >
+                                Approve anyway (special case)…
+                              </button>
+                            )}
                           </div>
                         )}
                         <button
@@ -285,6 +322,7 @@ export default function DoctorVerificationPage() {
                         <DoctorDocumentsPanel
                           registrationId={reg.id}
                           clinicMode={reg.clinic_mode}
+                          foreignDegree={Boolean(reg.foreign_degree)}
                           // Refresh the row so the docs badge and the Approve
                           // gate reflect the review that just happened.
                           onReviewed={fetchRegistrations}

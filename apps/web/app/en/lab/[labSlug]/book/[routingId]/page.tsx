@@ -25,7 +25,7 @@ export default async function OrderLinkedBookingPage({ params }: Props) {
       status,
       routing_note_ar,
       doctors (name_en, name_ar, title_ar),
-      health_records (
+      health_records!health_record_id (
         record_type,
         lab_values,
         summary_en

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateAdmin } from '@/lib/auth/api-auth';
 import { createAdminClient } from '@/lib/supabase/server';
+import { notifyDoctorRejected } from '@/lib/auth/verification-notifications';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,7 +36,7 @@ export async function POST(
 
   const { data: doctorAccount, error: fetchError } = await supabase
     .from('doctor_accounts')
-    .select('id')
+    .select('id, phone, email')
     .eq('id', id)
     .single();
 
@@ -61,6 +62,13 @@ export async function POST(
       { status: 500 }
     );
   }
+
+  // Let the doctor know, with the reason (best-effort; never blocks).
+  await notifyDoctorRejected(
+    doctorAccount.phone as string | null,
+    doctorAccount.email as string | null,
+    reason,
+  );
 
   return NextResponse.json({ success: true, message: 'Doctor registration rejected.' });
 }

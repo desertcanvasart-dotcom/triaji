@@ -73,6 +73,7 @@ interface FormData {
   name_ar: string;
   syndicate_number: string;
   specialty: string;
+  foreign_degree: boolean;
   governorate: string;
   clinic_mode: ClinicMode;
   clinic_name: string;
@@ -104,6 +105,7 @@ export default function DoctorRegisterPage() {
     name_ar: '',
     syndicate_number: '',
     specialty: '',
+    foreign_degree: false,
     governorate: '',
     clinic_mode: 'independent',
     clinic_name: '',
@@ -214,6 +216,7 @@ export default function DoctorRegisterPage() {
           name_ar: form.name_ar.trim(),
           syndicate_number: form.syndicate_number.trim(),
           specialty: form.specialty,
+          foreign_degree: form.foreign_degree,
           governorate: form.governorate,
           clinic_mode: form.clinic_mode,
           clinic_name: form.clinic_name.trim() || undefined,
@@ -312,6 +315,27 @@ export default function DoctorRegisterPage() {
               placeholder="Select specialty"
               options={SPECIALTIES.map((s) => ({ value: s.value, label: s.label }))}
             />
+
+            <label
+              className={`flex items-start gap-2 border rounded-xl px-4 py-2.5 text-sm cursor-pointer transition-colors ${
+                form.foreign_degree
+                  ? 'border-teal-500 bg-teal-50 text-teal-900'
+                  : 'border-gray-200 bg-white text-gray-700'
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={form.foreign_degree}
+                onChange={(e) => setForm((prev) => ({ ...prev, foreign_degree: e.target.checked }))}
+                className="mt-0.5 accent-teal-600"
+              />
+              <span>
+                My degree is from a university outside Egypt
+                <span className="block text-xs text-gray-500 mt-0.5">
+                  We&apos;ll ask for the Supreme Council of Universities equivalency during verification
+                </span>
+              </span>
+            </label>
 
             <SelectField
               label="Governorate"

@@ -58,6 +58,9 @@ export async function GET(request: NextRequest) {
     const supabase = getServiceClient();
     const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
 
+    // bookings.session_id and triage_sessions.booking_id both relate these two
+    // tables, so the embed names the one meant here: the session that led to
+    // the booking.
     const { data: bookings, error: bookingsError } = await supabase
       .from('bookings')
       .select(`
@@ -66,7 +69,7 @@ export async function GET(request: NextRequest) {
         appointment_type,
         status,
         patients!inner(phone_number, name_ar),
-        triage_sessions(
+        triage_sessions!session_id(
           session_summaries(chief_complaint_ar, urgency_level, specialty_name_ar)
         )
       `)
