@@ -210,6 +210,7 @@ export async function POST(
   // Confirm to the doctor that they're verified (best-effort; never blocks).
   await notifyDoctorApproved(
     doctorAccount.phone as string | null,
+    doctorAccount.email as string | null,
     doctorAccount.name_ar as string | null,
   );
 

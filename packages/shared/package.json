@@ -14,6 +14,7 @@
     "./api": "./api/client.ts",
     "./lib/whatsapp/client": "./lib/whatsapp/client.ts",
     "./lib/sms/client": "./lib/sms/client.ts",
+    "./lib/email/client": "./lib/email/client.ts",
     "./lib/cache/redis": "./lib/cache/redis.ts",
     "./lib/auth/otp-store": "./lib/auth/otp-store.ts"
   },

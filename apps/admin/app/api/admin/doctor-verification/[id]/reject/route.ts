@@ -36,7 +36,7 @@ export async function POST(
 
   const { data: doctorAccount, error: fetchError } = await supabase
     .from('doctor_accounts')
-    .select('id, phone')
+    .select('id, phone, email')
     .eq('id', id)
     .single();
 
@@ -64,7 +64,11 @@ export async function POST(
   }
 
   // Let the doctor know, with the reason (best-effort; never blocks).
-  await notifyDoctorRejected(doctorAccount.phone as string | null, reason);
+  await notifyDoctorRejected(
+    doctorAccount.phone as string | null,
+    doctorAccount.email as string | null,
+    reason,
+  );
 
   return NextResponse.json({ success: true, message: 'Doctor registration rejected.' });
 }
