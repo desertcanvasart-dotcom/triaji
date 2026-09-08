@@ -11,6 +11,7 @@ export const DOCTOR_DOCUMENT_TYPES = [
   'degree',
   'foreign_degree_equivalency', // only when the degree is from abroad
   'specialty_certificate',
+  'supporting_document', // flexible extra proof for unusual cases
   'clinic_license',
   'commercial_register',
   'tax_card',
@@ -87,6 +88,15 @@ export const DOCTOR_DOCUMENT_SPECS: DoctorDocumentSpec[] = [
     label_en: 'Specialty certificate',
     hint_ar: 'ماچستير أو دكتوراه أو زمالة — اختياري',
     hint_en: 'Masters, doctorate or fellowship — optional',
+    required: false,
+    clinicOnly: false,
+  },
+  {
+    type: 'supporting_document',
+    label_ar: 'مستند إضافي',
+    label_en: 'Supporting document',
+    hint_ar: 'أي مستند داعم لحالتك لو مش لاقي نوعه فوق — اختياري',
+    hint_en: "Any extra proof for your case that doesn't fit above — optional",
     required: false,
     clinicOnly: false,
   },

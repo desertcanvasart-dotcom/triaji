@@ -4,6 +4,7 @@ import { authenticateAdmin } from '@/lib/auth/api-auth';
 import { createAdminClient } from '@/lib/supabase/server';
 import { getDocumentReadiness } from '@/lib/auth/document-readiness';
 import { documentLabel } from '@triaji/shared/constants/doctor-documents';
+import { notifyDoctorApproved } from '@/lib/auth/verification-notifications';
 
 export const dynamic = 'force-dynamic';
 
@@ -98,6 +99,26 @@ export async function POST(
   }
 
   const { id } = await params;
+
+  // Special-case override: verify despite a non-standard document set. Requires
+  // a reason, which is recorded on the account for audit.
+  let override = false;
+  let overrideNote = '';
+  try {
+    const body = await request.json();
+    override = body?.override === true;
+    overrideNote = typeof body?.note === 'string' ? body.note.trim() : '';
+  } catch {
+    // No body — a normal, gated approval.
+  }
+
+  if (override && !overrideNote) {
+    return NextResponse.json(
+      { error: 'A reason is required to approve a doctor as a special case.' },
+      { status: 400 }
+    );
+  }
+
   const supabase = createAdminClient();
 
   // Fetch the doctor account
@@ -122,48 +143,62 @@ export async function POST(
   }
 
   // Every required document must have been looked at and approved first —
-  // approving on a typed syndicate number alone is what this gate exists to stop.
-  const readiness = await getDocumentReadiness(
-    supabase,
-    id,
-    doctorAccount.clinic_mode as string | null,
-    Boolean(doctorAccount.foreign_degree)
-  );
-
-  if ('error' in readiness) {
-    return NextResponse.json(
-      { error: `Could not check verification documents: ${readiness.error}` },
-      { status: 500 }
+  // approving on a typed syndicate number alone is what this gate exists to
+  // stop. A platform admin can override it for a genuine special case, but only
+  // with a recorded reason (checked above).
+  if (!override) {
+    const readiness = await getDocumentReadiness(
+      supabase,
+      id,
+      doctorAccount.clinic_mode as string | null,
+      Boolean(doctorAccount.foreign_degree)
     );
+
+    if ('error' in readiness) {
+      return NextResponse.json(
+        { error: `Could not check verification documents: ${readiness.error}` },
+        { status: 500 }
+      );
+    }
+
+    if (!readiness.ready) {
+      const parts: string[] = [];
+      if (readiness.missing.length > 0) {
+        parts.push(`not uploaded: ${readiness.missing.map((t) => documentLabel(t, 'en')).join(', ')}`);
+      }
+      if (readiness.unapproved.length > 0) {
+        parts.push(`not approved: ${readiness.unapproved.map((t) => documentLabel(t, 'en')).join(', ')}`);
+      }
+      return NextResponse.json(
+        {
+          error: `Approve the required documents first — ${parts.join('; ')}.`,
+          readiness,
+        },
+        { status: 409 }
+      );
+    }
   }
 
-  if (!readiness.ready) {
-    const parts: string[] = [];
-    if (readiness.missing.length > 0) {
-      parts.push(`not uploaded: ${readiness.missing.map((t) => documentLabel(t, 'en')).join(', ')}`);
-    }
-    if (readiness.unapproved.length > 0) {
-      parts.push(`not approved: ${readiness.unapproved.map((t) => documentLabel(t, 'en')).join(', ')}`);
-    }
-    return NextResponse.json(
-      {
-        error: `Approve the required documents first — ${parts.join('; ')}.`,
-        readiness,
-      },
-      { status: 409 }
-    );
-  }
-
-  // Update status to verified
-  const { error: updateError } = await supabase
+  // Update status to verified. The override reason (when present) is recorded in
+  // verification_note; retry without it if migration 072 isn't applied yet.
+  const verifiedFields = {
+    verification_status: 'verified',
+    verified_at: new Date().toISOString(),
+    verified_by: admin.id,
+    rejection_reason: null,
+  };
+  let { error: updateError } = await supabase
     .from('doctor_accounts')
-    .update({
-      verification_status: 'verified',
-      verified_at: new Date().toISOString(),
-      verified_by: admin.id,
-      rejection_reason: null,
-    })
+    .update(override ? { ...verifiedFields, verification_note: overrideNote } : verifiedFields)
     .eq('id', id);
+
+  if (updateError && override && /verification_note|column/.test(updateError.message)) {
+    console.warn('[doctor-verification/approve] verification_note missing (apply migration 072):', updateError.message);
+    ({ error: updateError } = await supabase
+      .from('doctor_accounts')
+      .update(verifiedFields)
+      .eq('id', id));
+  }
 
   if (updateError) {
     return NextResponse.json(
@@ -171,6 +206,12 @@ export async function POST(
       { status: 500 }
     );
   }
+
+  // Confirm to the doctor that they're verified (best-effort; never blocks).
+  await notifyDoctorApproved(
+    doctorAccount.phone as string | null,
+    doctorAccount.name_ar as string | null,
+  );
 
   // If self-registered, create a matching doctors record
   let clinicNote = '';
