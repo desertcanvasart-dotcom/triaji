@@ -103,9 +103,23 @@ AbortController + secure token storage; optional admin `@supabase/ssr` cold-star
 4. Place a real test call. Local smoke: `pnpm --filter @triaji/web dev:phone`, WS to
    `ws://localhost:3000/api/phone/stream` (expect 101).
 
-### 4. Product decision: lab payments
-Unmodeled (no `lab_invoices` table); degrades safely today. Build it (migration + wiring, ~1–2
-days) or explicitly exclude from v1.
+### 4. Product decision: lab payments — DECIDED 2026-09-10: EXCLUDED from v1 (pay-at-lab)
+Patients book lab tests and see the total (from `lab_services.price_egp`), then **pay on-site or
+on home-collection delivery** — the platform does not collect lab payment online in v1. The lab
+booking flow (`/{ar,en}/lab/[labSlug]/book` → `POST /api/lab/route-order`) ends cleanly at a
+success step; there is no dangling pay UI, so nothing is broken by this choice. Also weighed: the
+payment-provider creds (Fawry/Paymob/Vodafone) aren't configured, so online lab payment couldn't
+be launched or tested yet regardless.
+
+**It can be switched on later cheaply — the payment machinery is already built**, not missing:
+`payable_type='lab_invoice'` is fully wired end-to-end (`lib/payments/initiate.ts` lookup keyed to
+`lab_order_routing`, `process-webhook.ts`, receipts, WhatsApp) with a caller-supplied amount. What's
+missing is only (a) a durable amount and (b) a call to `initiatePayment` from the booking flow. Two
+enablement paths when the product wants it: **minimal** — add `lab_order_routing.patient_pays_egp`
+(1-col migration), compute it from selected services at booking, and call `initiatePayment` with
+the override; **full parity** — a `lab_invoices` table mirroring `clinic_invoices`/`pharmacy_invoices`
+(line items, invoice number, insurance split), generated at booking, with `updateLabInvoice()`
+marking it paid on the webhook (it's a no-op today). Either needs the payment creds to test.
 
 ### 5. Mobile — phase 2 (longest pole: store review 2–4 weeks)
 Repo side is DONE (eas.json, expo-dev-client, LiveKit/image-picker plugins + permissions, env

@@ -65,11 +65,15 @@ for those lacking `default`.
   the lab_chains.lab_tenant_id/chain_code/branch_id fallback).
 
 ## ⚠️ Residual decisions / caveats (NOT drift — product follow-ups)
-- **Lab payments are unmodeled.** No `lab_invoices` table and `lab_order_routing` has no money
-  columns. The `lab_invoice` payable now degrades: `payments/initiate` requires the caller to pass
-  `amount_egp` (lookup returns 0), `payments/[reference]` shows the chain_order_id, and the webhook
-  `updateLabInvoice` is a no-op (payment_transactions is the source of truth). If lab payment becomes
-  a real feature, add a migration (lab_invoices, or total_egp/payment_status/paid_at on routing).
+- **Lab payments — DECIDED 2026-09-10: EXCLUDED from v1 (pay-at-lab).** Patients book & see the
+  total but pay on-site / on home-collection delivery; the platform collects no lab payment online
+  in v1. Not a bug — the booking flow ends cleanly and nothing is broken. The `lab_invoice` payable
+  is fully wired but dormant: `payments/initiate` requires a caller-supplied `amount_egp` (lookup
+  keyed to `lab_order_routing`, returns 0), `payments/[reference]` shows the chain_order_id, and the
+  webhook `updateLabInvoice` is a no-op (payment_transactions is the source of truth). To enable
+  later, add a durable amount (min: `lab_order_routing.patient_pays_egp`; full: a `lab_invoices`
+  table like clinic/pharmacy) and call `initiatePayment` from the booking flow — needs payment creds
+  to test. See docs/NEXT-SESSION.md §4.
 - **Embedded-join drift — SWEPT (2026-06-15), now 0.** Built `docs/scan-embeds.py` (recurses into
   `alias:fk(col)` selects, resolves each embed to its real table via the OpenAPI FK graph). Fixed
   68 embed-inner column refs across 15 files (lab/orders, pharmacy/prescriptions, bookings, consent,
