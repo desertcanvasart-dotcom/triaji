@@ -37,13 +37,11 @@ export default async function PrescriptionStatusPage({ params }: Props) {
       status,
       routed_at,
       received_at,
-      stock_checked_at,
       ready_at,
       collected_at,
       pharmacy_tenant_id,
-      prescription_id,
       tenants!pharmacy_tenant_id (name_ar, name_en, slug, address_en, address_ar, phone),
-      prescriptions (doctor_name_en, doctor_name_ar, patient_name)
+      patients:patient_id (name_ar)
     `)
     .eq('id', routingId)
     .single();
@@ -54,9 +52,8 @@ export default async function PrescriptionStatusPage({ params }: Props) {
     name_ar: string; name_en: string; slug: string;
     address_en: string; address_ar: string; phone: string;
   } | null;
-  const prescription = routing.prescriptions as unknown as {
-    doctor_name_en: string; doctor_name_ar: string; patient_name: string;
-  } | null;
+  const patient = (Array.isArray(routing.patients) ? routing.patients[0] : routing.patients) as { name_ar: string } | null;
+  const prescription = { patient_name: patient?.name_ar ?? '' };
   const currentStatus = routing.status as RoutingStatus;
 
   // Fetch pharmacy config for working hours
@@ -103,7 +100,7 @@ export default async function PrescriptionStatusPage({ params }: Props) {
     {
       key: 'preparing',
       label: 'Preparing',
-      time: routing.stock_checked_at,
+      time: null,
       state: getStepState(['checking_stock']),
     },
     {

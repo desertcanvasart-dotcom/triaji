@@ -45,15 +45,16 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = createAdminClient();
 
-    // Step 1: Check if tenant belongs to a chain with shared_pricing
+    // Step 1: Check if tenant belongs to a chain with shared_pricing.
+    // Branches are tenants rows; the chain link is tenants.chain_id.
     const { data: branch } = await supabase
-      .from('chain_branches')
+      .from('tenants')
       .select('chain_id')
-      .eq('tenant_id', tenantId)
+      .eq('id', tenantId)
       .eq('is_active', true)
       .single();
 
-    if (!branch) return NextResponse.json(null);
+    if (!branch?.chain_id) return NextResponse.json(null);
 
     const chainId = branch.chain_id as string;
 

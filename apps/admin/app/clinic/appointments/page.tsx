@@ -27,14 +27,30 @@ export default async function AppointmentsPage() {
 
   const today = new Date().toISOString().split('T')[0];
 
-  // Fetch today's bookings per doctor
-  const { data: todayBookings } = await supabase
+  // Fetch today's bookings per doctor. Patient name/phone live on `patients`
+  // (joined via patient_id), not on `bookings` — embed and flatten.
+  const { data: rawBookings } = await supabase
     .from('bookings')
-    .select('id, doctor_id, appointment_datetime, status, patient_name, patient_phone')
+    .select('id, doctor_id, appointment_datetime, status, patients:patient_id(name_ar, phone_number)')
     .eq('tenant_id', tenantId)
     .gte('appointment_datetime', `${today}T00:00:00`)
     .lte('appointment_datetime', `${today}T23:59:59`)
     .order('appointment_datetime', { ascending: true });
+
+  const todayBookings = (rawBookings ?? []).map((b) => {
+    const p = (Array.isArray(b.patients) ? b.patients[0] : b.patients) as
+      | { name_ar?: string | null; phone_number?: string | null }
+      | null
+      | undefined;
+    return {
+      id: b.id,
+      doctor_id: b.doctor_id,
+      appointment_datetime: b.appointment_datetime,
+      status: b.status,
+      patient_name: p?.name_ar ?? null,
+      patient_phone: p?.phone_number ?? null,
+    };
+  });
 
   const bookingsByDoctor = new Map<string, typeof todayBookings>();
   for (const b of todayBookings ?? []) {

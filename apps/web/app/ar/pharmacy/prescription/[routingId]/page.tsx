@@ -45,13 +45,11 @@ export default async function PrescriptionStatusPage({ params }: Props) {
       status,
       routed_at,
       received_at,
-      stock_checked_at,
       ready_at,
       collected_at,
       pharmacy_tenant_id,
-      prescription_id,
       tenants!pharmacy_tenant_id (name_ar, slug, address_ar, phone),
-      prescriptions (doctor_name_ar, patient_name)
+      patients:patient_id (name_ar)
     `)
     .eq('id', routingId)
     .single();
@@ -59,7 +57,8 @@ export default async function PrescriptionStatusPage({ params }: Props) {
   if (!routing) notFound();
 
   const pharmacy = routing.tenants as unknown as { name_ar: string; slug: string; address_ar: string; phone: string } | null;
-  const prescription = routing.prescriptions as unknown as { doctor_name_ar: string; patient_name: string } | null;
+  const patient = (Array.isArray(routing.patients) ? routing.patients[0] : routing.patients) as { name_ar: string } | null;
+  const prescription = { patient_name: patient?.name_ar ?? '' };
   const currentStatus = routing.status as RoutingStatus;
   const currentIdx = getStatusIndex(currentStatus);
 
@@ -90,7 +89,7 @@ export default async function PrescriptionStatusPage({ params }: Props) {
     {
       key: 'checking_stock',
       label: 'جاري التحضير',
-      time: routing.stock_checked_at,
+      time: null,
       state: currentIdx >= 3 ? 'done' : currentIdx === 2 ? 'current' : currentIdx === 1 ? 'current' : 'upcoming',
     },
     {

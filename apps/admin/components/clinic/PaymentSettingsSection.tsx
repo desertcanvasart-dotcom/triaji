@@ -9,9 +9,8 @@ interface PaymentConfig {
   accepts_online_payment: boolean;
   payment_providers: string[];
   fawry_merchant_code: string;
-  paymob_merchant_id: string;
   paymob_integration_id: string;
-  vodafone_cash_merchant_code: string;
+  vf_merchant_code: string;
 }
 
 const PROVIDER_OPTIONS = [
@@ -30,7 +29,6 @@ const PROVIDER_OPTIONS = [
     icon: '💳',
     description: 'دفع عبر بطاقات الائتمان والخصم',
     fields: [
-      { key: 'paymob_merchant_id', label: 'Merchant ID', placeholder: 'XXXXX' },
       { key: 'paymob_integration_id', label: 'Integration ID', placeholder: 'XXXXX' },
     ],
   },
@@ -40,7 +38,7 @@ const PROVIDER_OPTIONS = [
     icon: '📱',
     description: 'دفع عبر محفظة فودافون كاش',
     fields: [
-      { key: 'vodafone_cash_merchant_code', label: 'كود التاجر', placeholder: 'VC-XXXXXX' },
+      { key: 'vf_merchant_code', label: 'كود التاجر', placeholder: 'VC-XXXXXX' },
     ],
   },
 ] as const;
@@ -56,9 +54,8 @@ export default function PaymentSettingsSection({
     accepts_online_payment: false,
     payment_providers: [],
     fawry_merchant_code: '',
-    paymob_merchant_id: '',
     paymob_integration_id: '',
-    vodafone_cash_merchant_code: '',
+    vf_merchant_code: '',
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -72,7 +69,7 @@ export default function PaymentSettingsSection({
         const { data } = await supabase
           .from('tenant_config')
           .select(
-            'accepts_online_payment, payment_providers, fawry_merchant_code, paymob_merchant_id, paymob_integration_id, vodafone_cash_merchant_code',
+            'accepts_online_payment, payment_providers, fawry_merchant_code, paymob_integration_id, vf_merchant_code',
           )
           .eq('tenant_id', tenantId)
           .single();
@@ -82,9 +79,8 @@ export default function PaymentSettingsSection({
             accepts_online_payment: (data.accepts_online_payment as boolean) ?? false,
             payment_providers: (data.payment_providers as string[]) ?? [],
             fawry_merchant_code: (data.fawry_merchant_code as string) ?? '',
-            paymob_merchant_id: (data.paymob_merchant_id as string) ?? '',
             paymob_integration_id: (data.paymob_integration_id as string) ?? '',
-            vodafone_cash_merchant_code: (data.vodafone_cash_merchant_code as string) ?? '',
+            vf_merchant_code: (data.vf_merchant_code as string) ?? '',
           });
         }
       } catch {
@@ -141,9 +137,8 @@ export default function PaymentSettingsSection({
               accepts_online_payment: config.accepts_online_payment,
               payment_providers: config.payment_providers,
               fawry_merchant_code: config.fawry_merchant_code,
-              paymob_merchant_id: config.paymob_merchant_id,
               paymob_integration_id: config.paymob_integration_id,
-              vodafone_cash_merchant_code: config.vodafone_cash_merchant_code,
+              vf_merchant_code: config.vf_merchant_code,
             },
             { onConflict: 'tenant_id' },
           );

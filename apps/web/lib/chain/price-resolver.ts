@@ -24,15 +24,16 @@ export async function resolveChainPrice(
 ): Promise<ResolvedPrice | null> {
   const supabase = createServerClient();
 
-  // Step 1: Check if tenant has a chain with shared_pricing=true
+  // Step 1: Check if tenant has a chain with shared_pricing=true.
+  // Branches are tenants rows; the chain link is tenants.chain_id.
   const { data: branch } = await supabase
-    .from('chain_branches')
-    .select('chain_id, tenant_id')
-    .eq('tenant_id', tenantId)
+    .from('tenants')
+    .select('chain_id')
+    .eq('id', tenantId)
     .eq('is_active', true)
     .single();
 
-  if (!branch) return null;
+  if (!branch?.chain_id) return null;
 
   const chainId = branch.chain_id as string;
 

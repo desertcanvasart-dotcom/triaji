@@ -13,6 +13,9 @@ export async function GET() {
 
   const supabase = createServerClient();
 
+  // The child's profile is not related to guardian_relationships directly; it
+  // hangs off the child patient (patient_profiles → patients), so nest it under
+  // the patients embed rather than a second FK hint on guardian_relationships.
   const { data: relationships, error } = await supabase
     .from('guardian_relationships')
     .select(`
@@ -21,13 +24,13 @@ export async function GET() {
       child:patients!guardian_relationships_child_patient_id_fkey (
         id,
         phone_number,
-        name_ar
-      ),
-      child_profile:patient_profiles!guardian_relationships_child_patient_id_fkey (
-        id,
-        date_of_birth,
-        biological_sex,
-        is_paediatric
+        name_ar,
+        patient_profiles (
+          id,
+          date_of_birth,
+          biological_sex,
+          is_paediatric
+        )
       )
     `)
     .eq('guardian_patient_id', patient.patientId)
@@ -39,26 +42,28 @@ export async function GET() {
 
   const now = new Date();
   const children: ChildProfile[] = (relationships ?? [])
-    .filter((r: Record<string, unknown>) => r.child_profile)
     .map((r: Record<string, unknown>) => {
-      const profile = r.child_profile as Record<string, unknown>;
+      const child = r.child as Record<string, unknown> | null;
+      const profileRaw = child?.patient_profiles;
+      const profile = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as
+        | Record<string, unknown>
+        | undefined;
+      if (!profile) return null;
       const dob = new Date(profile.date_of_birth as string);
       const ageMs = now.getTime() - dob.getTime();
       const ageMonths = Math.floor(ageMs / (1000 * 60 * 60 * 24 * 30.44));
 
-      // Get child name from patients table or profile
-      const child = r.child as Record<string, unknown> | null;
-
       return {
         patientId: r.child_patient_id as string,
-        name: (child as Record<string, unknown>)?.name_ar as string ?? '',
+        name: (child?.name_ar as string) ?? '',
         dateOfBirth: profile.date_of_birth as string,
         ageMonths,
         sex: profile.biological_sex as 'male' | 'female',
         relation: r.relation as GuardianRelation,
         isPaediatric: true as const,
       };
-    });
+    })
+    .filter((c): c is ChildProfile => c !== null);
 
   return NextResponse.json({ children });
 }
