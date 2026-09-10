@@ -26,6 +26,26 @@ interface PhoneSessionResult {
 // ─── Twilio Signature Validation ────────────────────────────────────────────
 
 /**
+ * Reconstruct the public URL Twilio actually signed.
+ *
+ * Twilio signs the external webhook URL it was configured to call
+ * (https://app.doctortrio.online/...). Behind a reverse proxy (Railway) the
+ * app sees an internal request whose `request.url` is the bound host/scheme
+ * (e.g. http://0.0.0.0:3000/...), so validating against `request.url` rejects
+ * every real call with 403. Rebuild the URL from the proxy's forwarded headers
+ * when present; fall back to `request.url` for direct (local) requests.
+ */
+function signedRequestUrl(request: Request): string {
+  const fwdHost = request.headers.get('x-forwarded-host')?.split(',')[0]?.trim();
+  if (!fwdHost) return request.url;
+  const u = new URL(request.url);
+  const fwdProto =
+    request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim() ||
+    u.protocol.replace(':', '');
+  return `${fwdProto}://${fwdHost}${u.pathname}${u.search}`;
+}
+
+/**
  * Validate an incoming Twilio webhook request signature.
  * In DEV_MODE (no TWILIO_AUTH_TOKEN), always returns true with a console log.
  */
@@ -51,7 +71,7 @@ export async function validateTwilioSignature(request: Request): Promise<boolean
     params[key] = String(value);
   }
 
-  const url = request.url;
+  const url = signedRequestUrl(request);
   const isValid = twilio.validateRequest(authToken, signature, url, params);
 
   if (!isValid) {
