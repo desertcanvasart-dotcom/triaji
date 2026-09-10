@@ -7,7 +7,7 @@ const CONTENT: ProviderContent = {
     title: 'Your Clinic Deserves a Smart System That Lets You Focus on the Patient',
     subtitle: 'Instant waitlist, online bookings, invoices, and reports — all without complexity',
     cta: 'Register Your Clinic for Free',
-    ctaHref: '/en/register/provider',
+    ctaHref: '/en/contact',
   },
   painPoints: [
     { icon: '📞', title: 'Phone-Based Bookings', description: 'Your receptionist spends half the day on the phone and appointments are still chaotic' },

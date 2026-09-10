@@ -7,7 +7,7 @@ const CONTENT: ProviderContent = {
     title: 'The Prescription Arrives Before the Patient',
     subtitle: 'The doctor sends the prescription digitally, your pharmacy prepares it, and the patient comes to collect — no waiting and no errors',
     cta: 'Register Your Pharmacy Now',
-    ctaHref: '/en/register/provider',
+    ctaHref: '/en/contact',
   },
   painPoints: [
     { icon: '📄', title: 'Reading Doctor Handwriting', description: 'The pharmacist wastes time decoding handwriting — and sometimes gets the medication name wrong' },

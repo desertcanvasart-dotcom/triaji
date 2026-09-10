@@ -7,7 +7,7 @@ const CONTENT: ProviderContent = {
     title: 'Transform Your Hospital into a Smart Healthcare Institution',
     subtitle: 'DoctorTrio connects your patients with your doctors, streamlines operations, and integrates with insurance and labs \u2014 all in one system',
     cta: 'Register Your Hospital Now',
-    ctaHref: '/en/register/provider',
+    ctaHref: '/en/contact',
   },
   painPoints: [
     { icon: '\uD83D\uDCCB', title: 'Lost Paper Records', description: 'Patients arrive without medical history, and doctors start from scratch every visit' },
