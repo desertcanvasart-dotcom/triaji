@@ -18,8 +18,15 @@ export const dynamic = 'force-dynamic';
 function isSameOrigin(request: NextRequest): boolean {
   const origin = request.headers.get('origin');
   if (!origin) return true; // same-origin fetches may omit Origin
+  // Behind a reverse proxy (Railway) request.nextUrl.host is the internal bound
+  // host, not the public domain the browser sends in Origin, so comparing the
+  // two rejected every real login with 403. Prefer the proxy's forwarded host
+  // when present; fall back to nextUrl.host for direct (local) requests.
+  const expectedHost =
+    request.headers.get('x-forwarded-host')?.split(',')[0]?.trim() ||
+    request.nextUrl.host;
   try {
-    return new URL(origin).host === request.nextUrl.host;
+    return new URL(origin).host === expectedHost;
   } catch {
     return false;
   }
