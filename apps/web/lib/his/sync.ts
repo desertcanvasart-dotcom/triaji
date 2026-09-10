@@ -113,12 +113,37 @@ export async function syncTenant(
         // Only available slots
         const availableSlots = hisSlots.filter((s) => s.isAvailable);
 
-        // Upsert slots into doctor_availability
+        // Insert HIS slots into doctor_availability.
+        //
+        // There is no unique constraint on (doctor_id, slot_datetime), so a real
+        // upsert with `onConflict` raises Postgres 42P10 ("no unique or exclusion
+        // constraint matching the ON CONFLICT specification") on every row and no
+        // slots are ever added. Instead we find-or-insert per slot, and crucially
+        // NEVER overwrite a booked slot or a manually-created (non-his_sync) one —
+        // a blind upsert would reset is_booked to false and un-book real bookings.
         for (const slot of availableSlots) {
-          const { error: upsertError } = await supabase
+          const { data: existingRows, error: findError } = await supabase
             .from('doctor_availability')
-            .upsert(
-              {
+            .select('id, is_booked, source')
+            .eq('doctor_id', doc.id)
+            .eq('slot_datetime', slot.datetime)
+            .limit(1);
+
+          if (findError) {
+            errors.push({
+              hisDoctorId: doc.his_doctor_id,
+              message: findError.message,
+              code: 'UPSERT_ERROR',
+            });
+            continue;
+          }
+
+          const existing = existingRows?.[0];
+
+          if (!existing) {
+            const { error: insertError } = await supabase
+              .from('doctor_availability')
+              .insert({
                 doctor_id: doc.id,
                 tenant_id: integration.tenant_id,
                 source: 'his_sync',
@@ -126,21 +151,38 @@ export async function syncTenant(
                 duration_minutes: slot.durationMinutes,
                 is_booked: false,
                 his_slot_id: slot.hisSlotId,
-              },
-              { onConflict: 'doctor_id,slot_datetime' }
-            );
+              });
 
-          if (upsertError) {
-            // If upsert fails (e.g. unique constraint on different columns),
-            // try insert with on conflict handling
-            errors.push({
-              hisDoctorId: doc.his_doctor_id,
-              message: upsertError.message,
-              code: 'UPSERT_ERROR',
-            });
-          } else {
-            slotsAdded++;
+            if (insertError) {
+              errors.push({
+                hisDoctorId: doc.his_doctor_id,
+                message: insertError.message,
+                code: 'UPSERT_ERROR',
+              });
+            } else {
+              slotsAdded++;
+            }
+          } else if (existing.source === 'his_sync' && !existing.is_booked) {
+            // Refresh an existing, still-open HIS slot's metadata. The
+            // is_booked guard makes a concurrent booking win over this update.
+            const { error: updateError } = await supabase
+              .from('doctor_availability')
+              .update({
+                duration_minutes: slot.durationMinutes,
+                his_slot_id: slot.hisSlotId,
+              })
+              .eq('id', existing.id)
+              .eq('is_booked', false);
+
+            if (updateError) {
+              errors.push({
+                hisDoctorId: doc.his_doctor_id,
+                message: updateError.message,
+                code: 'UPSERT_ERROR',
+              });
+            }
           }
+          // else: existing slot is booked or manually created — leave it untouched.
         }
 
         // Remove HIS-synced slots that no longer appear in HIS
