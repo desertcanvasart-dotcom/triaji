@@ -68,7 +68,7 @@ const C = {
       } as MegaMenu,
     ],
     simpleLinks: [{ label: '\u0645\u0646 \u0646\u062d\u0646', href: '/ar/about' }],
-    auth: { login: { label: '\u062f\u062e\u0648\u0644', href: '/ar/login' }, signup: { label: '\u0627\u0628\u062f\u0623 \u0627\u0644\u0622\u0646', href: '/ar/chat' } },
+    auth: { doctorLogin: { label: '\u062f\u062e\u0648\u0644 \u0627\u0644\u0623\u0637\u0628\u0627\u0621', href: '/ar/doctor/login' }, login: { label: '\u062f\u062e\u0648\u0644', href: '/ar/login' }, signup: { label: '\u0627\u0628\u062f\u0623 \u0627\u0644\u0622\u0646', href: '/ar/chat' } },
     learnMore: '\u0627\u0639\u0631\u0641 \u0623\u0643\u062a\u0631',
   },
   en: {
@@ -128,7 +128,7 @@ const C = {
       } as MegaMenu,
     ],
     simpleLinks: [{ label: 'About Us', href: '/en/about' }],
-    auth: { login: { label: 'Sign In', href: '/en/login' }, signup: { label: 'Get Started', href: '/en/chat' } },
+    auth: { doctorLogin: { label: 'Doctor Login', href: '/en/doctor/login' }, login: { label: 'Sign In', href: '/en/login' }, signup: { label: 'Get Started', href: '/en/chat' } },
     learnMore: 'Learn more',
   },
 };
@@ -275,6 +275,7 @@ export default function MegaNavbar({ lang }: { lang: Lang }) {
 
         {/* Auth + Language */}
         <div className="hidden md:flex items-center gap-2">
+          <Link href={c.auth.doctorLogin.href} className="text-gray-600 hover:text-teal-700 text-sm font-medium px-3 py-2 transition-colors">{c.auth.doctorLogin.label}</Link>
           <Link href={c.auth.login.href} className="text-gray-600 hover:text-gray-900 text-sm font-medium px-3 py-2 transition-colors">{c.auth.login.label}</Link>
           <div className="w-px h-4 bg-gray-200" />
           <LanguageDropdown lang={lang} />
@@ -333,6 +334,7 @@ export default function MegaNavbar({ lang }: { lang: Lang }) {
             <div className="pt-4 border-t border-gray-100 space-y-2">
               <Link href={c.auth.signup.href} className="block w-full text-center bg-teal-600 text-white font-bold py-3 rounded-xl" onClick={() => setMobileOpen(false)}>{c.auth.signup.label}</Link>
               <Link href={c.auth.login.href} className="block w-full text-center text-gray-600 font-medium py-3" onClick={() => setMobileOpen(false)}>{c.auth.login.label}</Link>
+              <Link href={c.auth.doctorLogin.href} className="block w-full text-center text-teal-700 font-medium py-3" onClick={() => setMobileOpen(false)}>{c.auth.doctorLogin.label}</Link>
             </div>
           </div>
         </div>

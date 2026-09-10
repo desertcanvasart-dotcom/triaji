@@ -162,6 +162,8 @@ const UI_STRINGS = {
       ar: 'ابدأ محادثة جديدة بدون تسجيل',
       en: 'Start a new conversation without signing in',
     },
+    doctorPrompt: { ar: 'إنت دكتور؟', en: 'Are you a doctor?' },
+    doctorLink: { ar: 'دخول الأطباء', en: 'Doctor login' },
     invalidPhone: { ar: 'رقم هاتف مصري غير صحيح', en: 'Invalid Egyptian phone number' },
     defaultError: { ar: 'حدث خطأ، حاول مرة أخرى', en: 'An error occurred, please try again' },
     sendingOtp: { ar: 'جاري الإرسال...', en: 'Sending...' },
