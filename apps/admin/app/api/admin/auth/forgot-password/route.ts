@@ -5,6 +5,7 @@ import { storeOTP } from '@triaji/shared/lib/auth/otp-store';
 import { redis } from '@triaji/shared/lib/cache/redis';
 import { createAdminClient, createAnonClient } from '@/lib/supabase/server';
 import { findAdminByEmail } from '@/lib/auth/admin-lookup';
+import { getPublicOrigin } from '@/lib/public-origin';
 
 export const dynamic = 'force-dynamic';
 
@@ -66,7 +67,7 @@ export async function POST(request: NextRequest) {
     if (admin && admin.is_active) {
       // /set-password already adopts Supabase invite/recovery hash tokens and
       // lets the user choose a password, so recovery links land there.
-      const origin = request.nextUrl.origin;
+      const origin = getPublicOrigin(request);
       const anon = createAnonClient();
       const { error } = await anon.auth.resetPasswordForEmail(email, {
         redirectTo: `${origin}/set-password`,

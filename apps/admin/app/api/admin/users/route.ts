@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { authenticateAdmin } from '@/lib/auth/api-auth';
 import { createAdminClient } from '@/lib/supabase/server';
 import type { AdminRole } from '@/lib/auth/types';
+import { getPublicOrigin } from '@/lib/public-origin';
 
 export const dynamic = 'force-dynamic';
 
@@ -179,7 +180,7 @@ export async function POST(request: NextRequest) {
 
   const email = body.email!.trim().toLowerCase();
   const supabase = createAdminClient();
-  const redirectTo = `${request.nextUrl.origin}/set-password`;
+  const redirectTo = `${getPublicOrigin(request)}/set-password`;
 
   // Try a fresh invite first; fall back to a recovery link when the auth user
   // already exists (re-invite / resend).
