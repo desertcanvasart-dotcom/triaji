@@ -6,6 +6,7 @@ import { getSupabaseBrowser } from '@/lib/supabase/browser';
 import { TableSkeleton } from '@/components/ui/LoadingSkeleton';
 import EmptyState from '@/components/ui/EmptyState';
 import { showToast } from '@/components/ui/Toast';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import BulkUploadModal from '@/components/doctors/BulkUploadModal';
 
 interface Doctor {
@@ -55,6 +56,11 @@ export default function DoctorsPage() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [exporting, setExporting] = useState(false);
 
+  // Bulk selection / delete (selection is scoped to the current page)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
   useEffect(() => {
     const supabase = getSupabaseBrowser();
     supabase.from('specialties').select('id, name_en').order('name_en').then(({ data }) => {
@@ -67,6 +73,9 @@ export default function DoctorsPage() {
 
   const fetchDoctors = useCallback(async () => {
     setLoading(true);
+    // Any reload can change which rows are on the page, so drop the selection
+    // rather than risk acting on doctors the user can no longer see.
+    setSelectedIds(new Set());
     const params = new URLSearchParams();
     if (search) params.set('search', search);
     if (specialtyFilter) params.set('specialty', specialtyFilter);
@@ -113,6 +122,78 @@ export default function DoctorsPage() {
       fetchDoctors();
     } else {
       showToast('Failed to update doctor status.', 'error');
+    }
+  }
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      const allSelected = doctors.length > 0 && doctors.every((d) => next.has(d.id));
+      if (allSelected) {
+        doctors.forEach((d) => next.delete(d.id));
+      } else {
+        doctors.forEach((d) => next.add(d.id));
+      }
+      return next;
+    });
+  }
+
+  async function performBulkDelete() {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    setDeleting(true);
+    try {
+      const res = await fetch('/api/admin/doctors/bulk-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids }),
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        showToast(data.error ?? 'Failed to delete doctors.', 'error');
+        return;
+      }
+
+      const deleted: number = data.deleted_count ?? 0;
+      const blocked: number = Array.isArray(data.blocked) ? data.blocked.length : 0;
+
+      if (deleted > 0 && blocked === 0) {
+        showToast(`Deleted ${deleted} doctor(s).`, 'success');
+      } else if (deleted > 0 && blocked > 0) {
+        showToast(
+          `Deleted ${deleted} doctor(s); ${blocked} skipped (have related records).`,
+          'success'
+        );
+      } else {
+        showToast(
+          `No doctors deleted — ${blocked} have related records. Deactivate them instead.`,
+          'error'
+        );
+      }
+
+      // Refetch only when something was actually removed; otherwise keep the
+      // selection so the user can act on the blocked rows (e.g. deactivate).
+      if (deleted > 0) {
+        fetchDoctors();
+      }
+    } catch {
+      showToast('Failed to delete doctors.', 'error');
+    } finally {
+      setDeleting(false);
+      setShowDeleteConfirm(false);
     }
   }
 
@@ -204,6 +285,11 @@ export default function DoctorsPage() {
       setExporting(false);
     }
   }
+
+  // Selection (current page only)
+  const selectedCount = selectedIds.size;
+  const allOnPageSelected = doctors.length > 0 && doctors.every((d) => selectedIds.has(d.id));
+  const someOnPageSelected = doctors.some((d) => selectedIds.has(d.id));
 
   // Pagination helpers
   const startRow = total === 0 ? 0 : (page - 1) * pageSize + 1;
@@ -360,7 +446,7 @@ export default function DoctorsPage() {
 
       {/* Table */}
       {loading ? (
-        <TableSkeleton rows={pageSize > 50 ? 20 : 8} cols={7} />
+        <TableSkeleton rows={pageSize > 50 ? 20 : 8} cols={8} />
       ) : doctors.length === 0 ? (
         <EmptyState
           icon="👨‍⚕️"
@@ -373,11 +459,46 @@ export default function DoctorsPage() {
         />
       ) : (
         <>
+          {/* Bulk-selection toolbar */}
+          {selectedCount > 0 && (
+            <div className="flex items-center justify-between mb-3 px-4 py-2.5 rounded-lg border border-teal-200 bg-teal-50">
+              <span className="text-sm font-medium text-teal-800">
+                {selectedCount} selected
+              </span>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setSelectedIds(new Set())}
+                  className="text-sm text-gray-600 hover:text-gray-800"
+                >
+                  Clear
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="btn-danger text-sm py-1.5"
+                >
+                  🗑 Delete selected
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="card p-0 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
+                    <th className="table-header px-6 py-3 w-10">
+                      <input
+                        type="checkbox"
+                        aria-label="Select all doctors on this page"
+                        className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
+                        checked={allOnPageSelected}
+                        ref={(el) => {
+                          if (el) el.indeterminate = someOnPageSelected && !allOnPageSelected;
+                        }}
+                        onChange={toggleSelectAll}
+                      />
+                    </th>
                     <th
                       className="table-header px-6 py-3 cursor-pointer select-none hover:text-teal-700"
                       onClick={() => handleSort('name_ar')}
@@ -404,7 +525,21 @@ export default function DoctorsPage() {
                 </thead>
                 <tbody>
                   {doctors.map((doc) => (
-                    <tr key={doc.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <tr
+                      key={doc.id}
+                      className={`border-b border-gray-100 hover:bg-gray-50 ${
+                        selectedIds.has(doc.id) ? 'bg-teal-50/60' : ''
+                      }`}
+                    >
+                      <td className="px-6 py-4">
+                        <input
+                          type="checkbox"
+                          aria-label={`Select ${doc.name_en ?? doc.name_ar}`}
+                          className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
+                          checked={selectedIds.has(doc.id)}
+                          onChange={() => toggleSelect(doc.id)}
+                        />
+                      </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           {doc.photo_url ? (
@@ -547,6 +682,17 @@ export default function DoctorsPage() {
           </div>
         </>
       )}
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={performBulkDelete}
+        title="Delete doctors permanently?"
+        message={`This permanently deletes ${selectedCount} selected doctor(s). This can't be undone. Doctors with related records (bookings, history, etc.) are skipped automatically — deactivate those instead.`}
+        confirmLabel={`Delete ${selectedCount}`}
+        danger
+        loading={deleting}
+      />
 
       <BulkUploadModal
         open={showUploadModal}

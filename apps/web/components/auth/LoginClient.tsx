@@ -178,6 +178,16 @@ export default function LoginClient({ lang }: LoginClientProps) {
               {s.login.skipLogin[lang]}
             </Link>
           </div>
+
+          <div className="text-center mt-4 pt-4 border-t border-gray-200">
+            <span className="text-sm text-gray-500">{s.login.doctorPrompt[lang]} </span>
+            <Link
+              href={`/${lang}/doctor/login`}
+              className="text-teal-600 text-sm font-semibold hover:underline"
+            >
+              {s.login.doctorLink[lang]}
+            </Link>
+          </div>
         </div>
       </div>
     </main>
