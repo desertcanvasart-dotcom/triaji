@@ -121,26 +121,14 @@ export async function PUT(request: NextRequest) {
 
   const supabase = createAdminClient();
 
-  // tenant_config has no unique constraint on tenant_id, so upsert can't key on
-  // it — update first, insert only when the tenant has no config row yet.
-  const { data: updated, error: updateError } = await supabase
+  // One config row per tenant, keyed by the tenant_config_tenant_id_key unique
+  // constraint (migration 073) — a single upsert both creates and updates it.
+  const { error } = await supabase
     .from('tenant_config')
-    .update(row)
-    .eq('tenant_id', tenantId)
-    .select('tenant_id');
+    .upsert({ tenant_id: tenantId, ...row }, { onConflict: 'tenant_id' });
 
-  if (updateError) {
-    return NextResponse.json({ error: updateError.message }, { status: 500 });
-  }
-
-  if (!updated || updated.length === 0) {
-    const { error: insertError } = await supabase
-      .from('tenant_config')
-      .insert({ tenant_id: tenantId, ...row });
-
-    if (insertError) {
-      return NextResponse.json({ error: insertError.message }, { status: 500 });
-    }
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
   return NextResponse.json({ success: true });
