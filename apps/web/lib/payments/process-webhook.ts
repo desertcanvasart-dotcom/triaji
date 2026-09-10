@@ -33,21 +33,24 @@ async function updateBookingPayable(
   patientPhone: string,
   lang: Lang,
 ) {
-  // Mark booking as confirmed
+  // Mark booking as confirmed. Patient name, doctor name/specialty, fee and the
+  // formatted date/time are not `bookings` columns — they come from the embedded
+  // patients/doctors/tenants rows (specialty via doctors→specialties) and from
+  // formatting appointment_datetime here.
   const { data: booking, error } = await supabase
     .from('bookings')
     .update({ status: 'confirmed' })
     .eq('id', payableId)
     .select(`
-      id, patient_name, date_ar, time_ar,
+      id, appointment_datetime, patient_id, tenant_id,
+      patients:patient_id ( name_ar ),
       doctors:doctor_id (
-        full_name_ar, full_name_en, title_ar, title_en,
-        specialty_ar, specialty_en
+        name_ar, name_en, title_ar, consultation_fee_egp,
+        specialties:specialty_id ( name_ar, name_en )
       ),
       tenants:tenant_id (
-        name_ar, name_en, address_ar
-      ),
-      fee_egp
+        id, name_ar, name_en, address_ar
+      )
     `)
     .single();
 
@@ -58,18 +61,29 @@ async function updateBookingPayable(
 
   // Send booking confirmation WhatsApp
   try {
-    const doctor = booking.doctors as unknown as Record<string, string> | null;
+    const patient = booking.patients as unknown as { name_ar?: string } | null;
+    const doctor = booking.doctors as unknown as
+      | { name_ar?: string; title_ar?: string; consultation_fee_egp?: number; specialties?: { name_ar?: string } | { name_ar?: string }[] }
+      | null;
     const tenant = booking.tenants as unknown as Record<string, string> | null;
     if (doctor && tenant) {
+      const specialty = Array.isArray(doctor.specialties) ? doctor.specialties[0] : doctor.specialties;
+      const appt = booking.appointment_datetime ? new Date(booking.appointment_datetime as string) : null;
+      const dateAr = appt
+        ? appt.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+        : '';
+      const timeAr = appt
+        ? appt.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
+        : '';
       const templateData: BookingTemplateData = {
-        patientName: booking.patient_name ?? '',
+        patientName: patient?.name_ar ?? '',
         doctorTitle: doctor.title_ar ?? '',
-        doctorName: doctor.full_name_ar ?? '',
-        specialtyName: doctor.specialty_ar ?? '',
-        dateAr: booking.date_ar ?? '',
-        timeAr: booking.time_ar ?? '',
+        doctorName: doctor.name_ar ?? '',
+        specialtyName: specialty?.name_ar ?? '',
+        dateAr,
+        timeAr,
         clinicAddress: tenant.address_ar ?? '',
-        fee: booking.fee_egp ?? 0,
+        fee: doctor.consultation_fee_egp ?? 0,
       };
       await sendWhatsAppMessage(patientPhone, bookingConfirmationMessage(templateData));
     }
@@ -79,8 +93,8 @@ async function updateBookingPayable(
 
   // Chain patient registry — non-blocking side effect on status → 'confirmed'
   try {
-    const tenantId = (booking.tenants as unknown as { id?: string })?.id
-      ?? (booking as Record<string, unknown>).tenant_id as string | undefined;
+    const tenantId = (booking as Record<string, unknown>).tenant_id as string | undefined
+      ?? (booking.tenants as unknown as { id?: string })?.id;
     const patientId = (booking as Record<string, unknown>).patient_id as string | undefined;
 
     if (tenantId && patientId) {

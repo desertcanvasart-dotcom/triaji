@@ -27,64 +27,54 @@ export async function GET(
     return NextResponse.json({ error: 'Chain not found' }, { status: 404 });
   }
 
-  // Fetch specialties for the chain (from chain_specialties or derived from branches)
-  const { data: specialtyRows } = await supabase
-    .from('chain_branches')
-    .select('tenants!inner(specialty_ar)')
-    .eq('chain_id', chain.id)
-    .eq('is_active', true);
-
-  const specialtiesSet = new Set<string>();
-  if (specialtyRows) {
-    for (const row of specialtyRows) {
-      const t = row.tenants as unknown as { specialty_ar?: string } | null;
-      if (t?.specialty_ar) specialtiesSet.add(t.specialty_ar);
-    }
-  }
-
-  // Fetch active branches
+  // Branches are `tenants` rows carrying this chain_id. Location (lat/lng) and
+  // specialty live on the per-tenant `tenant_config` row, embedded here. There
+  // is no working-hours string column, so those fields are returned as null.
   const { data: branchRows } = await supabase
-    .from('chain_branches')
+    .from('tenants')
     .select(`
-      tenant_id,
-      branch_name,
+      id,
+      branch_name_ar,
       branch_name_en,
       branch_number,
       is_active,
-      tenants!inner(
-        slug,
-        address_ar,
-        address_en,
-        phone,
-        lat,
-        lng,
-        working_hours_ar,
-        working_hours_en,
-        tenant_type
+      slug,
+      address_ar,
+      address_en,
+      phone,
+      tenant_config(
+        latitude,
+        longitude,
+        clinic_specialty_ar
       )
     `)
     .eq('chain_id', chain.id)
     .eq('is_active', true)
     .order('branch_number', { ascending: true });
 
+  const specialtiesSet = new Set<string>();
   const branches = (branchRows ?? []).map((b) => {
-    const tenant = b.tenants as unknown as Record<string, unknown> | null;
+    const cfg = Array.isArray(b.tenant_config)
+      ? (b.tenant_config[0] as Record<string, unknown> | undefined)
+      : (b.tenant_config as Record<string, unknown> | null);
+    const specialty = cfg?.clinic_specialty_ar as string | undefined;
+    if (specialty) specialtiesSet.add(specialty);
     return {
-      tenant_id: b.tenant_id,
-      branch_name: b.branch_name,
+      tenant_id: b.id,
+      branch_name: b.branch_name_ar,
       branch_name_en: b.branch_name_en ?? null,
       branch_number: b.branch_number ?? 0,
-      slug: (tenant?.slug as string) ?? null,
-      address_ar: (tenant?.address_ar as string) ?? null,
-      address_en: (tenant?.address_en as string) ?? null,
-      phone: (tenant?.phone as string) ?? null,
-      lat: (tenant?.lat as number) ?? null,
-      lng: (tenant?.lng as number) ?? null,
-      working_hours_ar: (tenant?.working_hours_ar as string) ?? null,
-      working_hours_en: (tenant?.working_hours_en as string) ?? null,
+      slug: (b.slug as string) ?? null,
+      address_ar: (b.address_ar as string) ?? null,
+      address_en: (b.address_en as string) ?? null,
+      phone: (b.phone as string) ?? null,
+      lat: (cfg?.latitude as number) ?? null,
+      lng: (cfg?.longitude as number) ?? null,
+      working_hours_ar: null,
+      working_hours_en: null,
       is_active: b.is_active,
       distance_km: null,
-      tenant_type: (tenant?.tenant_type as string) ?? 'clinic',
+      tenant_type: 'clinic',
     };
   });
 

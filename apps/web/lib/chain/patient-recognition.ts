@@ -130,13 +130,13 @@ export async function getChainPatientInfo(
     .eq('status', 'confirmed')
     .in(
       'tenant_id',
-      // Get all branch tenant_ids for this chain
+      // Get all branch tenant_ids for this chain (branches are tenants rows)
       (
         await supabase
-          .from('chain_branches')
-          .select('tenant_id')
+          .from('tenants')
+          .select('id')
           .eq('chain_id', chainId)
-      ).data?.map((b) => b.tenant_id as string) ?? []
+      ).data?.map((b) => b.id as string) ?? []
     );
 
   // Aggregate visits per branch
@@ -187,13 +187,13 @@ export async function getChainForTenant(
   const supabase = createServerClient();
 
   const { data: branch } = await supabase
-    .from('chain_branches')
+    .from('tenants')
     .select('chain_id')
-    .eq('tenant_id', tenantId)
+    .eq('id', tenantId)
     .eq('is_active', true)
     .single();
 
-  if (!branch) return null;
+  if (!branch?.chain_id) return null;
 
   const { data: chain } = await supabase
     .from('chains')

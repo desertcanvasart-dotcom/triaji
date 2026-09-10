@@ -106,11 +106,10 @@ export default async function DashboardPage() {
     .from('bookings')
     .select(`
       id,
-      patient_name,
-      patient_phone,
       appointment_datetime,
       status,
       created_at,
+      patients:patient_id(name_ar, phone_number),
       doctors!inner(name_ar, name_en)
     `)
     .order('created_at', { ascending: false })
@@ -170,10 +169,14 @@ export default async function DashboardPage() {
               <tbody>
                 {recentBookings.map((b) => {
                   const doctor = b.doctors as unknown as { name_ar: string; name_en: string };
+                  const patient = (Array.isArray(b.patients) ? b.patients[0] : b.patients) as
+                    | { name_ar?: string | null; phone_number?: string | null }
+                    | null
+                    | undefined;
                   return (
                     <tr key={b.id} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="px-4 py-3 text-sm">
-                        {b.patient_name ?? maskPhone(b.patient_phone)}
+                        {patient?.name_ar ?? (patient?.phone_number ? maskPhone(patient.phone_number) : '—')}
                       </td>
                       <td className="px-4 py-3 text-sm" dir="rtl">
                         {doctor?.name_ar ?? doctor?.name_en ?? '—'}

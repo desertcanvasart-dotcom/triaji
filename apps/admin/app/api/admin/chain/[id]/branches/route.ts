@@ -71,8 +71,8 @@ export async function GET(
 
       // Today's revenue
       const { data: revenueData } = await supabase
-        .from('invoices')
-        .select('total_amount')
+        .from('clinic_invoices')
+        .select('total_amount:patient_pays_egp')
         .eq('tenant_id', branch.id)
         .gte('created_at', `${today}T00:00:00`)
         .lte('created_at', `${today}T23:59:59`)

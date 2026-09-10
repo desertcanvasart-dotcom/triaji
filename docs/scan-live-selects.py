@@ -42,8 +42,18 @@ FROM_RE = re.compile(r"\.from\(\s*['\"]([a-z_][a-z0-9_]*)['\"]\s*\)", re.I)
 
 
 def read_select(src: str, start: int):
-    """The raw argument of the first .select( shortly after `start`."""
-    m = re.compile(r"\.select\(").search(src, start, start + 400)
+    """The raw argument of the first .select( shortly after `start`.
+
+    The search window stops at the next `.from(`: a query's own `.select()`
+    always precedes any later `.from()`, so a mutation with no select —
+    `.from('x').update(...)` followed within 400 chars by a sibling
+    `.from('y').select(...)` — must not borrow the next statement's select.
+    """
+    window_end = start + 400
+    nxt = re.compile(r"\.from\(").search(src, start, window_end)
+    if nxt:
+        window_end = nxt.start()
+    m = re.compile(r"\.select\(").search(src, start, window_end)
     if not m:
         return None
     i, depth, out = m.end(), 1, []
