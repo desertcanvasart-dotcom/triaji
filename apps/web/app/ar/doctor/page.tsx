@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import DoctorFeatureGrid from '@/components/landing/DoctorFeatureGrid';
 
 export default function DoctorLandingPage() {
   return (
@@ -124,6 +125,9 @@ export default function DoctorLandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Doctor tools (relocated from the homepage) */}
+      <DoctorFeatureGrid lang="ar" />
 
       {/* Registration CTA Banner */}
       <section className="py-16 px-4 bg-teal-500">
