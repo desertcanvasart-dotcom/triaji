@@ -23,6 +23,8 @@ const CORS_HEADERS = {
 /** Doctor routes that require authentication */
 const DOCTOR_PROTECTED_ROUTES = [
   '/ar/doctor/dashboard',
+  '/ar/doctor/availability',
+  '/en/doctor/availability',
   '/ar/doctor/consultation',
   '/ar/doctor/quick-intake',
   '/ar/doctor/settings',

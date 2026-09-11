@@ -150,15 +150,24 @@ function EmptyState({ openSlots }: { openSlots: number }) {
       <p className="text-sm text-gray-400 mb-6">
         {openSlots > 0
           ? `You have ${openSlots} open slot${openSlots === 1 ? '' : 's'} available — they'll appear here once a patient books.`
-          : 'Your availability is set up by the clinic admin.'}
+          : 'Start by adding your available times so patients can book with you.'}
       </p>
-      <Link
-        href="/en/doctor/quick-intake"
-        className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition-colors"
-      >
-        <span>⚡</span>
-        <span>Start quick intake</span>
-      </Link>
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        <Link
+          href="/en/doctor/availability"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition-colors"
+        >
+          <span>🗓️</span>
+          <span>{openSlots > 0 ? 'Manage my availability' : 'Add my availability'}</span>
+        </Link>
+        <Link
+          href="/en/doctor/quick-intake"
+          className="inline-flex items-center gap-2 px-6 py-3 border border-teal-600 text-teal-600 hover:bg-teal-50 font-medium rounded-lg transition-colors"
+        >
+          <span>⚡</span>
+          <span>Start quick intake</span>
+        </Link>
+      </div>
     </div>
   );
 }
@@ -272,7 +281,8 @@ export default function DoctorDashboardPage() {
       </div>
 
       {/* Quick actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <ActionCard href="/en/doctor/availability" icon="🗓️" title="My availability" desc="Set the times patients can book" />
         <ActionCard href="/en/doctor/quick-intake" icon="⚡" title="Quick triage" desc="Start a new case quickly" />
         <ActionCard href="/en/doctor/patients" icon="👥" title="My patients" desc="Follow your patients and records" />
         <ActionCard href="/en/doctor/settings" icon="⚙️" title="My settings" desc="Profile and signature" />
