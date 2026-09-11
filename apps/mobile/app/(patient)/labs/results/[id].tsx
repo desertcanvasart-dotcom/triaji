@@ -14,7 +14,8 @@ import {
   Alert,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import * as FileSystem from 'expo-file-system';
+// SDK 54 moved the documentDirectory/downloadAsync API to the legacy entry point.
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import { useLang } from '@/hooks/useLang';
 import { api } from '@/lib/api';
