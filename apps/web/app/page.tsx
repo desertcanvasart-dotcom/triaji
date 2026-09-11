@@ -211,8 +211,12 @@ export default async function HomePage() {
       <section className="bg-teal-600 py-5 px-4">
         <div className="max-w-6xl mx-auto flex gap-4 overflow-x-auto pb-1 no-scrollbar">
           {TRUST_STATS[lang].map((stat, i) => (
-            <div key={i} className="flex-shrink-0 bg-white/10 rounded-xl px-4 py-3 flex items-start gap-3 min-w-[200px]">
-              <span className="text-2xl">{stat.icon}</span>
+            <div
+              key={i}
+              style={{ animationDelay: `${i * 120}ms` }}
+              className="group flex-shrink-0 bg-white/10 rounded-xl px-4 py-3 flex items-start gap-3 min-w-[200px] animate-fade-in-up transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-white/20 hover:shadow-lg"
+            >
+              <span className="text-2xl transition-transform duration-300 group-hover:scale-110">{stat.icon}</span>
               <div>
                 <p className="text-white font-semibold text-xs leading-snug">{stat.value}</p>
                 <p className="text-white/60 text-[10px] mt-0.5">{stat.label}</p>
