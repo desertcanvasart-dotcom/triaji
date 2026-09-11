@@ -6,7 +6,7 @@ const CONTENT: ProviderContent = {
     badge: 'For Insurance Companies',
     title: 'Your Gateway to Integration with Egypt\'s Healthcare Ecosystem',
     subtitle: 'DoctorTrio provides policy verification, pre-authorization requests, and claims processing — from all service providers in our network',
-    cta: 'Contact Us for Integration',
+    cta: 'Register Your Company Now',
     ctaHref: '/en/register/provider',
   },
   painPoints: [
