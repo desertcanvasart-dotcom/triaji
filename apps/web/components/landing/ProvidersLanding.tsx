@@ -17,7 +17,7 @@ const T = {
       en: 'Clinics, labs, pharmacies, hospitals, radiology, and insurance — a dedicated dashboard for each, connected in one system.',
     },
     primaryCta:  { ar: 'سجّل مؤسستك الآن', en: 'Register your facility' },
-    ctaHref:     '/contact',
+    ctaHref:     '/register/provider',
     ctaNote:     { ar: 'مجاني للتسجيل — نتواصل معاك خلال 24 ساعة', en: 'Free to register — we contact you within 24 hours' },
   },
   types: {

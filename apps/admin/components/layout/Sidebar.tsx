@@ -28,6 +28,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Phone Calls', href: '/calls', icon: '📞' },
   { label: 'Widget & Embed', href: '/widget', icon: '⚙️' },
   { label: 'Tenants', href: '/tenants', icon: '🏢', platformOnly: true },
+  { label: 'Provider Approvals', href: '/provider-approvals', icon: '✅', platformOnly: true },
   { label: 'Users', href: '/users', icon: '👥', platformOnly: true },
   { label: 'Knowledge Base', href: '/knowledge-base', icon: '📚', platformOnly: true },
   { label: 'Emergency Rules', href: '/emergency-rules', icon: '🚨', platformOnly: true },

@@ -7,7 +7,7 @@ const CONTENT: ProviderContent = {
     title: 'Your Gateway to Integration with Egypt\'s Healthcare Ecosystem',
     subtitle: 'DoctorTrio provides policy verification, pre-authorization requests, and claims processing — from all service providers in our network',
     cta: 'Contact Us for Integration',
-    ctaHref: '/en/contact',
+    ctaHref: '/en/register/provider',
   },
   painPoints: [
     { icon: '📞', title: 'Manual Policy Verification', description: 'The clinic calls to verify — and sometimes the line is busy while the patient waits' },

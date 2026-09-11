@@ -7,7 +7,7 @@ const CONTENT: ProviderContent = {
     title: 'Connect Your Lab to Thousands of Doctors on DoctorTrio',
     subtitle: 'Orders come to you online, patients book their appointments, and results are automatically returned to the patient record',
     cta: 'Register Your Lab Now',
-    ctaHref: '/en/contact',
+    ctaHref: '/en/register/provider',
   },
   painPoints: [
     { icon: '📄', title: 'Paper-Based Orders', description: 'The doctor writes a paper order, the patient carries it, and sometimes it gets lost on the way' },
