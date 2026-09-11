@@ -150,15 +150,24 @@ function EmptyState({ openSlots }: { openSlots: number }) {
       <p className="text-sm text-gray-400 mb-6">
         {openSlots > 0
           ? `عندك ${openSlots} موعد متاح للحجز — هيظهروا هنا أول ما مريض يحجز.`
-          : 'مواعيدك المتاحة بتتظبط من إدارة العيادة.'}
+          : 'ابدأ بإضافة مواعيدك المتاحة عشان المرضى يقدروا يحجزوا معاك.'}
       </p>
-      <Link
-        href="/ar/doctor/quick-intake"
-        className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition-colors"
-      >
-        <span>⚡</span>
-        <span>ابدأ فرز سريع</span>
-      </Link>
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        <Link
+          href="/ar/doctor/availability"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition-colors"
+        >
+          <span>🗓️</span>
+          <span>{openSlots > 0 ? 'إدارة مواعيدي المتاحة' : 'أضف مواعيدي المتاحة'}</span>
+        </Link>
+        <Link
+          href="/ar/doctor/quick-intake"
+          className="inline-flex items-center gap-2 px-6 py-3 border border-teal-600 text-teal-600 hover:bg-teal-50 font-medium rounded-lg transition-colors"
+        >
+          <span>⚡</span>
+          <span>ابدأ فرز سريع</span>
+        </Link>
+      </div>
     </div>
   );
 }
@@ -272,7 +281,8 @@ export default function DoctorDashboardPage() {
       </div>
 
       {/* Quick actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <ActionCard href="/ar/doctor/availability" icon="🗓️" title="مواعيدي المتاحة" desc="ظبّط المواعيد اللي المرضى يحجزوا فيها" />
         <ActionCard href="/ar/doctor/quick-intake" icon="⚡" title="فرز سريع" desc="ابدأ فرز حالة جديدة بسرعة" />
         <ActionCard href="/ar/doctor/patients" icon="👥" title="المرضى المتابعين" desc="تابع مرضاك وملفاتهم الطبية" />
         <ActionCard href="/ar/doctor/settings" icon="⚙️" title="إعداداتي" desc="ملفك الشخصي وتوقيعك" />

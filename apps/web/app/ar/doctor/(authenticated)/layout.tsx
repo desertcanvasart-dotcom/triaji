@@ -27,6 +27,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'مواعيدي', icon: '📅', href: '/ar/doctor/dashboard' },
+  { label: 'مواعيدي المتاحة', icon: '🗓️', href: '/ar/doctor/availability' },
   { label: 'المرضى المتابعين', icon: '👥', href: '/ar/doctor/patients' },
   { label: 'ملخصات المرضى', icon: '📋', href: '/ar/doctor/dashboard' },
   { label: 'فرز سريع', icon: '⚡', href: '/ar/doctor/quick-intake' },
