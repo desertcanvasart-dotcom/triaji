@@ -157,6 +157,36 @@ function EmptyState() {
   );
 }
 
+const STAT_ACCENT: Record<string, string> = {
+  teal: 'text-teal-600',
+  indigo: 'text-indigo-600',
+  slate: 'text-slate-600',
+};
+
+function StatTile({ label, value, accent }: { label: string; value: number; accent: string }) {
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-4 text-center">
+      <p className={`text-3xl font-bold ${STAT_ACCENT[accent] ?? 'text-gray-800'}`}>{value}</p>
+      <p className="text-xs text-gray-500 mt-1">{label}</p>
+    </div>
+  );
+}
+
+function ActionCard({ href, icon, title, desc }: { href: string; icon: string; title: string; desc: string }) {
+  return (
+    <Link
+      href={href}
+      className="group bg-white rounded-xl border border-gray-200 p-4 flex items-start gap-3 hover:border-teal-400 hover:shadow-md transition-all"
+    >
+      <span className="text-2xl flex-shrink-0">{icon}</span>
+      <div>
+        <p className="text-sm font-bold text-[#1A2F4A] group-hover:text-teal-700">{title}</p>
+        <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
+      </div>
+    </Link>
+  );
+}
+
 // ─── Dashboard Page ─────────────────────────────────────────────────────────
 
 export default function DoctorDashboardPage() {
@@ -211,6 +241,10 @@ export default function DoctorDashboardPage() {
   const todayAppointments = appointments.filter((a) =>
     isToday(a.appointment_datetime)
   );
+  const weekFromNow = Date.now() + 7 * 24 * 60 * 60 * 1000;
+  const weekAppointments = appointments.filter(
+    (a) => new Date(a.appointment_datetime).getTime() <= weekFromNow
+  );
 
   return (
     <div className="p-6 md:p-8 space-y-6">
@@ -222,14 +256,19 @@ export default function DoctorDashboardPage() {
         <p className="text-gray-500 mt-1">{formatArabicDate(new Date())}</p>
       </div>
 
-      {/* Today's appointments summary */}
-      {todayAppointments.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 border-r-4 border-r-teal-500 p-5">
-          <h2 className="text-lg font-bold text-[#1A2F4A]">
-            مواعيد النهارده ({todayAppointments.length})
-          </h2>
-        </div>
-      )}
+      {/* Stat tiles */}
+      <div className="grid grid-cols-3 gap-3">
+        <StatTile label="مواعيد النهارده" value={todayAppointments.length} accent="teal" />
+        <StatTile label="خلال أسبوع" value={weekAppointments.length} accent="indigo" />
+        <StatTile label="كل المواعيد القادمة" value={appointments.length} accent="slate" />
+      </div>
+
+      {/* Quick actions */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <ActionCard href="/ar/doctor/quick-intake" icon="⚡" title="فرز سريع" desc="ابدأ فرز حالة جديدة بسرعة" />
+        <ActionCard href="/ar/doctor/patients" icon="👥" title="المرضى المتابعين" desc="تابع مرضاك وملفاتهم الطبية" />
+        <ActionCard href="/ar/doctor/settings" icon="⚙️" title="إعداداتي" desc="مواعيدك المتاحة وبياناتك" />
+      </div>
 
       {/* ICU Bed Availability Panel */}
       <div className="bg-red-50 rounded-xl border-2 border-red-200 p-5">
