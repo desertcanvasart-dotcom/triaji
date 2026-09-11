@@ -7,7 +7,7 @@ const CONTENT: ProviderContent = {
     title: 'Connect Your Center to All DoctorTrio Doctors — Radiology Appointments Without Phone Calls',
     subtitle: 'The doctor orders the scan, the patient books their appointment with you, and the report goes back to the doctor automatically',
     cta: 'Register Your Center Now',
-    ctaHref: '/en/contact',
+    ctaHref: '/en/register/provider',
   },
   painPoints: [
     { icon: '📞', title: 'Phone-Based Bookings', description: 'The receptionist spends their time answering calls instead of serving the patient in front of them' },

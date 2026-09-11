@@ -285,7 +285,7 @@ export default async function HomePage() {
               <Link href={`/${lang}/icu`} className="bg-teal-600 hover:bg-teal-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-colors">
                 {lang === 'ar' ? 'للأطباء: ابحث' : 'Doctors: search'}
               </Link>
-              <Link href={`/${lang}/contact`} className="border border-white/30 text-white hover:bg-white/10 font-bold px-5 py-2.5 rounded-xl text-sm transition-colors">
+              <Link href={`/${lang}/register/provider`} className="border border-white/30 text-white hover:bg-white/10 font-bold px-5 py-2.5 rounded-xl text-sm transition-colors">
                 {lang === 'ar' ? 'سجّل مستشفاك' : 'Register hospital'}
               </Link>
             </div>
