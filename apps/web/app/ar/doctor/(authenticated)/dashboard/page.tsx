@@ -19,6 +19,7 @@ interface DoctorAppointment {
 
 interface DashboardData {
   appointments: DoctorAppointment[];
+  open_slots_count: number;
   doctor_name_ar: string;
   doctor_account_id: string;
 }
@@ -139,20 +140,34 @@ function DashboardSkeleton() {
 
 // ─── Empty State ────────────────────────────────────────────────────────────
 
-function EmptyState() {
+function EmptyState({ openSlots }: { openSlots: number }) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
       <div className="text-5xl mb-4">📋</div>
-      <p className="text-gray-500 text-lg mb-6">
-        مفيش مواعيد قادمة دلوقتي
+      <p className="text-gray-500 text-lg mb-2">
+        {openSlots > 0 ? 'لسه مفيش حجوزات' : 'مفيش مواعيد قادمة دلوقتي'}
       </p>
-      <Link
-        href="/ar/doctor/quick-intake"
-        className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition-colors"
-      >
-        <span>⚡</span>
-        <span>ابدأ فرز سريع</span>
-      </Link>
+      {openSlots > 0 && (
+        <p className="text-sm text-emerald-700 mb-6">
+          عندك {openSlots} موعد متاح للحجز — هيظهروا هنا أول ما مريض يحجز.
+        </p>
+      )}
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        <Link
+          href="/ar/doctor/quick-intake"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition-colors"
+        >
+          <span>⚡</span>
+          <span>ابدأ فرز سريع</span>
+        </Link>
+        <Link
+          href="/ar/doctor/settings"
+          className="inline-flex items-center gap-2 px-6 py-3 border border-teal-600 text-teal-600 hover:bg-teal-50 font-medium rounded-lg transition-colors"
+        >
+          <span>🗓️</span>
+          <span>{openSlots > 0 ? 'إدارة مواعيدك المتاحة' : 'أضف مواعيدك المتاحة'}</span>
+        </Link>
+      </div>
     </div>
   );
 }
@@ -161,6 +176,7 @@ const STAT_ACCENT: Record<string, string> = {
   teal: 'text-teal-600',
   indigo: 'text-indigo-600',
   slate: 'text-slate-600',
+  emerald: 'text-emerald-600',
 };
 
 function StatTile({ label, value, accent }: { label: string; value: number; accent: string }) {
@@ -257,10 +273,11 @@ export default function DoctorDashboardPage() {
       </div>
 
       {/* Stat tiles */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <StatTile label="مواعيد النهارده" value={todayAppointments.length} accent="teal" />
         <StatTile label="خلال أسبوع" value={weekAppointments.length} accent="indigo" />
         <StatTile label="كل المواعيد القادمة" value={appointments.length} accent="slate" />
+        <StatTile label="مواعيد متاحة للحجز" value={data?.open_slots_count ?? 0} accent="emerald" />
       </div>
 
       {/* Quick actions */}
@@ -302,7 +319,7 @@ export default function DoctorDashboardPage() {
 
       {/* Appointments table or empty state */}
       {appointments.length === 0 ? (
-        <EmptyState />
+        <EmptyState openSlots={data?.open_slots_count ?? 0} />
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">

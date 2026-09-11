@@ -104,6 +104,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Open (unbooked, future) availability slots — so the dashboard can reflect
+    // that the doctor is bookable even before any patient has booked.
+    const { count: openSlots } = await supabase
+      .from('doctor_availability')
+      .select('*', { count: 'exact', head: true })
+      .eq('doctor_id', doctorAccount.doctor_id)
+      .eq('is_booked', false)
+      .gte('slot_datetime', new Date().toISOString());
+
     // Map to the shape the dashboard page consumes (appointments + doctor name).
     const appointments = ((bookings ?? []) as unknown as BookingRow[]).map((b) => {
       const patient = first(b.patients);
@@ -122,6 +131,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       appointments,
+      open_slots_count: openSlots ?? 0,
       doctor_name_ar: doctorAccount.name_ar ?? '',
       doctor_account_id: doctorAccount.id,
     });
