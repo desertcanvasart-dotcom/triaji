@@ -1,0 +1,34 @@
+# Learn more: https://docs.expo.dev/guides/using-git/
+
+# Dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native projects — Continuous Native Generation.
+# ios/ and android/ are generated from app.json via `expo prebuild`
+# (they are not source; regenerate rather than commit).
+/ios/
+/android/
+
+# Metro
+.metro-health-check*
+
+# Debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# Local env files
+.env*.local
+
+# TypeScript
+*.tsbuildinfo
