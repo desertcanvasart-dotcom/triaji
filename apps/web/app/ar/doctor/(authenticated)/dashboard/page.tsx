@@ -147,27 +147,18 @@ function EmptyState({ openSlots }: { openSlots: number }) {
       <p className="text-gray-500 text-lg mb-2">
         {openSlots > 0 ? 'لسه مفيش حجوزات' : 'مفيش مواعيد قادمة دلوقتي'}
       </p>
-      {openSlots > 0 && (
-        <p className="text-sm text-emerald-700 mb-6">
-          عندك {openSlots} موعد متاح للحجز — هيظهروا هنا أول ما مريض يحجز.
-        </p>
-      )}
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        <Link
-          href="/ar/doctor/quick-intake"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition-colors"
-        >
-          <span>⚡</span>
-          <span>ابدأ فرز سريع</span>
-        </Link>
-        <Link
-          href="/ar/doctor/settings"
-          className="inline-flex items-center gap-2 px-6 py-3 border border-teal-600 text-teal-600 hover:bg-teal-50 font-medium rounded-lg transition-colors"
-        >
-          <span>🗓️</span>
-          <span>{openSlots > 0 ? 'إدارة مواعيدك المتاحة' : 'أضف مواعيدك المتاحة'}</span>
-        </Link>
-      </div>
+      <p className="text-sm text-gray-400 mb-6">
+        {openSlots > 0
+          ? `عندك ${openSlots} موعد متاح للحجز — هيظهروا هنا أول ما مريض يحجز.`
+          : 'مواعيدك المتاحة بتتظبط من إدارة العيادة.'}
+      </p>
+      <Link
+        href="/ar/doctor/quick-intake"
+        className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition-colors"
+      >
+        <span>⚡</span>
+        <span>ابدأ فرز سريع</span>
+      </Link>
     </div>
   );
 }
@@ -284,7 +275,7 @@ export default function DoctorDashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <ActionCard href="/ar/doctor/quick-intake" icon="⚡" title="فرز سريع" desc="ابدأ فرز حالة جديدة بسرعة" />
         <ActionCard href="/ar/doctor/patients" icon="👥" title="المرضى المتابعين" desc="تابع مرضاك وملفاتهم الطبية" />
-        <ActionCard href="/ar/doctor/settings" icon="⚙️" title="إعداداتي" desc="مواعيدك المتاحة وبياناتك" />
+        <ActionCard href="/ar/doctor/settings" icon="⚙️" title="إعداداتي" desc="ملفك الشخصي وتوقيعك" />
       </div>
 
       {/* ICU Bed Availability Panel */}

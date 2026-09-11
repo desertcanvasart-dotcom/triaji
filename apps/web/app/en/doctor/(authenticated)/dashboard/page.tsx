@@ -147,27 +147,18 @@ function EmptyState({ openSlots }: { openSlots: number }) {
       <p className="text-gray-500 text-lg mb-2">
         {openSlots > 0 ? 'No bookings yet' : 'No upcoming appointments right now'}
       </p>
-      {openSlots > 0 && (
-        <p className="text-sm text-emerald-700 mb-6">
-          You have {openSlots} open slot{openSlots === 1 ? '' : 's'} available — they&apos;ll appear here once a patient books.
-        </p>
-      )}
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        <Link
-          href="/en/doctor/quick-intake"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition-colors"
-        >
-          <span>⚡</span>
-          <span>Start quick intake</span>
-        </Link>
-        <Link
-          href="/en/doctor/settings"
-          className="inline-flex items-center gap-2 px-6 py-3 border border-teal-600 text-teal-600 hover:bg-teal-50 font-medium rounded-lg transition-colors"
-        >
-          <span>🗓️</span>
-          <span>{openSlots > 0 ? 'Manage your availability' : 'Add your availability'}</span>
-        </Link>
-      </div>
+      <p className="text-sm text-gray-400 mb-6">
+        {openSlots > 0
+          ? `You have ${openSlots} open slot${openSlots === 1 ? '' : 's'} available — they'll appear here once a patient books.`
+          : 'Your availability is set up by the clinic admin.'}
+      </p>
+      <Link
+        href="/en/doctor/quick-intake"
+        className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition-colors"
+      >
+        <span>⚡</span>
+        <span>Start quick intake</span>
+      </Link>
     </div>
   );
 }
@@ -284,7 +275,7 @@ export default function DoctorDashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <ActionCard href="/en/doctor/quick-intake" icon="⚡" title="Quick triage" desc="Start a new case quickly" />
         <ActionCard href="/en/doctor/patients" icon="👥" title="My patients" desc="Follow your patients and records" />
-        <ActionCard href="/en/doctor/settings" icon="⚙️" title="My settings" desc="Availability and profile" />
+        <ActionCard href="/en/doctor/settings" icon="⚙️" title="My settings" desc="Profile and signature" />
       </div>
 
       {/* ICU Bed Availability Panel */}
