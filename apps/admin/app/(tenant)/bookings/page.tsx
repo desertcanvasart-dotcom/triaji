@@ -7,6 +7,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import LoadError from '@/components/ui/LoadError';
 import Modal from '@/components/ui/Modal';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import NewBookingModal from '@/components/bookings/NewBookingModal';
 
 interface BookingRow {
   id: string;
@@ -48,6 +49,7 @@ export default function BookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<BookingRow | null>(null);
   const [actionBooking, setActionBooking] = useState<{ booking: BookingRow; action: string } | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [showNewBooking, setShowNewBooking] = useState(false);
 
   const fetchBookings = useCallback(async () => {
     setLoading(true);
@@ -108,7 +110,12 @@ export default function BookingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Bookings</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Bookings</h1>
+        <button onClick={() => setShowNewBooking(true)} className="btn-primary">
+          + New booking
+        </button>
+      </div>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-6">
@@ -338,6 +345,12 @@ export default function BookingsPage() {
         }
         danger={actionBooking?.action === 'cancelled'}
         loading={actionLoading}
+      />
+
+      <NewBookingModal
+        open={showNewBooking}
+        onClose={() => setShowNewBooking(false)}
+        onCreated={() => { setPage(1); fetchBookings(); }}
       />
     </div>
   );
