@@ -136,12 +136,9 @@ export default function RootLayout() {
     );
 
     return () => {
-      if (notificationListenerRef.current) {
-        Notifications.removeNotificationSubscription(notificationListenerRef.current);
-      }
-      if (responseListenerRef.current) {
-        Notifications.removeNotificationSubscription(responseListenerRef.current);
-      }
+      // SDK 54: call .remove() on the subscription instead of removeNotificationSubscription().
+      notificationListenerRef.current?.remove();
+      responseListenerRef.current?.remove();
     };
   }, []);
 

@@ -67,7 +67,10 @@
         }
       ],
       "expo-local-authentication",
-      "@livekit/react-native-expo-plugin"
+      "@livekit/react-native-expo-plugin",
+      "@react-native-community/datetimepicker",
+      "expo-font",
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true
