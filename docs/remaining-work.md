@@ -155,6 +155,8 @@ for those lacking `default`.
   `POST /api/phone/incoming`; (3) per-tenant `tenant_config.phone_number` + `phone_number_active`;
   (4) DEPLOY via the new `start` (`node server.js`) on a host that allows WS (NOT a serverless/edge
   platform — needs a long-lived Node process); (5) place a real test call.
+  **Stays on Twilio, not Zernio** — Zernio has no Egyptian numbers, and a local Egyptian caller-ID is
+  required for patients to call in. See [messaging-channels-decision.md](messaging-channels-decision.md).
 - **Verify-only (lower priority):** runtime-test telehealth/LiveKit, payments webhooks, the admin app
   UI, and mobile — none deeply exercised.
   - **Widget — RUNTIME-VERIFIED (2026-06-16).** Built clean (Vite, 39 modules, 167 KB), served from
