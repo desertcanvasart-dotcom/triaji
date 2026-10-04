@@ -70,8 +70,8 @@ uncollected visits cannot be recovered.
 - The repository's default hoisted dependency install produced a React useContext
   error when prerendering Next.js error pages in this environment. The untouched
   HEAD reproduced it. The install override above resolved it without changing
-  the committed lockfile or the monorepo's `.npmrc`. If Railway encounters the
-  same error, use that install command in the web/admin build workflow.
+  the committed lockfile. After CI reproduced the same failure, `.npmrc` was
+  updated to make isolated dependencies the default for normal installs.
 - Local browser checks at http://localhost:3100/en and /ar verified language,
   canonical metadata, consent acceptance, withdrawal, and removal of the
   Analytics frame on navigation into /en/chat. No Google scripts loaded in the

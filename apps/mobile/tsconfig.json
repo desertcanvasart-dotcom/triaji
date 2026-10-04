@@ -5,8 +5,7 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "paths": {
-      "@/*": ["./*"],
-      "react": ["./node_modules/@types/react"]
+      "@/*": ["./*"]
     }
   },
   "include": [

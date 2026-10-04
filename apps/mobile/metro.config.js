@@ -1,8 +1,8 @@
 // Metro config for the pnpm monorepo (Expo SDK 54).
 // Watch the workspace root and resolve from both node_modules so the
 // `@triaji/shared` workspace package resolves. Package exports are enabled by
-// default in SDK 54, and node-linker=hoisted gives a flat layout, so no other
-// resolver workarounds are needed.
+// default in SDK 54, which supports the isolated dependency layout used
+// by this workspace.
 const { getDefaultConfig } = require('expo/metro-config');
 const path = require('path');
 
