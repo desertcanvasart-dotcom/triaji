@@ -24,7 +24,7 @@ export default function SiteFooter({ lang }: { lang: Lang }) {
           <div>
             <h4 className="text-white font-bold mb-4">{F.platform[lang]}</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/" className="hover:text-white transition-colors">{lang === 'ar' ? 'الرئيسية' : 'Home'}</Link></li>
+              <li><Link href={`/${lang}`} className="hover:text-white transition-colors">{lang === 'ar' ? 'الرئيسية' : 'Home'}</Link></li>
               <li><Link href={`/${lang}/about`} className="hover:text-white transition-colors">{lang === 'ar' ? 'من نحن' : 'About Us'}</Link></li>
               <li><Link href={`/${lang}/privacy`} className="hover:text-white transition-colors">{lang === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy'}</Link></li>
               <li><Link href={`/${lang}/terms`} className="hover:text-white transition-colors">{lang === 'ar' ? 'شروط الاستخدام' : 'Terms of Use'}</Link></li>

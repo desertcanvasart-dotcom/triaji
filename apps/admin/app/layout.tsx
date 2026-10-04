@@ -11,6 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  robots: { index: false, follow: false },
   title: 'DoctorTrio Admin',
   description: 'DoctorTrio Admin Panel — Hospital & Clinic Management',
 };

@@ -1,3 +1,7 @@
+import { marketingMetadata } from '@/lib/seo';
+
+export const metadata = marketingMetadata('ar', 'doctor');
+
 import Link from 'next/link';
 import DoctorFeatureGrid from '@/components/landing/DoctorFeatureGrid';
 
@@ -8,7 +12,7 @@ export default function DoctorLandingPage() {
       <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link
-            href="/"
+            href="/ar"
             className="text-2xl font-bold text-navy-500"
           >
             دكتور تريو

@@ -1,9 +1,14 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import { publicPage, publicPath } from '@/lib/seo';
 import type { Lang } from '@triaji/shared/i18n';
 
 export default function LanguageDropdown({ lang }: { lang: Lang }) {
+  const pathname = usePathname();
+  const page = publicPage(pathname);
+  const languageHref = (locale: 'ar' | 'en') => publicPath(locale, page?.slug ?? '');
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -33,11 +38,11 @@ export default function LanguageDropdown({ lang }: { lang: Lang }) {
 
       {open && (
         <div className="absolute top-full mt-1 bg-white rounded-xl shadow-lg border border-gray-100 py-1 min-w-[140px] z-50 end-0">
-          {/* Full-page navigation on purpose: the middleware sets the lang
-              cookie on /?lang= and the whole tree must re-render RTL/LTR. */}
+          {/* Full-page navigation on purpose: each language has a stable URL
+              and the whole tree must re-render RTL/LTR. */}
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
-            href="/?lang=ar"
+            href={languageHref('ar')}
             className={`flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 transition-colors ${lang === 'ar' ? 'text-teal-600 font-medium' : 'text-gray-600'}`}
           >
             <span>{'\u{1F1EA}\u{1F1EC}'}</span>
@@ -46,7 +51,7 @@ export default function LanguageDropdown({ lang }: { lang: Lang }) {
           </a>
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
-            href="/?lang=en"
+            href={languageHref('en')}
             className={`flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 transition-colors ${lang === 'en' ? 'text-teal-600 font-medium' : 'text-gray-600'}`}
           >
             <span>{'\u{1F1EC}\u{1F1E7}'}</span>

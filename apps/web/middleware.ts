@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { publicPage, SITE_ORIGIN } from './lib/seo';
 
 const SUPPORTED_LOCALES = ['ar', 'en'] as const;
 type Locale = (typeof SUPPORTED_LOCALES)[number];
@@ -75,6 +76,25 @@ function detectLocale(request: NextRequest): Locale {
 }
 
 export function middleware(request: NextRequest) {
+  const { pathname, hostname } = request.nextUrl;
+  const isPublic = pathname === '/' || publicPage(pathname) !== null;
+  const isStaticAsset = !pathname.startsWith('/api/') && /\.(avif|gif|ico|jpe?g|png|svg|webp|woff2?|ttf|css|js|map)$/.test(pathname);
+  // Keep the app hostname's clinical routes intact; consolidate public pages.
+  if (['GET', 'HEAD'].includes(request.method) && !pathname.startsWith('/api/') &&
+      (hostname === 'www.doctortrio.online' || (hostname === 'app.doctortrio.online' && isPublic))) {
+    return NextResponse.redirect(new URL(pathname + request.nextUrl.search, SITE_ORIGIN), 308);
+  }
+  const response = routeRequest(request);
+  if (!isPublic && !isStaticAsset && pathname !== '/robots.txt' && pathname !== '/sitemap.xml' && !pathname.startsWith('/_next/')) {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  }
+  return response;
+}
+
+function routeRequest(request: NextRequest) {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-site-locale', request.nextUrl.pathname.startsWith('/en') ? 'en' : 'ar');
+  const next = () => NextResponse.next({ request: { headers: requestHeaders } });
   const { pathname } = request.nextUrl;
 
   // Handle CORS preflight for widget-facing API routes
@@ -84,7 +104,7 @@ export function middleware(request: NextRequest) {
 
   // Add CORS headers to widget-facing API responses
   if (pathname.startsWith('/api/') && isWidgetRoute(pathname)) {
-    const response = NextResponse.next();
+    const response = next();
     for (const [key, value] of Object.entries(CORS_HEADERS)) {
       response.headers.set(key, value);
     }
@@ -96,9 +116,10 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/api/') ||
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/favicon') ||
+    pathname === '/analytics-frame' ||
     pathname.includes('.')
   ) {
-    return NextResponse.next();
+    return next();
   }
 
   // Doctor protected routes — check for access token cookie
@@ -111,7 +132,7 @@ export function middleware(request: NextRequest) {
     }
     // Actual verification_status check happens in the layout component
     // (middleware can't easily call Supabase to check doctor status)
-    return NextResponse.next();
+    return next();
   }
 
   // Check if pathname already has a locale prefix
@@ -127,24 +148,19 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Root path — handle lang switch and serve homepage
+  // Legacy language links keep working, but translated homepages have stable URLs.
   if (pathname === '/') {
-    const langParam = request.nextUrl.searchParams.get('lang');
-    if (langParam && SUPPORTED_LOCALES.includes(langParam as Locale)) {
-      const url = request.nextUrl.clone();
-      url.searchParams.delete('lang');
-      const response = NextResponse.redirect(url);
-      response.cookies.set('lang', langParam, {
-        path: '/',
-        maxAge: 60 * 60 * 24 * 365,
-        sameSite: 'lax',
-      });
-      return response;
-    }
-    return NextResponse.next();
+    const requested = request.nextUrl.searchParams.get('lang');
+    const locale = requested === 'ar' || requested === 'en' ? requested : detectLocale(request);
+    const url = request.nextUrl.clone();
+    url.pathname = `/${locale}`;
+    url.searchParams.delete('lang');
+    const response = NextResponse.redirect(url, 307);
+    response.cookies.set('lang', locale, { path: '/', maxAge: 60 * 60 * 24 * 365, sameSite: 'lax' });
+    return response;
   }
 
-  return NextResponse.next();
+  return next();
 }
 
 export const config = {

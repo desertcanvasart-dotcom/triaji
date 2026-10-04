@@ -23,9 +23,17 @@ interface PolicyContent {
 const PRIVACY: Record<Lang, PolicyContent> = {
   ar: {
     title: '\u0633\u064A\u0627\u0633\u0629 \u0627\u0644\u062E\u0635\u0648\u0635\u064A\u0629',
-    lastUpdated: '\u0622\u062E\u0631 \u062A\u062D\u062F\u064A\u062B: \u0645\u0627\u0631\u0633 2026',
+    lastUpdated: 'آخر تحديث: 4 أكتوبر 2026',
     intro: '\u062A\u0631\u064A\u062C\u064A \u0645\u0644\u062A\u0632\u0645 \u0628\u062D\u0645\u0627\u064A\u0629 \u062E\u0635\u0648\u0635\u064A\u062A\u0643. \u0647\u0630\u0647 \u0627\u0644\u0635\u0641\u062D\u0629 \u0628\u062A\u0634\u0631\u062D \u0628\u0648\u0636\u0648\u062D \u0625\u064A\u0647 \u0627\u0644\u0645\u0639\u0644\u0648\u0645\u0627\u062A \u0627\u0644\u0644\u064A \u0628\u0646\u062C\u0645\u0639\u0647\u0627\u060C \u0648\u0644\u064A\u0647\u060C \u0648\u0625\u0632\u0627\u064A \u0628\u0646\u062D\u0645\u064A\u0647\u0627.',
     sections: [
+      {
+        title: 'ملفات ارتباط التحليلات الاختيارية',
+        content: [
+          'عند تفعيل التحليلات، وبموافقتك فقط، نستخدم Google Analytics لقياس زيارة الصفحات التعريفية العامة. قد تتلقى Google معلومات تقنية مثل نوع المتصفح ومعلومات الاتصال بالشبكة وتضع ملفات ارتباط للتحليلات.',
+          'لا نرسل محتوى النماذج أو المحادثات الطبية أو السجلات أو روابط النتائج أو بيانات الحساب إلى Google Analytics. لا نرسل معاملات الروابط أو عناوين الصفحات السابقة.',
+          'يمكنك الرفض أو سحب الموافقة في أي وقت من زر إعدادات ملفات الارتباط على الصفحات التعريفية. نحفظ اختيارك لمدة ستة أشهر.',
+        ],
+      },
       {
         title: '\u0645\u0627 \u0627\u0644\u0645\u0639\u0644\u0648\u0645\u0627\u062A \u0627\u0644\u062A\u064A \u0646\u062C\u0645\u0639\u0647\u0627\u061F',
         content: [
@@ -96,9 +104,17 @@ const PRIVACY: Record<Lang, PolicyContent> = {
   },
   en: {
     title: 'Privacy Policy',
-    lastUpdated: 'Last updated: March 2026',
+    lastUpdated: 'Last updated: October 4, 2026',
     intro: 'DoctorTrio is committed to protecting your privacy. This page clearly explains what information we collect, why, and how we protect it.',
     sections: [
+      {
+        title: 'Optional analytics cookies',
+        content: [
+          'When analytics is enabled, we use Google Analytics on public information pages only after you accept analytics cookies. Google may receive technical information such as browser and network information and set analytics cookies.',
+          'We do not send form contents, medical conversations, records, result links, or account information to Google Analytics. URL query parameters and previous-page URLs are not sent.',
+          'You can decline or withdraw permission through Cookie settings on information pages. Your consent choice is saved for six months.',
+        ],
+      },
       {
         title: 'What information do we collect?',
         content: [

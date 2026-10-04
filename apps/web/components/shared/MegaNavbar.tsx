@@ -253,7 +253,7 @@ export default function MegaNavbar({ lang }: { lang: Lang }) {
     <nav className={`sticky top-0 z-50 relative transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100' : 'bg-white/80 backdrop-blur-md'}`}>
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex flex-col items-start leading-none">
+        <Link href={`/${lang}`} className="flex flex-col items-start leading-none">
           <span className="text-teal-700 font-black text-xl tracking-tight">{c.logo}</span>
           <span className="hidden lg:block text-gray-400 text-[11px] leading-tight mt-0.5">{c.logoTag}</span>
         </Link>

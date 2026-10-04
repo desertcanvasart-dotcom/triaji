@@ -1,3 +1,7 @@
+import { marketingMetadata } from '@/lib/seo';
+
+export const metadata = marketingMetadata('en', 'providers/clinics');
+
 import ProviderPageTemplate from '@/components/providers/ProviderPageTemplate';
 import type { ProviderContent } from '@/components/providers/ProviderPageTemplate';
 

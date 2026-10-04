@@ -22,6 +22,7 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm test
+      - run: pnpm --filter @triaji/web test:seo
 
   build:
     name: Build (widget → web → admin)
