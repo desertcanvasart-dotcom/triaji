@@ -10,6 +10,7 @@ import { useParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
+import ExamFieldsCard from '@/components/doctor/ExamFieldsCard';
 
 // The documents workflow (and its PDF preview) is behind a non-default tab, so
 // these heavy forms are code-split out of the consultation route's initial JS.
@@ -833,6 +834,9 @@ export default function ConsultationPage() {
           </div>
         </section>
       )}
+
+      {/* Custom exam fields (migration 078) */}
+      <ExamFieldsCard bookingId={bookingId} lang="en" />
 
       {/* Card 6: Doctor notes */}
       <section className="bg-white rounded-2xl shadow-sm border-t-4 border-teal-500 p-6 space-y-4">

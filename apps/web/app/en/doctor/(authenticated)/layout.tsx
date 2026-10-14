@@ -36,6 +36,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Followed Patients', icon: '👥', href: '/en/doctor/patients' },
   { label: 'Patient Summaries', icon: '📋', href: '/en/doctor/dashboard' },
   { label: 'Quick Intake', icon: '⚡', href: '/en/doctor/quick-intake' },
+  { label: 'Exam fields', icon: '🧾', href: '/en/doctor/exam-fields' },
   { label: 'Assistants', icon: '🧑‍💼', href: '/en/doctor/assistants' },
   { label: 'Settings', icon: '⚙️', href: '/en/doctor/settings' },
 ];
