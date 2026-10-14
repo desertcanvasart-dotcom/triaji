@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { authenticateDoctorAccount, getDoctorServiceClient } from '@/lib/auth/doctor-account';
+import { authenticateDoctorWorkspace, getDoctorServiceClient } from '@/lib/auth/doctor-account';
 import {
   sendCalledNotification,
   sendAlmostNextNotification,
@@ -212,7 +212,7 @@ async function enqueue(
 export async function GET(request: NextRequest) {
   const locale: Locale = request.nextUrl.searchParams.get('locale') === 'en' ? 'en' : 'ar';
   try {
-    const account = await authenticateDoctorAccount(request, { requireVerified: true });
+    const account = await authenticateDoctorWorkspace(request);
     if (!account) {
       return NextResponse.json({ error: T.unauthorized[locale] }, { status: 401 });
     }
@@ -365,6 +365,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       date: day,
       doctor_name_ar: account.name_ar,
+      viewer_role: account.actor.role,
       has_clinic: !!doctorRes.data?.tenant_id,
       consultation_fee_egp:
         doctorRes.data?.consultation_fee_egp != null ? num(doctorRes.data.consultation_fee_egp) : null,
@@ -395,7 +396,7 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as ActionBody;
     locale = body.locale === 'en' ? 'en' : 'ar';
 
-    const account = await authenticateDoctorAccount(request, { requireVerified: true });
+    const account = await authenticateDoctorWorkspace(request);
     if (!account) {
       return NextResponse.json({ error: T.unauthorized[locale] }, { status: 401 });
     }

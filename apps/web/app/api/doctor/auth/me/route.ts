@@ -49,13 +49,35 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (doctorError || !doctorAccount) {
+      // An assistant works inside their doctor's portal (migration 077).
+      const { data: assistant } = await supabase
+        .from('doctor_assistants')
+        .select('id, name, is_active, doctor_account_id')
+        .eq('id', userData.user.id)
+        .maybeSingle();
+      if (assistant?.is_active) {
+        // Only what the portal shell needs — not the doctor's whole account.
+        const { data: parent } = await supabase
+          .from('doctor_accounts')
+          .select('id, name_ar, name_en, specialty_ar, verification_status')
+          .eq('id', assistant.doctor_account_id)
+          .maybeSingle();
+        if (parent?.verification_status === 'verified') {
+          return NextResponse.json({
+            doctorAccount: parent,
+            role: 'assistant',
+            assistant: { id: assistant.id, name: assistant.name },
+          });
+        }
+      }
+
       return NextResponse.json(
         { error: 'هذا الحساب غير مسجل كطبيب' },
         { status: 403 }
       );
     }
 
-    return NextResponse.json({ doctorAccount });
+    return NextResponse.json({ doctorAccount, role: 'doctor' });
   } catch {
     return NextResponse.json(
       { error: 'حدث خطأ غير متوقع' },

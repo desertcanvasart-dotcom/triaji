@@ -16,6 +16,8 @@ interface DoctorAccount {
 
 interface MeResponse {
   doctorAccount: DoctorAccount;
+  role?: 'doctor' | 'assistant';
+  assistant?: { id: string; name: string };
 }
 
 interface NavItem {
@@ -34,8 +36,12 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Followed Patients', icon: '👥', href: '/en/doctor/patients' },
   { label: 'Patient Summaries', icon: '📋', href: '/en/doctor/dashboard' },
   { label: 'Quick Intake', icon: '⚡', href: '/en/doctor/quick-intake' },
+  { label: 'Assistants', icon: '🧑‍💼', href: '/en/doctor/assistants' },
   { label: 'Settings', icon: '⚙️', href: '/en/doctor/settings' },
 ];
+
+/** The only pages an assistant (migration 077) may open — the front desk. */
+const ASSISTANT_PATHS = ['/en/doctor/today', '/en/doctor/calendar'];
 
 // ─── Sidebar Skeleton ───────────────────────────────────────────────────────
 
@@ -88,6 +94,9 @@ export default function DoctorAuthenticatedLayout({
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [assistantName, setAssistantName] = useState<string | null>(null);
+  const isAssistant = assistantName !== null;
+  const assistantBlocked = isAssistant && !ASSISTANT_PATHS.some((p) => pathname.startsWith(p));
 
   useEffect(() => {
     async function checkAuth() {
@@ -112,6 +121,7 @@ export default function DoctorAuthenticatedLayout({
           return;
         }
 
+        setAssistantName(data.role === 'assistant' ? (data.assistant?.name ?? '') : null);
         setDoctor(account);
       } catch {
         router.replace('/en/doctor/login');
@@ -132,6 +142,11 @@ export default function DoctorAuthenticatedLayout({
     }
   }, [router]);
 
+  // Assistants only work the front desk — send them there from anywhere else.
+  useEffect(() => {
+    if (assistantBlocked) router.replace('/en/doctor/today');
+  }, [assistantBlocked, router]);
+
   // Close sidebar on route change (mobile)
   useEffect(() => {
     setSidebarOpen(false);
@@ -146,9 +161,11 @@ export default function DoctorAuthenticatedLayout({
     );
   }
 
-  if (!doctor) {
+  if (!doctor || assistantBlocked) {
     return null;
   }
+
+  const navItems = isAssistant ? NAV_ITEMS.filter((item) => ASSISTANT_PATHS.includes(item.href)) : NAV_ITEMS;
 
   const displayName = doctor.name_en || doctor.name_ar;
 
@@ -211,20 +228,32 @@ export default function DoctorAuthenticatedLayout({
       >
         {/* Doctor info */}
         <div className="p-6 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-[#1A2F4A]">
-            Dr. {displayName}
-          </h2>
-          <p className="text-sm text-gray-500 mt-1">
-            {doctor.specialty_ar}
-          </p>
-          <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
-            ✓ Verified
-          </span>
+          {assistantName ? (
+            <>
+              <h2 className="text-lg font-bold text-[#1A2F4A]">{assistantName}</h2>
+              <p className="text-sm text-gray-500 mt-1">Assistant to Dr. {displayName}</p>
+              <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full">
+                Assistant
+              </span>
+            </>
+          ) : (
+            <>
+              <h2 className="text-lg font-bold text-[#1A2F4A]">
+                Dr. {displayName}
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                {doctor.specialty_ar}
+              </p>
+              <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
+                ✓ Verified
+              </span>
+            </>
+          )}
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link

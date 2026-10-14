@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authenticateDoctorAccount, getDoctorServiceClient } from '@/lib/auth/doctor-account';
+import { authenticateDoctorWorkspace, getDoctorServiceClient } from '@/lib/auth/doctor-account';
 import { fetchTimeOff } from '@/lib/time-off';
 
 export const dynamic = 'force-dynamic';
@@ -55,7 +55,7 @@ const dateOf = (iso: string) => iso.slice(0, 10);
 export async function GET(request: NextRequest) {
   const locale = request.nextUrl.searchParams.get('locale') === 'en' ? 'en' : 'ar';
   try {
-    const account = await authenticateDoctorAccount(request, { requireVerified: true });
+    const account = await authenticateDoctorWorkspace(request);
     if (!account) {
       return NextResponse.json({ error: T.unauthorized[locale] }, { status: 401 });
     }
@@ -161,7 +161,11 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ month: `${match[1]}-${match[2]}`, days: Array.from(days.values()) });
+    return NextResponse.json({
+      month: `${match[1]}-${match[2]}`,
+      days: Array.from(days.values()),
+      viewer_role: account.actor.role,
+    });
   } catch (err) {
     console.error('[doctor/calendar] GET failed:', err instanceof Error ? err.message : err);
     return NextResponse.json({ error: T.failed[locale] }, { status: 500 });

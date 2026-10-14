@@ -17,6 +17,27 @@ function getServiceClient() {
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
+/** Attach the session cookies the doctor portal reads. */
+function withSessionCookies(response: NextResponse, accessToken: string, refreshToken: string): NextResponse {
+  response.cookies.set('sb-access-token', accessToken, {
+    httpOnly: true,
+    secure: process.env['NODE_ENV'] === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 60, // 1 hour
+  });
+
+  response.cookies.set('sb-refresh-token', refreshToken, {
+    httpOnly: true,
+    secure: process.env['NODE_ENV'] === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+  });
+
+  return response;
+}
+
 interface LoginBody {
   email: string;
   password: string;
@@ -56,6 +77,43 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (doctorError || !doctorAccount) {
+      // Not a doctor — maybe one of a doctor's assistants (migration 077).
+      const { data: assistant } = await serviceClient
+        .from('doctor_assistants')
+        .select('id, name, is_active, doctor_account_id')
+        .eq('id', authData.user.id)
+        .maybeSingle();
+
+      if (assistant) {
+        const { data: parent } = await serviceClient
+          .from('doctor_accounts')
+          .select('verification_status')
+          .eq('id', assistant.doctor_account_id)
+          .maybeSingle();
+        if (!assistant.is_active || parent?.verification_status !== 'verified') {
+          return NextResponse.json(
+            { error: 'حساب المساعد ده متوقف. تواصل مع الدكتور.' },
+            { status: 403 }
+          );
+        }
+
+        await serviceClient
+          .from('doctor_assistants')
+          .update({ last_login_at: new Date().toISOString() })
+          .eq('id', assistant.id);
+
+        return withSessionCookies(
+          NextResponse.json({
+            success: true,
+            role: 'assistant',
+            verification_status: 'verified',
+            assistant: { id: assistant.id, name: assistant.name },
+          }),
+          authData.session.access_token,
+          authData.session.refresh_token
+        );
+      }
+
       return NextResponse.json(
         { error: 'هذا الحساب غير مسجل كطبيب' },
         { status: 403 }
@@ -81,23 +139,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    response.cookies.set('sb-access-token', authData.session.access_token, {
-      httpOnly: true,
-      secure: process.env['NODE_ENV'] === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60, // 1 hour
-    });
-
-    response.cookies.set('sb-refresh-token', authData.session.refresh_token, {
-      httpOnly: true,
-      secure: process.env['NODE_ENV'] === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-    });
-
-    return response;
+    return withSessionCookies(response, authData.session.access_token, authData.session.refresh_token);
   } catch {
     return NextResponse.json(
       { error: 'حدث خطأ غير متوقع' },

@@ -129,6 +129,7 @@ export default function DoctorCalendar({ lang }: { lang: Lang }) {
 
   const [month, setMonth] = useState(today.slice(0, 7));
   const [days, setDays] = useState<CalendarDay[]>([]);
+  const [viewerRole, setViewerRole] = useState<'doctor' | 'assistant'>('doctor');
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [selected, setSelected] = useState<string | null>(today);
@@ -145,8 +146,9 @@ export default function DoctorCalendar({ lang }: { lang: Lang }) {
         setLoadError(true);
         return;
       }
-      const data = (await res.json()) as { days: CalendarDay[] };
+      const data = (await res.json()) as { days: CalendarDay[]; viewer_role?: 'doctor' | 'assistant' };
       setDays(data.days);
+      setViewerRole(data.viewer_role ?? 'doctor');
       setLoadError(false);
     } catch {
       setLoadError(true);
@@ -229,12 +231,14 @@ export default function DoctorCalendar({ lang }: { lang: Lang }) {
           <h1 className="text-2xl font-bold text-[#1A2F4A]">{t('title')}</h1>
           <p className="text-gray-500 mt-1 text-sm">{t('subtitle')}</p>
         </div>
+        {viewerRole === 'doctor' && (
         <Link
           href={`/${lang}/doctor/availability`}
           className="px-4 py-2 border border-teal-600 text-teal-700 rounded-lg text-sm font-medium hover:bg-teal-50 transition-colors"
         >
           {t('manage')}
         </Link>
+        )}
       </div>
 
       {/* Month switcher */}
@@ -378,6 +382,7 @@ export default function DoctorCalendar({ lang }: { lang: Lang }) {
                 lang={lang}
                 t={t}
                 today={today}
+                readOnly={viewerRole === 'assistant'}
                 busy={busy}
                 offFormOpen={offFormOpen}
                 setOffFormOpen={setOffFormOpen}
@@ -410,6 +415,7 @@ function DayDetail({
   lang,
   t,
   today,
+  readOnly,
   busy,
   offFormOpen,
   setOffFormOpen,
@@ -422,6 +428,7 @@ function DayDetail({
   lang: Lang;
   t: (k: keyof typeof T) => string;
   today: string;
+  readOnly: boolean;
   busy: boolean;
   offFormOpen: boolean;
   setOffFormOpen: (v: boolean) => void;
@@ -438,7 +445,7 @@ function DayDetail({
   });
   const active = activeBookings(day);
   const hasOff = day.time_off.length > 0;
-  const editable = day.date >= today;
+  const editable = !readOnly && day.date >= today;
 
   return (
     <>
@@ -510,7 +517,7 @@ function DayDetail({
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${st.className}`}>{st[lang]}</span>
-                    {b.status !== 'cancelled' && (
+                    {!readOnly && b.status !== 'cancelled' && (
                       <Link
                         href={`/${lang}/doctor/consultation/${b.id}`}
                         className="text-xs text-indigo-700 hover:underline"

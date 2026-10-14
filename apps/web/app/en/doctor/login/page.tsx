@@ -8,6 +8,7 @@ interface LoginResponse {
   success?: boolean;
   error?: string;
   verification_status?: 'pending' | 'verified' | 'rejected';
+  role?: 'doctor' | 'assistant';
   rejection_reason?: string;
   token?: string;
 }
@@ -41,6 +42,12 @@ export default function DoctorLoginPage() {
 
       if (!res.ok || !data.success) {
         setError(data.error ?? 'Invalid email or password');
+        return;
+      }
+
+      // A doctor's assistant works the front desk (migration 077).
+      if (data.role === 'assistant') {
+        router.push('/en/doctor/today');
         return;
       }
 

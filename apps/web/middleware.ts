@@ -28,6 +28,8 @@ const DOCTOR_PROTECTED_ROUTES = [
   '/en/doctor/today',
   '/ar/doctor/calendar',
   '/en/doctor/calendar',
+  '/ar/doctor/assistants',
+  '/en/doctor/assistants',
   '/ar/doctor/availability',
   '/en/doctor/availability',
   '/ar/doctor/consultation',

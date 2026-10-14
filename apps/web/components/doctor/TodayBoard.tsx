@@ -36,6 +36,7 @@ interface TodayData {
   doctor_name_ar: string;
   has_clinic: boolean;
   consultation_fee_egp: number | null;
+  viewer_role?: 'doctor' | 'assistant';
   rows: Row[];
   stats: {
     total: number;
@@ -277,6 +278,8 @@ export default function TodayBoard({ lang }: { lang: Lang }) {
   const current = data.rows.find((r) => r.state === 'called') ?? null;
   const hasWaiting = data.stats.waiting > 0;
   const hasClinic = data.has_clinic;
+  // Assistants run the front desk; the exam itself is the doctor's.
+  const canExam = data.viewer_role !== 'assistant';
   const consultHref = (bookingId: string) => `/${lang}/doctor/consultation/${bookingId}`;
 
   function renderActions(row: Row) {
@@ -307,7 +310,7 @@ export default function TodayBoard({ lang }: { lang: Lang }) {
             {t('noShow')}
           </ActionButton>
         )}
-        {row.booking_id && row.state !== 'cancelled' && (
+        {canExam && row.booking_id && row.state !== 'cancelled' && (
           <Link
             href={consultHref(row.booking_id)}
             className="px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors"
@@ -477,7 +480,7 @@ export default function TodayBoard({ lang }: { lang: Lang }) {
               )}
             </div>
             <div className="flex flex-wrap gap-2">
-              {current.booking_id && (
+              {canExam && current.booking_id && (
                 <Link
                   href={consultHref(current.booking_id)}
                   className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-semibold transition-colors"
