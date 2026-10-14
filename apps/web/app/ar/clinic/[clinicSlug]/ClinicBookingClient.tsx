@@ -22,6 +22,9 @@ interface ClinicBookingClientProps {
   bookingMode: string;
 }
 
+const FAILED = 'حصل خطأ، حاول تاني';
+
+/** Slot times are floating clinic-local wall clocks (lib/slots.ts) — format in UTC. */
 export default function ClinicBookingClient({
   tenantId,
   clinicName,
@@ -37,27 +40,22 @@ export default function ClinicBookingClient({
   const [patientPhone, setPatientPhone] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
 
   // Fetch available slots for selected doctor (next 7 days)
   const fetchSlots = useCallback(async () => {
     if (!selectedDoctor) return;
     setLoading(true);
     try {
-      const today = new Date().toISOString().split('T')[0];
-      const weekLater = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      const res = await fetch(
-        `/api/booking/slots?doctor_id=${selectedDoctor}&date_from=${today}&date_to=${weekLater}`
-      );
-      if (res.ok) {
-        const data = await res.json();
-        setSlots(data.slots ?? []);
-      }
+      const res = await fetch(`/api/clinics/${tenantId}/slots?doctor_id=${selectedDoctor}&days=7`);
+      const data = await res.json().catch(() => ({}));
+      setSlots(res.ok ? (data.slots ?? []) : []);
     } catch {
       // Silently fail
     } finally {
       setLoading(false);
     }
-  }, [selectedDoctor]);
+  }, [selectedDoctor, tenantId]);
 
   useEffect(() => {
     fetchSlots();
@@ -66,28 +64,35 @@ export default function ClinicBookingClient({
   async function handleBookSlot() {
     if (!selectedSlot || !patientName || !patientPhone) return;
     setSubmitting(true);
+    setError('');
     try {
-      const res = await fetch('/api/booking', {
+      const res = await fetch(`/api/clinics/${tenantId}/book`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           slot_id: selectedSlot,
           doctor_id: selectedDoctor,
-          tenant_id: tenantId,
           patient_name: patientName,
           patient_phone: patientPhone,
+          locale: 'ar',
         }),
       });
+      const data = await res.json().catch(() => ({}));
 
-      if (res.ok) {
-        setSuccess(true);
-        setBookingForm(false);
-        setSelectedSlot(null);
-        setPatientName('');
-        setPatientPhone('');
+      if (!res.ok) {
+        setError(data.error ?? FAILED);
+        // The slot may have just been taken — refresh the list.
+        if (res.status === 409) fetchSlots();
+        return;
       }
+
+      setSuccess(true);
+      setBookingForm(false);
+      setSelectedSlot(null);
+      setPatientName('');
+      setPatientPhone('');
     } catch {
-      // Silently fail
+      setError(FAILED);
     } finally {
       setSubmitting(false);
     }
@@ -169,6 +174,7 @@ export default function ClinicBookingClient({
             weekday: 'long',
             day: 'numeric',
             month: 'long',
+            timeZone: 'UTC',
           });
 
           return (
@@ -179,6 +185,7 @@ export default function ClinicBookingClient({
                   const time = new Date(slot.start_time).toLocaleTimeString('ar-EG', {
                     hour: '2-digit',
                     minute: '2-digit',
+                    timeZone: 'UTC',
                   });
                   const isSelected = selectedSlot === slot.id;
 
@@ -237,6 +244,8 @@ export default function ClinicBookingClient({
               required
             />
           </div>
+
+          {error && <p className="text-sm text-red-600">{error}</p>}
 
           <div className="flex gap-3">
             <button

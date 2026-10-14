@@ -236,6 +236,74 @@ async function nativeBooking(
 }
 
 /**
+ * Direct clinic booking — a patient picks a slot on a clinic's public page
+ * without going through triage. Same atomic reserve_slot RPC, time-off guard
+ * and WhatsApp/SMS confirmation as the triage flow; the patient is matched (or
+ * created) by phone within the clinic, as the admin booking flow does.
+ */
+export async function createDirectBooking(input: {
+  tenantId: string;
+  doctorId: string;
+  slotId: string;
+  patientName: string;
+  phoneNumber: string;
+  notes?: string;
+}): Promise<BookingResult> {
+  const supabase = createServerClient();
+
+  if (await slotIdIsBlocked(supabase, input.slotId)) {
+    throw new Error('الموعد ده مبقاش متاح، اختار موعد تاني.');
+  }
+
+  const { data: existing } = await supabase
+    .from('patients')
+    .select('id')
+    .eq('phone_number', input.phoneNumber)
+    .eq('tenant_id', input.tenantId)
+    .maybeSingle();
+
+  let patientId = existing?.id as string | undefined;
+  if (!patientId) {
+    const { data: created, error } = await supabase
+      .from('patients')
+      .insert({ phone_number: input.phoneNumber, name_ar: input.patientName, tenant_id: input.tenantId })
+      .select('id')
+      .single();
+    if (error || !created) throw new Error('خطأ في تسجيل بيانات المريض.');
+    patientId = created.id as string;
+  }
+
+  const { data: rpcResult, error: rpcError } = await supabase.rpc('reserve_slot', {
+    p_slot_id: input.slotId,
+    p_patient_id: patientId,
+    p_doctor_id: input.doctorId,
+    p_session_id: null,
+    p_patient_name: input.patientName,
+    p_phone_number: input.phoneNumber,
+    p_notes: input.notes ?? null,
+  });
+
+  if (rpcError) {
+    throw new Error(`خطأ في الحجز: ${rpcError.message}`);
+  }
+
+  const reservation = Array.isArray(rpcResult) ? rpcResult[0] : rpcResult;
+  if (!reservation?.success) {
+    const code = reservation?.error_code;
+    if (code === 'SLOT_TAKEN') throw new SlotTakenError();
+    if (code === 'SLOT_NOT_FOUND') throw new SlotNotFoundError();
+    throw new Error('الموعد ده مبقاش متاح، اختار موعد تاني.');
+  }
+
+  const bookingId = reservation.booking_id as string;
+  // reserve_slot doesn't know the clinic — attach it so the booking shows up
+  // in the clinic's reception views.
+  await supabase.from('bookings').update({ tenant_id: input.tenantId }).eq('id', bookingId);
+
+  return finalizeBooking(input, bookingId, 'native');
+}
+
+/**
  * HIS booking flow — creates booking in external HIS system first,
  * then creates local booking record with HIS reference.
  */
@@ -328,7 +396,7 @@ async function hisBooking(
  * Shared finalization: fetch details, send confirmation, update status.
  */
 async function finalizeBooking(
-  input: BookingInput,
+  input: Omit<BookingInput, 'sessionId'>,
   bookingId: string,
   source: 'native' | 'his_api',
   hisBookingRef?: string
