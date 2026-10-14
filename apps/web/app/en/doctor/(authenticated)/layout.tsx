@@ -39,6 +39,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Quick Intake', icon: '⚡', href: '/en/doctor/quick-intake' },
   { label: 'Exam fields', icon: '🧾', href: '/en/doctor/exam-fields' },
   { label: 'Visit types & prices', icon: '🏷️', href: '/en/doctor/visit-types' },
+  { label: 'Reports', icon: '📊', href: '/en/doctor/reports' },
   { label: 'Assistants', icon: '🧑‍💼', href: '/en/doctor/assistants' },
   { label: 'Settings', icon: '⚙️', href: '/en/doctor/settings' },
 ];

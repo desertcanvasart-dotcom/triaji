@@ -34,6 +34,8 @@ const DOCTOR_PROTECTED_ROUTES = [
   '/en/doctor/exam-fields',
   '/ar/doctor/visit-types',
   '/en/doctor/visit-types',
+  '/ar/doctor/reports',
+  '/en/doctor/reports',
   '/ar/doctor/availability',
   '/en/doctor/availability',
   '/ar/doctor/consultation',

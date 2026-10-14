@@ -19,7 +19,6 @@ assistants, billing on Today, custom exam fields — all live)._
 |---|---|---|---|
 | 1 | **Demo mode** — try the full product with sample data, timer bar, "Reset demo", "Create your real account" | Large | Use a separate demo clinic/doctor that is wiped and re-seeded, never real data. Write a plan first. |
 | 3 | **Notify waiting patients** ("تنبيه المرضى") — e.g. "the doctor is running 30 min late" to everyone in today's queue | Small–medium | Needs WhatsApp/SMS working. |
-| 5 | **Doctor reports** ("الإدارة") — visits, no-show rate, income by day/month, insurance share | Medium | Invoices and queue data already exist. |
 | 6 | **Patient sign-in button in the main header** + **book a doctor without triage** for signed-in patients | Medium | Postponed until WhatsApp/SMS work. Can reuse the direct-booking path built for clinic pages. |
 | 7 | **Files in custom exam fields** | Medium | Needs file storage (Supabase Storage bucket). |
 | 8 | **Show custom exam field values on printed documents / PDFs** | Small–medium | Values are saved per visit but not printed yet. |
@@ -41,4 +40,5 @@ Today screen · call next / check-in / walk-ins · billing on Today + clinic-pan
 prescription templates · drug-interaction check actually running · exam page crash fix ·
 mobile exam data fix · month calendar + days off enforced everywhere · waiting-room TV screen ·
 clinic public booking fix · doctor assistants · custom exam fields · admin + doctor password
-reset by email · "view as assistant" toggle · visit types with their own price (migration 079).
+reset by email · "view as assistant" toggle · visit types with their own price (migration 079) · doctor reports (visits, no-shows, income by
+day/month, visit type and payment method, CSV + print).
