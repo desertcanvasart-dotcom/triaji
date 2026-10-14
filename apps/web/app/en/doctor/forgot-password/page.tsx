@@ -126,10 +126,10 @@ export default function DoctorForgotPasswordPage() {
           <h1 className="text-2xl font-bold text-[#1A2F4A] mb-2">Forgot password</h1>
           <p className="text-gray-500 text-sm mb-8">
             {step === 'email'
-              ? 'Enter your email and we will send a verification code to the mobile number on your account.'
+              ? 'Enter your email and we will send you a verification code by email (and to the mobile number on your account, if any).'
               : phoneHint
-                ? `We sent a verification code to ${phoneHint}. Enter it and choose a new password.`
-                : 'If that email is registered, a verification code has been sent to the mobile number on file. Enter it and choose a new password.'}
+                ? `We sent a verification code to your email and to ${phoneHint}. Enter it and choose a new password.`
+                : 'If that email is registered, a verification code has been sent to it. Check your inbox (and spam folder), then enter the code and choose a new password.'}
           </p>
 
           {error && (

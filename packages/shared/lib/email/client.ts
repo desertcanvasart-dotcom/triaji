@@ -4,6 +4,8 @@
  * WhatsApp clients, so it works in the web app and the admin panel alike.
  *
  * DEV_MODE: when RESEND_API_KEY is not set, logs to console instead of sending.
+ * In production a missing key is a misconfiguration, so it fails loudly instead
+ * of pretending the email went out.
  * Configure `EMAIL_FROM` with an address on a domain verified in Resend.
  */
 
@@ -26,6 +28,11 @@ const DEFAULT_FROM = 'دكتور تريو <noreply@doctortrio.online>';
 export async function sendEmail(input: EmailInput): Promise<EmailResult> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM ?? DEFAULT_FROM;
+
+  if (!apiKey && process.env.NODE_ENV === 'production') {
+    console.error('[Email] RESEND_API_KEY is not set — cannot send to:', input.to);
+    return { success: false, error: 'RESEND_API_KEY is not configured' };
+  }
 
   // DEV_MODE — log instead of sending
   if (!apiKey) {

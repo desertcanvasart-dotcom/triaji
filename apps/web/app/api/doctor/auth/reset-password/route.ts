@@ -60,20 +60,18 @@ export async function POST(request: NextRequest) {
     const supabase = getServiceClient();
     const { data: account } = await supabase
       .from('doctor_accounts')
-      .select('id, phone')
+      .select('id')
       .ilike('email', email)
       .limit(1)
       .maybeSingle();
 
-    const phone = (account?.phone as string | null)?.trim();
-
-    // Unknown email or missing phone gets the same answer as a wrong code —
-    // the request step already refused to say whether the email is registered.
-    if (!account || !phone) {
+    // An unknown email gets the same answer as a wrong code — the request step
+    // already refused to say whether the email is registered.
+    if (!account) {
       return NextResponse.json({ error: T.invalidCode[locale] }, { status: 401 });
     }
 
-    const result = await verifyOTP(`doctor-reset:${phone}`, otp);
+    const result = await verifyOTP(`doctor-reset:${account.id as string}`, otp);
     if (!result.valid) {
       return NextResponse.json(
         { error: locale === 'en' ? T.invalidCode.en : result.error ?? T.invalidCode.ar },
