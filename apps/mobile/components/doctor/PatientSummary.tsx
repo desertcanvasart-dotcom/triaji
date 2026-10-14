@@ -9,8 +9,8 @@ import { s } from '@triaji/shared/i18n';
 
 interface PatientData {
   name: string;
-  age: number;
-  sex: 'male' | 'female';
+  age: number | null;
+  sex: 'male' | 'female' | null;
   brs_score?: number;
   brs_level?: string;
   allergies: string[];
@@ -27,7 +27,13 @@ interface PatientSummaryProps {
 export default function PatientSummary({ patient, lang, isRtl }: PatientSummaryProps) {
   const sexLabel = patient.sex === 'male'
     ? s.doctorConsultation.male[lang]
-    : s.doctorConsultation.female[lang];
+    : patient.sex === 'female'
+      ? s.doctorConsultation.female[lang]
+      : null;
+  const meta = [
+    patient.age != null ? `${patient.age} ${s.doctorConsultation.age[lang]}` : null,
+    sexLabel,
+  ].filter(Boolean).join(' · ');
 
   return (
     <View style={styles.card}>
@@ -40,9 +46,9 @@ export default function PatientSummary({ patient, lang, isRtl }: PatientSummaryP
           <Text style={[styles.name, isRtl && styles.textRtl]} numberOfLines={1}>
             {patient.name}
           </Text>
-          <Text style={[styles.meta, isRtl && styles.textRtl]}>
-            {patient.age} {s.doctorConsultation.age[lang]} · {sexLabel}
-          </Text>
+          {meta ? (
+            <Text style={[styles.meta, isRtl && styles.textRtl]}>{meta}</Text>
+          ) : null}
         </View>
         {patient.brs_score != null && (
           <View style={[

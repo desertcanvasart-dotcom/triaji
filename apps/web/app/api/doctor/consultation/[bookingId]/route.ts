@@ -146,6 +146,44 @@ export async function GET(request: NextRequest, context: RouteContext) {
       healthRecords = (records ?? []) as { id: string; record_type: string; title_ar: string; uploaded_at: string }[];
     }
 
+    // Current medications (structured profile, migration 031) — shown in the
+    // summary and checked against anything the doctor prescribes.
+    let patientMedications: { drug_name_ar: string; drug_name_en: string | null }[] = [];
+    if (patientProfile?.id) {
+      const { data: meds } = await supabase
+        .from('patient_medications')
+        .select('drug_name_ar, drug_name_en')
+        .eq('patient_profile_id', patientProfile.id)
+        .order('sort_order', { ascending: true });
+      patientMedications = (meds ?? []) as typeof patientMedications;
+    }
+
+    // Earlier doctor notes on this patient's triage summaries. The doctor always
+    // sees their own; other doctors' notes follow the same consent gate as the
+    // health records above.
+    let notesQuery = supabase
+      .from('session_summaries')
+      .select('doctor_notes_ar, doctor_notes_added_at, created_at, doctor_name_ar, doctor_id, session_id')
+      .eq('patient_id', booking.patient_id)
+      .not('doctor_notes_ar', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(5);
+    if (booking.session_id) notesQuery = notesQuery.neq('session_id', booking.session_id);
+    if (!consent) notesQuery = notesQuery.eq('doctor_id', doctorAccount.doctor_id);
+    const { data: noteRows } = await notesQuery;
+    const previousNotes = (
+      (noteRows ?? []) as {
+        doctor_notes_ar: string;
+        doctor_notes_added_at: string | null;
+        created_at: string;
+        doctor_name_ar: string | null;
+      }[]
+    ).map((n) => ({
+      note: n.doctor_notes_ar,
+      date: (n.doctor_notes_added_at ?? n.created_at).slice(0, 10),
+      doctor_name: n.doctor_name_ar ?? '',
+    }));
+
     // The web consultation page reads `profile` / `summary` / `images` /
     // `hasConsent`; the original keys stay for any older client.
     const profile = patientProfile
@@ -167,6 +205,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
       triageImages,
       healthRecords,
       hasHistoryConsent: !!consent,
+      patientMedications,
+      previousNotes,
     });
   } catch {
     return NextResponse.json(

@@ -85,6 +85,7 @@ interface ConsultationData {
   images: string[];
   healthRecords: HealthRecord[];
   hasConsent: boolean;
+  patientMedications?: { drug_name_ar: string; drug_name_en: string | null }[];
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -902,6 +903,10 @@ export default function ConsultationPage() {
                   onSubmit={(formData) => handleDocSubmit('prescription', formData as unknown as Record<string, unknown>)}
                   loading={docLoading}
                   patientId={data.booking.patient_id}
+                  patientMedications={(data.patientMedications ?? []).map((m) => ({
+                    drugNameAr: m.drug_name_ar,
+                    drugNameEn: m.drug_name_en,
+                  }))}
                   lang="en"
                 />
               </div>

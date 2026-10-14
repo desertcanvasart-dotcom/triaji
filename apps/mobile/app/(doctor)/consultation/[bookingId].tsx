@@ -44,8 +44,8 @@ interface DoctorNote {
 interface ConsultationData {
   patient_id: string;
   patient_name: string;
-  patient_age: number;
-  patient_sex: 'male' | 'female';
+  patient_age: number | null;
+  patient_sex: 'male' | 'female' | null;
   appointment_time: string;
   brs_score?: number;
   brs_level?: string;
@@ -54,6 +54,70 @@ interface ConsultationData {
   medications: string[];
   recent_lab_results: LabResult[];
   previous_notes: DoctorNote[];
+}
+
+/** The nested shape GET /api/doctor/consultation/[bookingId] returns (shared with web). */
+interface ConsultationResponse {
+  booking?: { patient_id?: string; appointment_datetime?: string } | null;
+  patient?: { name_ar?: string | null; phone_number?: string | null } | null;
+  profile?: {
+    age?: number | null;
+    biological_sex?: string | null;
+    background_risk_score?: number | null;
+    risk_level?: string | null;
+    known_allergies?: string | null;
+    chronic_conditions?: string[] | null;
+    current_medications?: string | null;
+  } | null;
+  patientMedications?: { drug_name_ar: string; drug_name_en: string | null }[];
+  previousNotes?: DoctorNote[];
+}
+
+/** Split a free-text list ("a, b، c" or one per line) into items. */
+function splitList(text: string | null | undefined): string[] {
+  return (text ?? '')
+    .split(/[,،\n;]+/)
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Map the API response to the flat shape this screen renders.
+ * appointment_datetime is a floating clinic-local wall clock stored with a `Z`
+ * (see apps/web/lib/slots.ts), so it is formatted in UTC to keep its digits.
+ */
+function toConsultationData(json: ConsultationResponse, lang: 'ar' | 'en'): ConsultationData {
+  const profile = json.profile ?? null;
+  const structured = (json.patientMedications ?? []).map((m) =>
+    lang === 'en' && m.drug_name_en ? m.drug_name_en : m.drug_name_ar
+  );
+  const sex = profile?.biological_sex;
+  const when = json.booking?.appointment_datetime;
+
+  return {
+    patient_id: json.booking?.patient_id ?? '',
+    patient_name: json.patient?.name_ar ?? '',
+    patient_age: profile?.age ?? null,
+    patient_sex: sex === 'male' || sex === 'female' ? sex : null,
+    appointment_time: when
+      ? new Date(when).toLocaleString(lang === 'ar' ? 'ar-EG-u-nu-latn' : 'en-GB', {
+          weekday: 'short',
+          day: 'numeric',
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit',
+          timeZone: 'UTC',
+        })
+      : '',
+    brs_score: profile?.background_risk_score ?? undefined,
+    brs_level: profile?.risk_level ?? undefined,
+    allergies: splitList(profile?.known_allergies),
+    chronic_conditions: profile?.chronic_conditions ?? [],
+    medications: structured.length > 0 ? structured : splitList(profile?.current_medications),
+    // No structured lab-result store yet; the screen shows its empty state.
+    recent_lab_results: [],
+    previous_notes: json.previousNotes ?? [],
+  };
 }
 
 interface InteractionResult {
@@ -145,15 +209,15 @@ export default function ConsultationScreen() {
       );
 
       if (res.ok) {
-        const json = await res.json();
-        setData(json);
+        const json = (await res.json()) as ConsultationResponse;
+        setData(toConsultationData(json, lang));
       }
     } catch {
       // Silently fail
     } finally {
       setLoading(false);
     }
-  }, [bookingId]);
+  }, [bookingId, lang]);
 
   useEffect(() => {
     fetchConsultation();
