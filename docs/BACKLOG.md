@@ -1,8 +1,21 @@
 # DoctorTrio — open backlog
 
-_Last updated: 15 Oct 2026. Items still to do after the competitor-comparison work
+_Last updated: 15 Oct 2026 (end of session). Items still to do after the competitor-comparison work
 (Today screen, prescription templates, calendar & days off, waiting-room screen,
 assistants, billing on Today, custom exam fields — all live)._
+
+## ▶ Where we left off (start here next time)
+
+1. **Doctor reports — built, NOT merged yet.** On branch `claude/practical-darwin-ic9tzm`.
+   No SQL needed. Say "merge" to put it live (Railway redeploys from `main`).
+2. **Demo mode — plan written, not built.** Read [plans/demo-mode.md](plans/demo-mode.md),
+   confirm or change the 4 defaults at the top (doctor portal only · 60 min · AI capped at 5
+   calls · login-page button + shareable link), then building starts with migration 080.
+3. **Notify waiting patients** — waiting on WhatsApp/SMS being fixed.
+4. Everything else: sections 2–3 below.
+
+Live on `main` already: view as assistant · visit types with prices (migrations 075 + 079 run
+and checked) · backlog memo.
 
 ## 1. Blocked on an outside service
 
@@ -17,7 +30,7 @@ assistants, billing on Today, custom exam fields — all live)._
 
 | # | Feature | Size | Notes |
 |---|---|---|---|
-| 1 | **Demo mode** — try the full product with sample data, timer bar, "Reset demo", "Create your real account" | Large | Use a separate demo clinic/doctor that is wiped and re-seeded, never real data. Write a plan first. |
+| 1 | **Demo mode** — try the full product with sample data, timer bar, "Reset demo", "Create your real account" | Large | Plan ready: [plans/demo-mode.md](plans/demo-mode.md). Waiting for the owner to confirm the defaults. |
 | 3 | **Notify waiting patients** ("تنبيه المرضى") — e.g. "the doctor is running 30 min late" to everyone in today's queue | Small–medium | Needs WhatsApp/SMS working. |
 | 6 | **Patient sign-in button in the main header** + **book a doctor without triage** for signed-in patients | Medium | Postponed until WhatsApp/SMS work. Can reuse the direct-booking path built for clinic pages. |
 | 7 | **Files in custom exam fields** | Medium | Needs file storage (Supabase Storage bucket). |
