@@ -63,6 +63,8 @@ interface BookingRow {
 }
 
 interface InvoiceRow {
+  id: string;
+  invoice_number: string | null;
   booking_id: string | null;
   queue_entry_id: string | null;
   subtotal_egp: number | string;
@@ -77,6 +79,9 @@ export interface TodayBilling {
   insurance: number;
   patient_pays: number;
   paid: boolean;
+  /** The oldest unpaid invoice, so the screen can record its payment. */
+  unpaid_invoice_id: string | null;
+  invoice_numbers: string[];
 }
 
 export interface TodayRow {
@@ -153,6 +158,8 @@ function billingFrom(invoices: InvoiceRow[]): TodayBilling | null {
     insurance: live.reduce((s, i) => s + num(i.insurance_covered), 0),
     patient_pays: live.reduce((s, i) => s + num(i.patient_pays_egp), 0),
     paid: live.every((i) => i.status === 'paid'),
+    unpaid_invoice_id: live.find((i) => i.status !== 'paid')?.id ?? null,
+    invoice_numbers: live.map((i) => i.invoice_number).filter(Boolean) as string[],
   };
 }
 
@@ -249,10 +256,11 @@ export async function GET(request: NextRequest) {
       supabase
         .from('clinic_invoices')
         .select(
-          'booking_id, queue_entry_id, subtotal_egp, discount_egp, insurance_covered, patient_pays_egp, status'
+          'id, invoice_number, booking_id, queue_entry_id, subtotal_egp, discount_egp, insurance_covered, patient_pays_egp, status'
         )
         .eq('doctor_id', doctorId)
-        .eq('invoice_date', day),
+        .eq('invoice_date', day)
+        .order('created_at', { ascending: true }),
       supabase
         .from('doctors')
         .select('tenant_id, consultation_fee_egp')

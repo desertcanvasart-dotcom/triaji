@@ -12,6 +12,8 @@ interface Billing {
   insurance: number;
   patient_pays: number;
   paid: boolean;
+  unpaid_invoice_id?: string | null;
+  invoice_numbers?: string[];
 }
 
 interface Row {
@@ -111,6 +113,8 @@ const T = {
   retry:         { ar: 'حاول تاني', en: 'Try again' },
   failed:        { ar: 'حصل خطأ، حاول تاني', en: 'Something went wrong, please try again' },
   unknown:       { ar: 'مريض', en: 'Patient' },
+  invoice:       { ar: '💵 فاتورة', en: '💵 Invoice' },
+  recordPay:     { ar: '💵 تسجيل الدفع', en: '💵 Record payment' },
 };
 
 const STATE_LABEL: Record<RowState, { ar: string; en: string; className: string }> = {
@@ -159,6 +163,7 @@ export default function TodayBoard({ lang }: { lang: Lang }) {
   const [error, setError] = useState('');
   const [walkInOpen, setWalkInOpen] = useState(false);
   const [walkIn, setWalkIn] = useState({ name: '', phone: '', complaint: '' });
+  const [billing, setBilling] = useState<{ row: Row; mode: 'new' | 'pay' } | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -310,6 +315,16 @@ export default function TodayBoard({ lang }: { lang: Lang }) {
             {t('noShow')}
           </ActionButton>
         )}
+        {!row.billing && (row.queue_id || row.booking_id) && ['called', 'waiting', 'completed'].includes(row.state) && (
+          <ActionButton tone="teal" disabled={busy !== null} onClick={() => setBilling({ row, mode: 'new' })}>
+            {t('invoice')}
+          </ActionButton>
+        )}
+        {row.billing && !row.billing.paid && row.billing.unpaid_invoice_id && (
+          <ActionButton tone="amber" disabled={busy !== null} onClick={() => setBilling({ row, mode: 'pay' })}>
+            {t('recordPay')}
+          </ActionButton>
+        )}
         {canExam && row.booking_id && row.state !== 'cancelled' && (
           <Link
             href={consultHref(row.booking_id)}
@@ -360,6 +375,19 @@ export default function TodayBoard({ lang }: { lang: Lang }) {
 
   return (
     <div className="px-4 pt-16 pb-6 sm:px-6 md:p-8 space-y-6" dir={isRtl ? 'rtl' : 'ltr'}>
+      {billing && (
+        <InvoiceDialog
+          row={billing.row}
+          mode={billing.mode}
+          lang={lang}
+          fee={data.consultation_fee_egp}
+          onClose={() => setBilling(null)}
+          onDone={async () => {
+            setBilling(null);
+            await load();
+          }}
+        />
+      )}
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
@@ -613,6 +641,265 @@ export default function TodayBoard({ lang }: { lang: Lang }) {
         </div>
         </>
       )}
+    </div>
+  );
+}
+
+const METHODS: { value: string; ar: string; en: string }[] = [
+  { value: 'cash', ar: 'نقدي', en: 'Cash' },
+  { value: 'card', ar: 'كارت', en: 'Card' },
+  { value: 'insurance', ar: 'تأمين', en: 'Insurance' },
+  { value: 'partial_insurance', ar: 'تأمين جزئي', en: 'Partial insurance' },
+  { value: 'bank_transfer', ar: 'تحويل', en: 'Transfer' },
+];
+
+const INV = {
+  newTitle:   { ar: 'فاتورة جديدة', en: 'New invoice' },
+  payTitle:   { ar: 'تسجيل الدفع', en: 'Record payment' },
+  item:       { ar: 'البند', en: 'Item' },
+  qty:        { ar: 'العدد', en: 'Qty' },
+  price:      { ar: 'السعر', en: 'Price' },
+  addItem:    { ar: '+ بند', en: '+ Line' },
+  consult:    { ar: 'كشف طبي', en: 'Consultation' },
+  subtotal:   { ar: 'الإجمالي', en: 'Subtotal' },
+  discount:   { ar: 'خصم', en: 'Discount' },
+  insurance:  { ar: 'على التأمين', en: 'Insurance covers' },
+  pays:       { ar: 'المريض يدفع', en: 'Patient pays' },
+  method:     { ar: 'طريقة الدفع', en: 'Payment method' },
+  paidNow:    { ar: 'تم الدفع دلوقتي', en: 'Paid now' },
+  save:       { ar: 'حفظ الفاتورة', en: 'Save invoice' },
+  confirmPay: { ar: 'تأكيد الدفع', en: 'Confirm payment' },
+  amountDue:  { ar: 'المبلغ المطلوب', en: 'Amount due' },
+  cancel:     { ar: 'إلغاء', en: 'Cancel' },
+  egp:        { ar: 'ج.م', en: 'EGP' },
+  tooMuch:    { ar: 'الخصم والتأمين أكبر من الإجمالي', en: 'Discount plus insurance exceeds the subtotal' },
+  failed:     { ar: 'حصل خطأ، حاول تاني', en: 'Something went wrong, please try again' },
+};
+
+interface DraftItem {
+  description: string;
+  qty: string;
+  price: string;
+}
+
+/** Bill a patient (new invoice) or record payment for their open one. */
+function InvoiceDialog({
+  row,
+  mode,
+  lang,
+  fee,
+  onClose,
+  onDone,
+}: {
+  row: Row;
+  mode: 'new' | 'pay';
+  lang: Lang;
+  fee: number | null;
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const t = (k: keyof typeof INV) => INV[k][lang];
+  const [items, setItems] = useState<DraftItem[]>([
+    { description: INV.consult[lang], qty: '1', price: fee != null ? String(fee) : '' },
+  ]);
+  const [discount, setDiscount] = useState('');
+  const [insurance, setInsurance] = useState('');
+  const [method, setMethod] = useState('cash');
+  const [paidNow, setPaidNow] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const n = (v: string) => {
+    const x = parseFloat(v);
+    return Number.isFinite(x) && x >= 0 ? x : 0;
+  };
+  const subtotal = items.reduce((sum, i) => sum + n(i.qty) * n(i.price), 0);
+  const pays = subtotal - n(discount) - n(insurance);
+  const invalid = pays < 0;
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (mode === 'new' && invalid) {
+      setError(t('tooMuch'));
+      return;
+    }
+    setSaving(true);
+    setError('');
+    try {
+      const res =
+        mode === 'new'
+          ? await fetch('/api/doctor/invoices', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                queue_id: row.queue_id,
+                booking_id: row.booking_id,
+                line_items: items.map((i) => ({
+                  description: i.description.trim(),
+                  qty: Math.floor(n(i.qty)),
+                  unit_price_egp: n(i.price),
+                })),
+                discount_egp: n(discount),
+                insurance_covered: n(insurance),
+                payment_method: method,
+                paid: paidNow,
+                locale: lang,
+              }),
+            })
+          : await fetch(`/api/doctor/invoices/${row.billing?.unpaid_invoice_id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paid: true, payment_method: method, locale: lang }),
+            });
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) {
+        setError(data.error ?? t('failed'));
+        return;
+      }
+      onDone();
+    } catch {
+      setError(t('failed'));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const field =
+    'w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500';
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
+      <form
+        onSubmit={submit}
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl p-5 space-y-4 max-h-[90vh] overflow-y-auto"
+      >
+        <div>
+          <h3 className="text-lg font-bold text-[#1A2F4A]">{mode === 'new' ? t('newTitle') : t('payTitle')}</h3>
+          <p className="text-sm text-gray-500">
+            {row.queue_number != null ? `#${row.queue_number} · ` : ''}
+            {row.patient_name ?? ''}
+          </p>
+        </div>
+
+        {mode === 'new' ? (
+          <>
+            <div className="space-y-2">
+              <div className="grid grid-cols-[1fr_4rem_6rem_1.5rem] gap-2 text-xs text-gray-500">
+                <span>{t('item')}</span>
+                <span>{t('qty')}</span>
+                <span>{t('price')}</span>
+                <span />
+              </div>
+              {items.map((item, i) => (
+                <div key={i} className="grid grid-cols-[1fr_4rem_6rem_1.5rem] gap-2 items-center">
+                  <input
+                    value={item.description}
+                    onChange={(e) => setItems(items.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)))}
+                    required
+                    className={field}
+                  />
+                  <input
+                    value={item.qty}
+                    onChange={(e) => setItems(items.map((x, j) => (j === i ? { ...x, qty: e.target.value } : x)))}
+                    inputMode="numeric"
+                    required
+                    dir="ltr"
+                    className={field}
+                  />
+                  <input
+                    value={item.price}
+                    onChange={(e) => setItems(items.map((x, j) => (j === i ? { ...x, price: e.target.value } : x)))}
+                    inputMode="decimal"
+                    required
+                    dir="ltr"
+                    className={field}
+                  />
+                  {items.length > 1 ? (
+                    <button
+                      type="button"
+                      onClick={() => setItems(items.filter((_, j) => j !== i))}
+                      className="text-gray-400 hover:text-red-600"
+                      aria-label="×"
+                    >
+                      ×
+                    </button>
+                  ) : (
+                    <span />
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setItems([...items, { description: '', qty: '1', price: '' }])}
+                className="text-xs font-medium text-teal-700 hover:underline"
+              >
+                {t('addItem')}
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <label className="text-xs text-gray-600 space-y-1">
+                <span>{t('discount')}</span>
+                <input value={discount} onChange={(e) => setDiscount(e.target.value)} inputMode="decimal" dir="ltr" className={field} />
+              </label>
+              <label className="text-xs text-gray-600 space-y-1">
+                <span>{t('insurance')}</span>
+                <input value={insurance} onChange={(e) => setInsurance(e.target.value)} inputMode="decimal" dir="ltr" className={field} />
+              </label>
+            </div>
+
+            <div className="rounded-lg bg-gray-50 p-3 text-sm space-y-1">
+              <div className="flex justify-between text-gray-600">
+                <span>{t('subtotal')}</span>
+                <span>{money(subtotal, lang)} {t('egp')}</span>
+              </div>
+              <div className={`flex justify-between font-bold ${invalid ? 'text-red-600' : 'text-[#1A2F4A]'}`}>
+                <span>{t('pays')}</span>
+                <span>{money(Math.max(pays, 0), lang)} {t('egp')}</span>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="rounded-lg bg-gray-50 p-3 text-sm flex justify-between font-bold text-[#1A2F4A]">
+            <span>{t('amountDue')}</span>
+            <span>{money(row.billing?.patient_pays ?? 0, lang)} {t('egp')}</span>
+          </div>
+        )}
+
+        <label className="block text-xs text-gray-600 space-y-1">
+          <span>{t('method')}</span>
+          <select value={method} onChange={(e) => setMethod(e.target.value)} className={field}>
+            {METHODS.map((m) => (
+              <option key={m.value} value={m.value}>
+                {m[lang]}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {mode === 'new' && (
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input type="checkbox" checked={paidNow} onChange={(e) => setPaidNow(e.target.checked)} className="w-4 h-4 accent-teal-600" />
+            {t('paidNow')}
+          </label>
+        )}
+
+        {error && <p className="text-sm text-red-600">{error}</p>}
+
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            disabled={saving || (mode === 'new' && invalid)}
+            className="flex-1 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white rounded-lg text-sm font-semibold"
+          >
+            {mode === 'new' ? t('save') : t('confirmPay')}
+          </button>
+          <button type="button" onClick={onClose} className="px-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-600">
+            {t('cancel')}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
