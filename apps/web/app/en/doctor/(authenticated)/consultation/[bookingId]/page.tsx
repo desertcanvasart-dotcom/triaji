@@ -26,6 +26,7 @@ const PDFPreviewModal = dynamic(() => import('@/components/doctor/PDFPreviewModa
 
 interface BookingData {
   id: string;
+  patient_id: string;
   appointment_datetime: string;
   appointment_type: string;
   status: string;
@@ -900,6 +901,8 @@ export default function ConsultationPage() {
                   onPreview={(formData) => handleDocPreview('prescription', formData as unknown as Record<string, unknown>)}
                   onSubmit={(formData) => handleDocSubmit('prescription', formData as unknown as Record<string, unknown>)}
                   loading={docLoading}
+                  patientId={data.booking.patient_id}
+                  lang="en"
                 />
               </div>
             )}

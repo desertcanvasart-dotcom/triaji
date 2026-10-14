@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import InteractionAlert from './InteractionAlert';
 import InteractionBadge from './InteractionBadge';
 import PaediatricDoseCalculator, { type CopyDosePayload } from './PaediatricDoseCalculator';
+import PrescriptionTemplates, { type TemplateDraft } from './PrescriptionTemplates';
+import type { PrescriptionTemplate } from '@/lib/doctor/prescription-templates';
 import type { CheckResult, InteractionOverride } from '@triaji/shared/types';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -88,6 +90,14 @@ const STRINGS = {
   checkingInteractions: { ar: 'جاري فحص التفاعلات الدوائية...', en: 'Checking drug interactions...' },
   checkFailed: { ar: 'تعذر التحقق من التفاعلات — راجع مرجعاً دوائياً', en: 'Interaction check unavailable — consult a drug reference' },
   noInteractions: { ar: 'لا توجد تفاعلات دوائية معروفة', en: 'No known drug interactions' },
+  confirmReplace: {
+    ar: 'هيتم استبدال الروشتة اللي كتبتها بالقالب. تكمل؟',
+    en: 'This replaces the prescription you have written with the template. Continue?',
+  },
+  paedTemplateWarning: {
+    ar: 'تم تطبيق قالب — راجع كل الجرعات حسب وزن وسن الطفل قبل الحفظ.',
+    en: 'Template applied — review every dose against the child’s weight and age before saving.',
+  },
   saveBlocked: {
     ar: 'لا يمكن الحفظ: يوجد تفاعل دوائي خطير بدون سبب للمتابعة',
     en: 'Cannot save: serious drug interaction without override reason',
@@ -124,6 +134,10 @@ export default function PrescriptionForm({
   const [overrides, setOverrides] = useState<Record<string, { drugA: string; drugB: string; severity: string; reason: string }>>({});
   const [acknowledgements, setAcknowledgements] = useState<Record<string, boolean>>({});
   const checkAbortControllers = useRef<Record<string, AbortController>>({});
+  // Rows filled in by a template still need their interaction check, which can
+  // only run once those rows are in state (it reads the other medications).
+  const pendingTemplateChecks = useRef<string[] | null>(null);
+  const [templateAppliedForChild, setTemplateAppliedForChild] = useState(false);
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -172,7 +186,8 @@ export default function PrescriptionForm({
   const checkInteractions = useCallback(
     async (medId: string, drugNameAr: string, drugNameEn: string) => {
       if (!drugNameAr && !drugNameEn) return;
-      if (!patientId || !doctorAccountId) return;
+      // The check route identifies the doctor from the session; it only needs the patient.
+      if (!patientId) return;
 
       // Abort any previous check for this row
       if (checkAbortControllers.current[medId]) {
@@ -268,6 +283,55 @@ export default function PrescriptionForm({
       return next;
     });
   };
+
+  // ── Templates ─────────────────────────────────────────────────────────────
+
+  const hasNamedMedication = medications.some((m) => m.drugNameAr.trim() || m.drugNameEn.trim());
+
+  const getTemplateDraft = (): TemplateDraft => ({
+    diagnosis_ar: diagnosisAr,
+    diagnosis_en: diagnosisEn,
+    medications: medications
+      .filter((m) => m.drugNameAr.trim() || m.drugNameEn.trim())
+      .map(({ id: _id, ...rest }) => rest),
+    pharmacist_notes: pharmacistNotes,
+    follow_up_value: followUpValue,
+    follow_up_unit: followUpUnit,
+  });
+
+  const applyTemplate = (template: PrescriptionTemplate): boolean => {
+    const hasContent = hasNamedMedication || diagnosisAr.trim() || diagnosisEn.trim();
+    if (hasContent && !window.confirm(STRINGS.confirmReplace[lang])) return false;
+
+    // Drop every trace of the previous rows' interaction checks and overrides.
+    Object.values(checkAbortControllers.current).forEach((c) => c.abort());
+    checkAbortControllers.current = {};
+    setInteractionResults({});
+    setInteractionLoading({});
+    setInteractionErrors({});
+    setOverrides({});
+    setAcknowledgements({});
+
+    const rows: MedicationRow[] = template.medications.map((m) => ({ ...createEmptyMedication(), ...m }));
+    setDiagnosisAr(template.diagnosis_ar ?? '');
+    setDiagnosisEn(template.diagnosis_en ?? '');
+    setMedications(rows.length > 0 ? rows : [createEmptyMedication()]);
+    setPharmacistNotes(template.pharmacist_notes ?? '');
+    setFollowUpValue(template.follow_up_value ?? 0);
+    setFollowUpUnit(template.follow_up_unit ?? 'day');
+    pendingTemplateChecks.current = rows.map((r) => r.id);
+    setTemplateAppliedForChild(isPaediatric);
+    return true;
+  };
+
+  useEffect(() => {
+    const ids = pendingTemplateChecks.current;
+    if (!ids || !ids.every((id) => medications.some((m) => m.id === id))) return;
+    pendingTemplateChecks.current = null;
+    for (const med of medications) {
+      if (ids.includes(med.id)) checkInteractions(med.id, med.drugNameAr, med.drugNameEn);
+    }
+  }, [medications, checkInteractions]);
 
   const addMedication = () => {
     setMedications((prev) => [...prev, createEmptyMedication()]);
@@ -384,6 +448,20 @@ export default function PrescriptionForm({
                   />
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Saved templates */}
+          <PrescriptionTemplates
+            lang={lang}
+            getDraft={getTemplateDraft}
+            canSave={hasNamedMedication}
+            onApply={applyTemplate}
+          />
+
+          {templateAppliedForChild && (
+            <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800 font-[Cairo]">
+              ⚠️ {STRINGS.paedTemplateWarning[lang]}
             </div>
           )}
 
