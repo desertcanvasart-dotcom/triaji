@@ -26,6 +26,7 @@ interface NavItem {
 // ─── Constants ──────────────────────────────────────────────────────────────
 
 const NAV_ITEMS: NavItem[] = [
+  { label: 'يوم العمل', icon: '🩺', href: '/ar/doctor/today' },
   { label: 'مواعيدي', icon: '📅', href: '/ar/doctor/dashboard' },
   { label: 'مواعيدي المتاحة', icon: '🗓️', href: '/ar/doctor/availability' },
   { label: 'المرضى المتابعين', icon: '👥', href: '/ar/doctor/patients' },

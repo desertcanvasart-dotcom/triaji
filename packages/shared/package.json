@@ -16,7 +16,8 @@
     "./lib/sms/client": "./lib/sms/client.ts",
     "./lib/email/client": "./lib/email/client.ts",
     "./lib/cache/redis": "./lib/cache/redis.ts",
-    "./lib/auth/otp-store": "./lib/auth/otp-store.ts"
+    "./lib/auth/otp-store": "./lib/auth/otp-store.ts",
+    "./lib/clinic/queue-notifications": "./lib/clinic/queue-notifications.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

@@ -285,7 +285,7 @@ export default function DoctorDashboardPage() {
         <ActionCard href="/en/doctor/availability" icon="🗓️" title="My availability" desc="Set the times patients can book" />
         <ActionCard href="/en/doctor/quick-intake" icon="⚡" title="Quick triage" desc="Start a new case quickly" />
         <ActionCard href="/en/doctor/patients" icon="👥" title="My patients" desc="Follow your patients and records" />
-        <ActionCard href="/en/doctor/settings" icon="⚙️" title="My settings" desc="Profile and signature" />
+        <ActionCard href="/en/doctor/today" icon="🩺" title="Today" desc="Queue, calling patients and payments" />
       </div>
 
       {/* ICU Bed Availability Panel */}

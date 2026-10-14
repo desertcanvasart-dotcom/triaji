@@ -285,7 +285,7 @@ export default function DoctorDashboardPage() {
         <ActionCard href="/ar/doctor/availability" icon="🗓️" title="مواعيدي المتاحة" desc="ظبّط المواعيد اللي المرضى يحجزوا فيها" />
         <ActionCard href="/ar/doctor/quick-intake" icon="⚡" title="فرز سريع" desc="ابدأ فرز حالة جديدة بسرعة" />
         <ActionCard href="/ar/doctor/patients" icon="👥" title="المرضى المتابعين" desc="تابع مرضاك وملفاتهم الطبية" />
-        <ActionCard href="/ar/doctor/settings" icon="⚙️" title="إعداداتي" desc="ملفك الشخصي وتوقيعك" />
+        <ActionCard href="/ar/doctor/today" icon="🩺" title="يوم العمل" desc="الطابور ونداء المرضى والتحصيل" />
       </div>
 
       {/* ICU Bed Availability Panel */}
