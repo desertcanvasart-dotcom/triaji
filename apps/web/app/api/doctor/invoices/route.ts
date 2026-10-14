@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
  * POST /api/doctor/invoices — bill a patient from the doctor's work-day screen.
  *
  * Body: { queue_id? | booking_id?, line_items: [{ description, qty, unit_price_egp }],
- *         discount_egp?, insurance_covered?, payment_method?, paid?, locale? }
+ *         visit_type_id?, discount_egp?, insurance_covered?, payment_method?, paid?, locale? }
  *
  * Writes the same clinic_invoices rows the clinic panel does (migration 034),
  * numbered per clinic by next_invoice_number, dated on the Cairo calendar day
@@ -137,6 +137,18 @@ export async function POST(request: NextRequest) {
     const method: Method | null = METHODS.includes(body.payment_method as Method) ? (body.payment_method as Method) : null;
     const paid = body.paid === true;
 
+    // Optional visit type (migration 079) so reports can split income by type.
+    let visitTypeId: string | null = null;
+    if (typeof body.visit_type_id === 'string' && body.visit_type_id) {
+      const { data: vt } = await supabase
+        .from('doctor_visit_types')
+        .select('id')
+        .eq('id', body.visit_type_id)
+        .eq('doctor_id', doctorId)
+        .maybeSingle();
+      visitTypeId = (vt?.id as string | undefined) ?? null;
+    }
+
     const now = new Date().toISOString();
     // Numbers are unique per clinic; retry once if another invoice took ours.
     let invoice: { id: string; invoice_number: string; patient_pays_egp: number; status: string } | null = null;
@@ -166,6 +178,7 @@ export async function POST(request: NextRequest) {
           status: paid ? 'paid' : 'issued',
           payment_method: method ?? (paid ? 'cash' : null),
           paid_at: paid ? now : null,
+          ...(visitTypeId ? { visit_type_id: visitTypeId } : {}),
           notes_ar:
             account.actor.role === 'assistant'
               ? `${locale === 'en' ? 'Issued by assistant' : 'أصدرها المساعد'}: ${account.actor.name}`

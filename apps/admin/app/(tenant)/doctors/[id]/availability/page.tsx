@@ -32,6 +32,7 @@ interface VisitType {
   name: string;
   duration_minutes: number;
   is_default: boolean;
+  price_egp?: number | string | null;
 }
 
 interface ScheduleTemplate {
@@ -89,6 +90,7 @@ export default function AvailabilityPage({ params }: { params: Promise<{ id: str
   const [showVisitTypes, setShowVisitTypes] = useState(false);
   const [vtName, setVtName] = useState('');
   const [vtDuration, setVtDuration] = useState(30);
+  const [vtPrice, setVtPrice] = useState('');
   const [vtDefault, setVtDefault] = useState(false);
   const [savingVt, setSavingVt] = useState(false);
   const [slotVisitType, setSlotVisitType] = useState(''); // selected for adds
@@ -383,17 +385,27 @@ export default function AvailabilityPage({ params }: { params: Promise<{ id: str
       showToast('Enter a name and a positive duration.', 'error');
       return;
     }
+    if (vtPrice.trim() && !(Number(vtPrice) >= 0)) {
+      showToast('Price must be a positive number.', 'error');
+      return;
+    }
     setSavingVt(true);
     const res = await fetch(`/api/admin/doctors/${id}/visit-types`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: vtName.trim(), duration_minutes: vtDuration, is_default: vtDefault }),
+      body: JSON.stringify({
+        name: vtName.trim(),
+        duration_minutes: vtDuration,
+        is_default: vtDefault,
+        price_egp: vtPrice.trim() ? Number(vtPrice) : undefined,
+      }),
     });
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
       showToast('Visit type added.', 'success');
       setVtName('');
       setVtDuration(30);
+      setVtPrice('');
       setVtDefault(false);
       fetchVisitTypes();
     } else {
@@ -516,6 +528,7 @@ export default function AvailabilityPage({ params }: { params: Promise<{ id: str
                 <span key={v.id} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-sm">
                   <span className="font-medium text-gray-800">{v.name}</span>
                   <span className="text-gray-500">{v.duration_minutes}m</span>
+                  {v.price_egp != null && <span className="text-gray-500">{Number(v.price_egp)} EGP</span>}
                   {v.is_default && <span className="text-xs text-teal-700 bg-teal-100 px-1.5 rounded">default</span>}
                   <button
                     onClick={() => handleRemoveVisitType(v.id)}
@@ -548,6 +561,18 @@ export default function AvailabilityPage({ params }: { params: Promise<{ id: str
                 min={1}
                 value={vtDuration}
                 onChange={(e) => setVtDuration(Number(e.target.value))}
+                className="input-field w-28"
+              />
+            </div>
+            <div>
+              <label className="label">Price (EGP)</label>
+              <input
+                type="number"
+                min={0}
+                step="any"
+                value={vtPrice}
+                onChange={(e) => setVtPrice(e.target.value)}
+                placeholder="Doctor's fee"
                 className="input-field w-28"
               />
             </div>

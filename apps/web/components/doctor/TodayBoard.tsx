@@ -32,6 +32,17 @@ interface Row {
   urgency: 'routine' | 'urgent' | 'emergency' | null;
   state: RowState;
   billing: Billing | null;
+  visit_type?: VisitTypeRef | null;
+}
+
+interface VisitTypeRef {
+  id: string;
+  name: string;
+  price_egp: number | null;
+}
+
+interface VisitTypeOption extends VisitTypeRef {
+  is_default: boolean;
 }
 
 interface TodayData {
@@ -40,6 +51,7 @@ interface TodayData {
   has_clinic: boolean;
   consultation_fee_egp: number | null;
   viewer_role?: 'doctor' | 'assistant';
+  visit_types?: VisitTypeOption[];
   rows: Row[];
   stats: {
     total: number;
@@ -94,6 +106,7 @@ const T = {
   unpaid:        { ar: 'غير مدفوع', en: 'Unpaid' },
   insuranceShare:{ ar: 'التأمين', en: 'Insurance' },
   fee:           { ar: 'سعر الكشف', en: 'Fee' },
+  visitType:     { ar: 'نوع الكشف', en: 'Visit type' },
   egp:           { ar: 'ج.م', en: 'EGP' },
   empty:         { ar: 'مفيش مرضى النهارده لحد دلوقتي', en: 'No patients today yet' },
   emptyHint:     {
@@ -164,7 +177,7 @@ export default function TodayBoard({ lang }: { lang: Lang }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [walkInOpen, setWalkInOpen] = useState(false);
-  const [walkIn, setWalkIn] = useState({ name: '', phone: '', complaint: '' });
+  const [walkIn, setWalkIn] = useState({ name: '', phone: '', complaint: '', typeId: '' });
   const [billing, setBilling] = useState<{ row: Row; mode: 'new' | 'pay' } | null>(null);
 
   const load = useCallback(async () => {
@@ -235,9 +248,10 @@ export default function TodayBoard({ lang }: { lang: Lang }) {
       patient_name: walkIn.name,
       patient_phone: walkIn.phone,
       chief_complaint: walkIn.complaint,
+      visit_type_id: walkInTypeId || undefined,
     });
     if (ok) {
-      setWalkIn({ name: '', phone: '', complaint: '' });
+      setWalkIn({ name: '', phone: '', complaint: '', typeId: '' });
       setWalkInOpen(false);
     }
   }
@@ -283,6 +297,8 @@ export default function TodayBoard({ lang }: { lang: Lang }) {
   }
 
   const current = data.rows.find((r) => r.state === 'called') ?? null;
+  const visitTypes = data.visit_types ?? [];
+  const walkInTypeId = walkIn.typeId || (visitTypes.find((v) => v.is_default) ?? visitTypes[0])?.id || '';
   const hasWaiting = data.stats.waiting > 0;
   const hasClinic = data.has_clinic;
   // Assistants run the front desk; the exam itself is the doctor's.
@@ -356,6 +372,7 @@ export default function TodayBoard({ lang }: { lang: Lang }) {
         }`}
       >
         {row.source === 'walk_in' ? t('walkInTag') : row.appointment_type === 'telehealth' ? t('online') : t('clinic')}
+        {row.visit_type ? ` · ${row.visit_type.name}` : ''}
       </span>
     );
   }
@@ -383,6 +400,7 @@ export default function TodayBoard({ lang }: { lang: Lang }) {
           mode={billing.mode}
           lang={lang}
           fee={data.consultation_fee_egp}
+          visitTypes={data.visit_types ?? []}
           onClose={() => setBilling(null)}
           onDone={async () => {
             setBilling(null);
@@ -449,7 +467,9 @@ export default function TodayBoard({ lang }: { lang: Lang }) {
       {walkInOpen && data.has_clinic && (
         <form
           onSubmit={submitWalkIn}
-          className="bg-white rounded-xl border border-gray-200 p-4 grid grid-cols-1 sm:grid-cols-4 gap-3 items-end"
+          className={`bg-white rounded-xl border border-gray-200 p-4 grid grid-cols-1 gap-3 items-end ${
+            visitTypes.length > 0 ? 'sm:grid-cols-5' : 'sm:grid-cols-4'
+          }`}
         >
           <input
             value={walkIn.name}
@@ -472,6 +492,21 @@ export default function TodayBoard({ lang }: { lang: Lang }) {
             placeholder={t('complaint')}
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
           />
+          {visitTypes.length > 0 && (
+            <select
+              value={walkInTypeId}
+              onChange={(e) => setWalkIn({ ...walkIn, typeId: e.target.value })}
+              aria-label={t('visitType')}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+            >
+              {visitTypes.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.name}
+                  {v.price_egp != null ? ` — ${money(v.price_egp, lang)} ${t('egp')}` : ''}
+                </option>
+              ))}
+            </select>
+          )}
           <div className="flex gap-2">
             <button
               type="submit"
@@ -580,7 +615,7 @@ export default function TodayBoard({ lang }: { lang: Lang }) {
                   <div className="shrink-0">{stateBadge(row)}</div>
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <AmountCell row={row} fee={data.consultation_fee_egp} lang={lang} t={t} />
+                  <AmountCell row={row} fee={row.visit_type?.price_egp ?? data.consultation_fee_egp} lang={lang} t={t} />
                   {renderActions(row)}
                 </div>
               </div>
@@ -630,7 +665,7 @@ export default function TodayBoard({ lang }: { lang: Lang }) {
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">{typeBadge(row)}</td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <AmountCell row={row} fee={data.consultation_fee_egp} lang={lang} t={t} />
+                        <AmountCell row={row} fee={row.visit_type?.price_egp ?? data.consultation_fee_egp} lang={lang} t={t} />
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">{stateBadge(row)}</td>
                       <td className="px-4 py-3">{renderActions(row)}</td>
@@ -663,6 +698,7 @@ const INV = {
   price:      { ar: 'السعر', en: 'Price' },
   addItem:    { ar: '+ بند', en: '+ Line' },
   consult:    { ar: 'كشف طبي', en: 'Consultation' },
+  visitType:  { ar: 'نوع الكشف', en: 'Visit type' },
   subtotal:   { ar: 'الإجمالي', en: 'Subtotal' },
   discount:   { ar: 'خصم', en: 'Discount' },
   insurance:  { ar: 'على التأمين', en: 'Insurance covers' },
@@ -690,6 +726,7 @@ function InvoiceDialog({
   mode,
   lang,
   fee,
+  visitTypes,
   onClose,
   onDone,
 }: {
@@ -697,13 +734,27 @@ function InvoiceDialog({
   mode: 'new' | 'pay';
   lang: Lang;
   fee: number | null;
+  visitTypes: VisitTypeOption[];
   onClose: () => void;
   onDone: () => void;
 }) {
   const t = (k: keyof typeof INV) => INV[k][lang];
-  const [items, setItems] = useState<DraftItem[]>([
-    { description: INV.consult[lang], qty: '1', price: fee != null ? String(fee) : '' },
-  ]);
+  // The visit's own type first, else the doctor's default; its price beats the flat fee.
+  const initialType =
+    visitTypes.find((v) => v.id === row.visit_type?.id) ?? visitTypes.find((v) => v.is_default) ?? visitTypes[0] ?? null;
+  const lineFor = (type: VisitTypeOption | null): DraftItem => {
+    const price = type?.price_egp ?? fee;
+    return { description: type?.name ?? INV.consult[lang], qty: '1', price: price != null ? String(price) : '' };
+  };
+  const [typeId, setTypeId] = useState(initialType?.id ?? '');
+  const [items, setItems] = useState<DraftItem[]>([lineFor(initialType)]);
+
+  function pickType(id: string) {
+    setTypeId(id);
+    const type = visitTypes.find((v) => v.id === id) ?? null;
+    // Only the first line follows the type; extra lines stay as typed.
+    setItems((prev) => [lineFor(type), ...prev.slice(1)]);
+  }
   const [discount, setDiscount] = useState('');
   const [insurance, setInsurance] = useState('');
   const [method, setMethod] = useState('cash');
@@ -736,6 +787,7 @@ function InvoiceDialog({
               body: JSON.stringify({
                 queue_id: row.queue_id,
                 booking_id: row.booking_id,
+                visit_type_id: typeId || undefined,
                 line_items: items.map((i) => ({
                   description: i.description.trim(),
                   qty: Math.floor(n(i.qty)),
@@ -786,6 +838,19 @@ function InvoiceDialog({
 
         {mode === 'new' ? (
           <>
+            {visitTypes.length > 0 && (
+              <label className="block text-sm">
+                <span className="block text-xs text-gray-500 mb-1">{t('visitType')}</span>
+                <select value={typeId} onChange={(e) => pickType(e.target.value)} className={`${field} bg-white`}>
+                  {visitTypes.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.name}
+                      {v.price_egp != null ? ` — ${money(v.price_egp, lang)} ${t('egp')}` : ''}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
             <div className="space-y-2">
               <div className="grid grid-cols-[1fr_4rem_6rem_1.5rem] gap-2 text-xs text-gray-500">
                 <span>{t('item')}</span>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { authenticateDoctorWorkspace, getDoctorServiceClient } from '@/lib/auth/doctor-account';
+import { toVisitType } from '@/lib/doctor/visit-types';
 import {
   sendCalledNotification,
   sendAlmostNextNotification,
@@ -47,6 +48,8 @@ interface QueueRow {
   chief_complaint_ar: string | null;
   arrived_at: string;
   called_at: string | null;
+  /** migration 079 — absent before it is applied */
+  visit_type_id?: string | null;
 }
 
 interface PatientEmbed { name_ar: string | null; phone_number: string | null }
@@ -55,6 +58,7 @@ interface SessionEmbed { session_summaries: SummaryEmbed | SummaryEmbed[] | null
 interface BookingRow {
   id: string;
   tenant_id: string | null;
+  slot_id: string | null;
   appointment_datetime: string;
   appointment_type: 'in_person' | 'telehealth' | null;
   status: BookingStatus;
@@ -99,6 +103,8 @@ export interface TodayRow {
   urgency: 'routine' | 'urgent' | 'emergency' | null;
   state: TodayRowState;
   billing: TodayBilling | null;
+  /** The visit type (كشف / استشارة …) and its price, when known. */
+  visit_type: { id: string; name: string; price_egp: number | null } | null;
 }
 
 const T = {
@@ -192,6 +198,7 @@ async function enqueue(
     source: 'walk_in' | 'online_booking';
     booking_id?: string | null;
     chief_complaint_ar?: string | null;
+    visit_type_id?: string;
   }
 ) {
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -237,7 +244,7 @@ export async function GET(request: NextRequest) {
       supabase
         .from('bookings')
         .select(`
-          id, tenant_id, appointment_datetime, appointment_type, status,
+          id, tenant_id, slot_id, appointment_datetime, appointment_type, status,
           patients(name_ar, phone_number),
           triage_sessions!session_id(session_summaries(chief_complaint_ar, urgency_level))
         `)
@@ -247,9 +254,9 @@ export async function GET(request: NextRequest) {
         .order('appointment_datetime', { ascending: true }),
       supabase
         .from('clinic_queue')
-        .select(
-          'id, tenant_id, queue_number, status, source, booking_id, patient_name_ar, patient_phone, chief_complaint_ar, arrived_at, called_at'
-        )
+        // '*' so the screen keeps working whether or not migration 079
+        // (visit_type_id) is applied yet.
+        .select('*')
         .eq('doctor_id', doctorId)
         .eq('queue_date', day)
         .order('queue_number', { ascending: true }),
@@ -281,6 +288,26 @@ export async function GET(request: NextRequest) {
     // Invoices are optional context; a missing table/column must not hide the day.
     const invoices = invoicesRes.error ? [] : ((invoicesRes.data ?? []) as InvoiceRow[]);
 
+    // Visit types: walk-ins carry one on the queue entry; bookings inherit the
+    // type of the slot they were booked into.
+    const slotIds = bookings.map((b) => b.slot_id).filter(Boolean) as string[];
+    const [typesRes, slotsRes] = await Promise.all([
+      supabase.from('doctor_visit_types').select('*').eq('doctor_id', doctorId),
+      slotIds.length > 0
+        ? supabase.from('doctor_availability').select('id, visit_type_id').in('id', slotIds)
+        : Promise.resolve({ data: [] as { id: string; visit_type_id: string | null }[], error: null }),
+    ]);
+    const visitTypes = typesRes.error ? [] : (typesRes.data ?? []).map((r) => toVisitType(r as Record<string, unknown>));
+    const typeById = new Map(visitTypes.map((v) => [v.id, v]));
+    const slotType = new Map(
+      ((slotsRes.error ? [] : slotsRes.data) ?? []).map((s) => [s.id as string, (s.visit_type_id as string | null) ?? null])
+    );
+    const visitTypeFor = (typeId: string | null | undefined) => {
+      const v = typeId ? typeById.get(typeId) : undefined;
+      return v ? { id: v.id, name: v.name, price_egp: v.price_egp } : null;
+    };
+    const bookingTypeId = (b: BookingRow | undefined) => (b?.slot_id ? slotType.get(b.slot_id) : null);
+
     const bookingById = new Map(bookings.map((b) => [b.id, b]));
     const queuedBookingIds = new Set(queue.map((q) => q.booking_id).filter(Boolean) as string[]);
 
@@ -311,6 +338,7 @@ export async function GET(request: NextRequest) {
         chief_complaint: q.chief_complaint_ar ?? summary?.chief_complaint_ar ?? null,
         urgency: summary?.urgency_level ?? null,
         state,
+        visit_type: visitTypeFor(q.visit_type_id ?? bookingTypeId(booking)),
         billing: billingFrom(
           invoices.filter(
             (i) => i.queue_entry_id === q.id || (q.booking_id && i.booking_id === q.booking_id)
@@ -337,6 +365,7 @@ export async function GET(request: NextRequest) {
         chief_complaint: summary?.chief_complaint_ar ?? null,
         urgency: summary?.urgency_level ?? null,
         state: bookingState(b.status),
+        visit_type: visitTypeFor(bookingTypeId(b)),
         billing: billingFrom(invoices.filter((i) => i.booking_id === b.id)),
       });
     }
@@ -374,6 +403,7 @@ export async function GET(request: NextRequest) {
       date: day,
       doctor_name_ar: account.name_ar,
       viewer_role: account.actor.role,
+      visit_types: visitTypes,
       has_clinic: !!doctorRes.data?.tenant_id,
       consultation_fee_egp:
         doctorRes.data?.consultation_fee_egp != null ? num(doctorRes.data.consultation_fee_egp) : null,
@@ -395,6 +425,7 @@ interface ActionBody {
   patient_name?: string;
   patient_phone?: string;
   chief_complaint?: string;
+  visit_type_id?: string;
   locale?: Locale;
 }
 
@@ -526,6 +557,17 @@ export async function POST(request: NextRequest) {
       }
 
       case 'walk_in': {
+        // Only accept one of this doctor's own visit types.
+        let walkInType: string | undefined;
+        if (body.visit_type_id) {
+          const { data: vt } = await supabase
+            .from('doctor_visit_types')
+            .select('id')
+            .eq('id', body.visit_type_id)
+            .eq('doctor_id', doctorId)
+            .maybeSingle();
+          walkInType = (vt?.id as string | undefined) ?? undefined;
+        }
         const name = body.patient_name?.trim();
         if (!name) {
           return NextResponse.json({ error: T.nameRequired[locale] }, { status: 400 });
@@ -543,6 +585,7 @@ export async function POST(request: NextRequest) {
           patient_phone: body.patient_phone?.trim() || null,
           source: 'walk_in',
           chief_complaint_ar: body.chief_complaint?.trim() || null,
+          ...(walkInType ? { visit_type_id: walkInType } : {}),
         });
 
         return NextResponse.json({ success: true, entry });

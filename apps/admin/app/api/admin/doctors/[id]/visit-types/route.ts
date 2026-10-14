@@ -53,12 +53,17 @@ export async function POST(
   const name = (body['name'] ?? '').toString().trim();
   const duration = Number(body['duration_minutes']);
   const isDefault = body['is_default'] === true;
+  const rawPrice = body['price_egp'];
+  const price = rawPrice == null || rawPrice === '' ? null : Number(rawPrice);
 
   if (!name) {
     return NextResponse.json({ error: 'Name is required.' }, { status: 400 });
   }
   if (!Number.isFinite(duration) || duration <= 0) {
     return NextResponse.json({ error: 'Duration must be a positive number of minutes.' }, { status: 400 });
+  }
+  if (price !== null && (!Number.isFinite(price) || price < 0)) {
+    return NextResponse.json({ error: 'Price must be a positive number.' }, { status: 400 });
   }
 
   // Only one default per doctor.
@@ -81,6 +86,8 @@ export async function POST(
       name,
       duration_minutes: Math.round(duration),
       is_default: isDefault,
+      // Optional per-type price (migration 079); omitted when blank.
+      ...(price !== null ? { price_egp: Math.round(price * 100) / 100 } : {}),
     })
     .select()
     .single();

@@ -37,6 +37,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'ملخصات المرضى', icon: '📋', href: '/ar/doctor/dashboard' },
   { label: 'فرز سريع', icon: '⚡', href: '/ar/doctor/quick-intake' },
   { label: 'حقول الكشف', icon: '🧾', href: '/ar/doctor/exam-fields' },
+  { label: 'أنواع الكشف والأسعار', icon: '🏷️', href: '/ar/doctor/visit-types' },
   { label: 'المساعدون', icon: '🧑‍💼', href: '/ar/doctor/assistants' },
   { label: 'إعداداتي', icon: '⚙️', href: '/ar/doctor/settings' },
 ];
