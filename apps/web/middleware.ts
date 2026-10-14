@@ -26,6 +26,8 @@ const DOCTOR_PROTECTED_ROUTES = [
   '/ar/doctor/dashboard',
   '/ar/doctor/today',
   '/en/doctor/today',
+  '/ar/doctor/calendar',
+  '/en/doctor/calendar',
   '/ar/doctor/availability',
   '/en/doctor/availability',
   '/ar/doctor/consultation',

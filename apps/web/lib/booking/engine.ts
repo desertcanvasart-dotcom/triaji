@@ -18,6 +18,7 @@ import {
 } from '@/lib/whatsapp/templates';
 import type { ConfirmChannel } from '@triaji/shared/types';
 import { getAdapter } from '@triaji/his-adapters';
+import { slotIdIsBlocked } from '@/lib/time-off';
 import type { PaymentProvider } from '@triaji/payment-adapters';
 import { initiatePayment, VALID_PROVIDERS } from '@/lib/payments/initiate';
 import type { HisAdapterConfig } from '@triaji/his-adapters';
@@ -166,6 +167,11 @@ export async function createBooking(input: BookingInput): Promise<BookingResult>
 
   if (sessionError || !session) {
     throw new Error('الجلسة غير موجودة.');
+  }
+
+  // The doctor took this time off after the slot was published.
+  if (await slotIdIsBlocked(supabase, input.slotId)) {
+    throw new Error('الموعد ده مبقاش متاح، اختار موعد تاني.');
   }
 
   const tenantId = session.tenant_id as string | null;
@@ -457,6 +463,11 @@ export async function createBookingPaymentPending(
 
   if (sessionError || !session) {
     throw new Error('الجلسة غير موجودة.');
+  }
+
+  // The doctor took this time off after the slot was published.
+  if (await slotIdIsBlocked(supabase, input.slotId)) {
+    throw new Error('الموعد ده مبقاش متاح، اختار موعد تاني.');
   }
 
   const patientId = session.patient_id as string;

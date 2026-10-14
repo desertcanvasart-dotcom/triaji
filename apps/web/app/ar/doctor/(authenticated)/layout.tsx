@@ -28,6 +28,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: 'يوم العمل', icon: '🩺', href: '/ar/doctor/today' },
   { label: 'مواعيدي', icon: '📅', href: '/ar/doctor/dashboard' },
+  { label: 'التقويم', icon: '📆', href: '/ar/doctor/calendar' },
   { label: 'مواعيدي المتاحة', icon: '🗓️', href: '/ar/doctor/availability' },
   { label: 'المرضى المتابعين', icon: '👥', href: '/ar/doctor/patients' },
   { label: 'ملخصات المرضى', icon: '📋', href: '/ar/doctor/dashboard' },

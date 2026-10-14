@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@triaji/shared/supabase';
+import { fetchTimeOff, isSlotBlocked } from '@/lib/time-off';
 
 const ARABIC_DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'] as const;
 const ARABIC_MONTHS = [
@@ -67,9 +68,14 @@ export async function GET(
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const slots: AvailableSlot[] = (data ?? []).map((row) =>
-    formatSlot(row as { id: string; slot_datetime: string; duration_minutes: number })
-  );
+  // Hide slots that fall inside the doctor's time off (they come back if the
+  // day off is removed).
+  const blocks = await fetchTimeOff(supabase, doctorId, now.toISOString(), endDate.toISOString());
+  const rows = (data ?? []) as { id: string; slot_datetime: string; duration_minutes: number }[];
+
+  const slots: AvailableSlot[] = rows
+    .filter((row) => !isSlotBlocked(row.slot_datetime, row.duration_minutes, blocks))
+    .map((row) => formatSlot(row));
 
   return NextResponse.json({ slots });
 }

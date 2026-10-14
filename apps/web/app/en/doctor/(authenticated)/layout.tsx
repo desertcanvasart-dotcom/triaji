@@ -29,6 +29,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: 'Today', icon: '🩺', href: '/en/doctor/today' },
   { label: 'My Appointments', icon: '📅', href: '/en/doctor/dashboard' },
+  { label: 'Calendar', icon: '📆', href: '/en/doctor/calendar' },
   { label: 'My Availability', icon: '🗓️', href: '/en/doctor/availability' },
   { label: 'Followed Patients', icon: '👥', href: '/en/doctor/patients' },
   { label: 'Patient Summaries', icon: '📋', href: '/en/doctor/dashboard' },

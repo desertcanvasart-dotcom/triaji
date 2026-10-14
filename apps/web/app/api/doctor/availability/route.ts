@@ -4,6 +4,7 @@ import {
   getDoctorServiceClient,
 } from '@/lib/auth/doctor-account';
 import { slotsOverlap, DEFAULT_SLOT_DURATION_MIN, CONFLICT_WINDOW_MS } from '@/lib/slots';
+import { fetchTimeOff, isSlotBlocked } from '@/lib/time-off';
 
 export const dynamic = 'force-dynamic';
 
@@ -76,6 +77,16 @@ export async function POST(request: NextRequest) {
   );
   if (conflict) {
     return NextResponse.json({ error: 'الموعد ده متعارض مع موعد موجود' }, { status: 409 });
+  }
+
+  const blocks = await fetchTimeOff(
+    supabase,
+    account.doctor_id,
+    slotDatetime,
+    new Date(newStart + durationMinutes * 60_000).toISOString()
+  );
+  if (isSlotBlocked(slotDatetime, durationMinutes, blocks)) {
+    return NextResponse.json({ error: 'اليوم ده عندك فيه إجازة — شيل الإجازة الأول' }, { status: 409 });
   }
 
   const { data, error } = await supabase

@@ -9,6 +9,7 @@ import {
   DEFAULT_SLOT_DURATION_MIN,
   CONFLICT_WINDOW_MS,
 } from '@/lib/slots';
+import { fetchTimeOff, isSlotBlocked } from '@/lib/time-off';
 
 export const dynamic = 'force-dynamic';
 
@@ -72,6 +73,14 @@ export async function POST(request: NextRequest) {
     .lte('slot_datetime', new Date(maxStart + CONFLICT_WINDOW_MS).toISOString());
   if (existingError) return NextResponse.json({ error: existingError.message }, { status: 500 });
 
+  const blocks = await fetchTimeOff(
+    supabase,
+    account.doctor_id,
+    new Date(minStart).toISOString(),
+    new Date(maxStart + DEFAULT_SLOT_DURATION_MIN * 60_000).toISOString()
+  );
+  let blockedCount = 0;
+
   const existingIntervals = (existing ?? []).map((s) => ({
     start: new Date(s.slot_datetime as string).getTime(),
     dur: (s.duration_minutes as number) ?? DEFAULT_SLOT_DURATION_MIN,
@@ -87,6 +96,10 @@ export async function POST(request: NextRequest) {
 
   for (const [iso, dur] of candidates) {
     const start = new Date(iso).getTime();
+    if (isSlotBlocked(iso, dur, blocks)) {
+      blockedCount++;
+      continue;
+    }
     const clashesExisting = existingIntervals.some((e) => slotsOverlap(start, dur, e.start, e.dur));
     const clashesAccepted = accepted.some((a) =>
       slotsOverlap(start, dur, new Date(a.slot_datetime).getTime(), a.duration_minutes)
@@ -102,8 +115,13 @@ export async function POST(request: NextRequest) {
   }
 
   const skipped = candidates.size - accepted.length;
+  const blockedNote = blockedCount > 0 ? ` — ${blockedCount} في أيام إجازة` : '';
   if (accepted.length === 0) {
-    return NextResponse.json({ created: 0, skipped, message: `المواعيد موجودة بالفعل (${skipped})` });
+    return NextResponse.json({
+      created: 0,
+      skipped,
+      message: `مفيش مواعيد جديدة اتضافت (${skipped})${blockedNote}`,
+    });
   }
 
   const { data, error } = await supabase.from('doctor_availability').insert(accepted).select();
@@ -116,7 +134,7 @@ export async function POST(request: NextRequest) {
       skipped,
       message:
         skipped > 0
-          ? `تمت إضافة ${created} موعد، وتخطّي ${skipped} (موجودين بالفعل)`
+          ? `تمت إضافة ${created} موعد، وتخطّي ${skipped}${blockedNote || ' (موجودين بالفعل)'}`
           : `تمت إضافة ${created} موعد`,
     },
     { status: 201 }
