@@ -34,6 +34,46 @@ function recoveryEmailHtml(actionLink: string): string {
 </div>`;
 }
 
+/**
+ * Email a recovery link ourselves. We mint the link with generateLink (which
+ * does NOT send) and deliver it through Resend, so the mail comes from our
+ * verified domain instead of Supabase's built-in mailer. /set-password already
+ * adopts Supabase invite/recovery hash tokens and lets the user choose a
+ * password, so recovery links land there. Returns whether it was sent.
+ */
+async function emailRecoveryLink(
+  supabase: ReturnType<typeof createAdminClient>,
+  request: NextRequest,
+  email: string
+): Promise<boolean> {
+  const origin = getPublicOrigin(request);
+  const { data: linkData, error } = await supabase.auth.admin.generateLink({
+    type: 'recovery',
+    email,
+    options: { redirectTo: `${origin}/set-password` },
+  });
+
+  const actionLink = linkData?.properties?.action_link ?? null;
+  if (error || !actionLink) {
+    console.error(
+      '[admin/forgot-password] recovery link generation failed:',
+      error?.message ?? 'no action_link returned'
+    );
+    return false;
+  }
+
+  const result = await sendEmail({
+    to: email,
+    subject: 'Reset your DoctorTrio Admin password',
+    html: recoveryEmailHtml(actionLink),
+  });
+  if (!result.success) {
+    console.error('[admin/forgot-password] recovery email failed:', result.error);
+    return false;
+  }
+  return true;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as ForgotPasswordBody;
@@ -59,8 +99,14 @@ export async function POST(request: NextRequest) {
     const phone =
       admin && admin.is_active ? (admin.phone as string | null)?.trim() || null : null;
 
-    // With a mobile on file we can send the code over WhatsApp/SMS, which is
-    // the channel this platform actually has configured.
+    // An active admin always gets the recovery link by email, so a reset never
+    // depends on WhatsApp/SMS alone. An unknown or deactivated email takes the
+    // same path but sends nothing, so the response can't be used to tell
+    // registered admins from strangers.
+    const emailed = admin && admin.is_active ? await emailRecoveryLink(supabase, request, email) : false;
+
+    // With a mobile on file we also send a code over WhatsApp/SMS; either way
+    // back in works.
     if (phone) {
       const otp = String(Math.floor(100000 + Math.random() * 900000));
       await storeOTP(`admin-reset:${phone}`, otp);
@@ -71,41 +117,12 @@ export async function POST(request: NextRequest) {
         await sendSMS(phone, message);
       }
 
-      return NextResponse.json({ success: true, channel: 'phone', phone_hint: maskPhone(phone) });
-    }
-
-    // No mobile on file — email a recovery link ourselves. We mint the link
-    // with generateLink (which does NOT send) and deliver it through Resend, so
-    // the mail comes from our verified domain instead of Supabase's built-in
-    // mailer. An unknown or deactivated email takes this branch too but sends
-    // nothing, so the response can't be used to tell registered admins from
-    // strangers.
-    if (admin && admin.is_active) {
-      // /set-password already adopts Supabase invite/recovery hash tokens and
-      // lets the user choose a password, so recovery links land there.
-      const origin = getPublicOrigin(request);
-      const { data: linkData, error } = await supabase.auth.admin.generateLink({
-        type: 'recovery',
-        email,
-        options: { redirectTo: `${origin}/set-password` },
+      return NextResponse.json({
+        success: true,
+        channel: 'phone',
+        phone_hint: maskPhone(phone),
+        email_sent: emailed,
       });
-
-      const actionLink = linkData?.properties?.action_link ?? null;
-      if (error || !actionLink) {
-        console.error(
-          '[admin/forgot-password] recovery link generation failed:',
-          error?.message ?? 'no action_link returned'
-        );
-      } else {
-        const result = await sendEmail({
-          to: email,
-          subject: 'Reset your DoctorTrio Admin password',
-          html: recoveryEmailHtml(actionLink),
-        });
-        if (!result.success) {
-          console.error('[admin/forgot-password] recovery email failed:', result.error);
-        }
-      }
     }
 
     return NextResponse.json({ success: true, channel: 'email' });

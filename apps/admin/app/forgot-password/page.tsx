@@ -11,13 +11,14 @@ interface ForgotResponse {
   error?: string;
   channel?: 'phone' | 'email';
   phone_hint?: string | null;
+  email_sent?: boolean;
 }
 
 /**
  * Admin password reset.
  *
- * Admins with a mobile on file get a WhatsApp/SMS code they redeem here;
- * everyone else gets a Supabase recovery email that lands on /set-password.
+ * Every active admin gets a recovery email that lands on /set-password. Admins
+ * with a mobile on file also get a WhatsApp/SMS code they can redeem here.
  */
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function ForgotPasswordPage() {
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [phoneHint, setPhoneHint] = useState<string | null>(null);
+  const [emailAlso, setEmailAlso] = useState(false);
   const [otp, setOtp] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -52,6 +54,7 @@ export default function ForgotPasswordPage() {
 
       if (data.channel === 'phone') {
         setPhoneHint(data.phone_hint ?? null);
+        setEmailAlso(!!data.email_sent);
         setStep('otp');
       } else {
         setStep('email-sent');
@@ -135,8 +138,8 @@ export default function ForgotPasswordPage() {
               account, we have emailed a password reset link. It expires in one hour.
             </p>
             <p className="text-xs text-gray-500">
-              No email after a few minutes? Check spam, or ask a platform admin to add a mobile
-              number to your account so we can text you a code instead.
+              No email after a few minutes? Check your spam folder, or ask a platform admin to
+              reset your password for you.
             </p>
             <Link href="/login" className="block text-sm text-teal-600 font-semibold hover:text-teal-700">
               Back to sign in
@@ -183,6 +186,13 @@ export default function ForgotPasswordPage() {
             onSubmit={submitReset}
             className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4"
           >
+            {emailAlso && (
+              <div className="bg-teal-50 text-teal-800 text-xs px-4 py-2.5 rounded-lg">
+                We also emailed a reset link to <span className="font-semibold">{email.trim()}</span>.
+                If the code doesn&apos;t arrive, use the link instead.
+              </div>
+            )}
+
             {error && (
               <div className="bg-red-50 text-red-700 text-sm px-4 py-2.5 rounded-lg">{error}</div>
             )}
