@@ -58,6 +58,7 @@ const T = {
   refresh:       { ar: 'تحديث', en: 'Refresh' },
   callNext:      { ar: 'نداء المريض التالي', en: 'Call next patient' },
   addWalkIn:     { ar: 'إضافة مريض بدون حجز', en: 'Add walk-in' },
+  screen:        { ar: 'شاشة الانتظار', en: 'Waiting-room screen' },
   inRoom:        { ar: 'داخل الكشف الآن', en: 'In the room now' },
   noneInRoom:    { ar: 'مفيش مريض داخل الكشف دلوقتي', en: 'No patient in the room right now' },
   openExam:      { ar: 'فتح الكشف', en: 'Open exam' },
@@ -201,6 +202,22 @@ export default function TodayBoard({ lang }: { lang: Lang }) {
       return false;
     } finally {
       setBusy(null);
+    }
+  }
+
+  /** Open the waiting-room TV screen (a signed public link) in a new tab. */
+  async function openScreen() {
+    // Open synchronously so popup blockers allow it, then point it at the link.
+    const win = window.open('', '_blank');
+    try {
+      const res = await fetch(`/api/doctor/display-link?locale=${lang}`);
+      const data = (await res.json()) as { path?: string; error?: string };
+      if (!res.ok || !data.path) throw new Error(data.error);
+      if (win) win.location.href = data.path;
+      else window.location.href = data.path;
+    } catch {
+      win?.close();
+      setError(t('failed'));
     }
   }
 
@@ -356,6 +373,13 @@ export default function TodayBoard({ lang }: { lang: Lang }) {
           </button>
           {data.has_clinic && (
             <>
+              <button
+                type="button"
+                onClick={openScreen}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                📺 {t('screen')}
+              </button>
               <button
                 type="button"
                 onClick={() => setWalkInOpen((v) => !v)}
