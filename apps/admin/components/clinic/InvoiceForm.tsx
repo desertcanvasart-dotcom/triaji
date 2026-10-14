@@ -148,24 +148,22 @@ export default function InvoiceForm({
       } = await supabase.auth.getSession();
       const token = session?.access_token;
 
+      // Field names follow POST /api/admin/invoices and clinic_invoices
+      // (migration 034); the route computes subtotal and patient share itself.
       const body = {
-        tenant_id: tenantId,
         queue_entry_id: queueEntryId || null,
-        patient_name: patientName,
+        patient_name_ar: patientName,
         doctor_id: doctorId || null,
         line_items: lineItems.map((item) => ({
           description: item.description,
-          quantity: item.quantity,
-          unit_price: item.price,
-          total: item.quantity * item.price,
+          qty: item.quantity,
+          unit_price_egp: item.price,
           price_source: item.chainPriceSource ?? 'manual',
         })),
-        subtotal,
-        discount,
-        insurance_coverage: insuranceCoverage,
-        patient_pays: patientPays,
+        discount_egp: discount,
+        insurance_covered: insuranceCoverage,
         payment_method: paymentMethod,
-        notes: notes || null,
+        notes_ar: notes || null,
         status,
       };
 

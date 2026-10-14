@@ -9,15 +9,16 @@ interface Doctor {
   name_ar: string;
 }
 
+/** A clinic_invoices row as GET /api/admin/invoices returns it (migration 034). */
 interface Invoice {
   id: string;
   invoice_number: string;
-  patient_name: string;
+  patient_name_ar: string;
   doctor_id: string | null;
-  subtotal: number;
-  patient_pays: number;
+  subtotal_egp: number | string;
+  patient_pays_egp: number | string;
   status: 'draft' | 'issued' | 'paid' | 'cancelled';
-  payment_method: string;
+  payment_method: string | null;
   created_at: string;
 }
 
@@ -100,7 +101,19 @@ export default function BillingView({
         headers,
       });
       if (res.ok) {
-        setSummary(await res.json());
+        // The route answers in camelCase; map it to this view's shape.
+        const d = (await res.json()) as {
+          totalRevenue?: number;
+          totalInvoices?: number;
+          byPaymentMethod?: { method: string; count: number; total: number }[];
+        };
+        setSummary({
+          total_revenue: Number(d.totalRevenue ?? 0),
+          total_invoices: Number(d.totalInvoices ?? 0),
+          by_payment_method: Object.fromEntries(
+            (d.byPaymentMethod ?? []).map((m) => [m.method, { count: m.count, amount: Number(m.total) }])
+          ),
+        });
       }
     } catch {
       // Silently fail
@@ -208,11 +221,11 @@ export default function BillingView({
                       <td className="px-4 py-3 font-mono text-xs" dir="ltr">
                         {inv.invoice_number}
                       </td>
-                      <td className="px-4 py-3">{inv.patient_name}</td>
+                      <td className="px-4 py-3">{inv.patient_name_ar}</td>
                       <td className="px-4 py-3">{getDoctorName(inv.doctor_id)}</td>
-                      <td className="px-4 py-3">{inv.subtotal.toLocaleString('ar-EG')} ج.م</td>
+                      <td className="px-4 py-3">{Number(inv.subtotal_egp).toLocaleString('ar-EG')} ج.م</td>
                       <td className="px-4 py-3 font-medium">
-                        {inv.patient_pays.toLocaleString('ar-EG')} ج.م
+                        {Number(inv.patient_pays_egp).toLocaleString('ar-EG')} ج.م
                       </td>
                       <td className="px-4 py-3">
                         <span
@@ -222,18 +235,10 @@ export default function BillingView({
                         </span>
                       </td>
                       <td className="px-4 py-3 text-xs">
-                        {PAYMENT_LABELS[inv.payment_method] ?? inv.payment_method}
+                        {inv.payment_method ? (PAYMENT_LABELS[inv.payment_method] ?? inv.payment_method) : '-'}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
-                          <a
-                            href={`/api/admin/invoices/${inv.id}/pdf`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-teal-600 hover:text-teal-700 text-xs font-medium"
-                          >
-                            PDF
-                          </a>
                           {inv.status !== 'paid' && inv.status !== 'cancelled' && (
                             <button
                               type="button"
