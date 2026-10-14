@@ -146,9 +146,22 @@ export async function GET(request: NextRequest, context: RouteContext) {
       healthRecords = (records ?? []) as { id: string; record_type: string; title_ar: string; uploaded_at: string }[];
     }
 
+    // The web consultation page reads `profile` / `summary` / `images` /
+    // `hasConsent`; the original keys stay for any older client.
+    const profile = patientProfile
+      ? { ...patientProfile, chronic_conditions: patientProfile.chronic_conditions ?? [] }
+      : null;
+    const summaryOut = sessionSummary
+      ? { ...sessionSummary, symptoms_ar: sessionSummary.symptoms_ar ?? [] }
+      : null;
+
     return NextResponse.json({
       booking,
       patient,
+      profile,
+      summary: summaryOut,
+      images: triageImages.flatMap((m) => m.image_urls),
+      hasConsent: !!consent,
       patientProfile,
       sessionSummary,
       triageImages,
