@@ -2,7 +2,15 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { Lang } from '@triaji/shared/i18n';
+import Link from 'next/link';
 import { buildSlotDatetime, formatSlotClock } from '@/lib/slots';
+
+interface TimeOffBlock {
+  id: string;
+  starts_at: string;
+  ends_at: string;
+  reason: string | null;
+}
 
 interface Slot {
   id: string;
@@ -35,6 +43,10 @@ const T = {
   slotAdded:   { ar: 'تمت إضافة الموعد', en: 'Slot added' },
   slotDeleted: { ar: 'تم حذف الموعد', en: 'Slot removed' },
   failed:      { ar: 'حصل خطأ', en: 'Something went wrong' },
+  dayOff:      { ar: 'إجازة', en: 'Day off' },
+  hidden:      { ar: 'مخفي (إجازة)', en: 'Hidden (day off)' },
+  offHint:     { ar: 'المواعيد دي مش ظاهرة للمرضى. شيل الإجازة من التقويم.', en: 'These slots are hidden from patients. Remove the day off from the calendar.' },
+  calendar:    { ar: 'التقويم', en: 'Calendar' },
 };
 
 const DAYS: Array<{ v: number; ar: string; en: string }> = [
@@ -56,6 +68,7 @@ const QUICK = [
 export default function DoctorAvailabilityManager({ lang }: { lang: Lang }) {
   const isRtl = lang === 'ar';
   const [slots, setSlots] = useState<Slot[]>([]);
+  const [timeOff, setTimeOff] = useState<TimeOffBlock[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
 
@@ -91,8 +104,10 @@ export default function DoctorAvailabilityManager({ lang }: { lang: Lang }) {
       const res = await fetch(`/api/doctor/availability?from=${from}&to=${to}`);
       const data = await res.json().catch(() => null);
       setSlots(res.ok && data ? (data.slots ?? []) : []);
+      setTimeOff(res.ok && data ? (data.time_off ?? []) : []);
     } catch {
       setSlots([]);
+      setTimeOff([]);
     } finally {
       setLoading(false);
     }
@@ -107,6 +122,21 @@ export default function DoctorAvailabilityManager({ lang }: { lang: Lang }) {
   for (const s of slots) {
     const key = new Date(s.slot_datetime).toISOString().split('T')[0] ?? '';
     (slotsByDate[key] ??= []).push(s);
+  }
+
+  /** Slots and day off share the floating clinic-local convention (lib/slots.ts). */
+  function slotHidden(s: Slot): boolean {
+    const start = new Date(s.slot_datetime).getTime();
+    const end = start + (s.duration_minutes ?? 30) * 60_000;
+    return timeOff.some((b) => start < new Date(b.ends_at).getTime() && new Date(b.starts_at).getTime() < end);
+  }
+
+  function dayOffFor(day: string): TimeOffBlock | null {
+    const start = new Date(`${day}T00:00:00.000Z`).getTime();
+    const end = start + 86_400_000;
+    return (
+      timeOff.find((b) => new Date(b.starts_at).getTime() <= start && new Date(b.ends_at).getTime() >= end) ?? null
+    );
   }
 
   async function addSlot(date: string, time: string) {
@@ -277,25 +307,55 @@ export default function DoctorAvailabilityManager({ lang }: { lang: Lang }) {
             const daySlots = (slotsByDate[day] ?? []).sort((a, b) => a.slot_datetime.localeCompare(b.slot_datetime));
             const date = new Date(day + 'T00:00:00');
             const label = date.toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-GB', { weekday: 'short', day: '2-digit', month: 'short' });
+            const off = dayOffFor(day);
             return (
               <div
                 key={day}
-                className={`border rounded-lg p-3 min-h-[110px] cursor-pointer ${selectedDate === day ? 'border-teal-500 bg-teal-50' : 'border-gray-200 bg-white'}`}
+                className={`border rounded-lg p-3 min-h-[110px] cursor-pointer ${
+                  selectedDate === day ? 'border-teal-500 bg-teal-50' : off ? 'border-gray-200 bg-gray-100' : 'border-gray-200 bg-white'
+                }`}
                 onClick={() => setSelectedDate(day)}
               >
-                <div className="text-xs font-medium text-gray-500 mb-2">{label}</div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-gray-500">{label}</span>
+                  {off && (
+                    <span className="text-[11px] font-semibold text-gray-600 bg-white border border-gray-300 rounded-full px-2 py-0.5">
+                      {T.dayOff[lang]}
+                    </span>
+                  )}
+                </div>
+                {off && daySlots.some((s) => !s.is_booked) && (
+                  <p className="text-[11px] text-gray-500 mb-2">
+                    {T.offHint[lang]}{' '}
+                    <Link
+                      href={`/${lang}/doctor/calendar`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-teal-700 font-medium hover:underline"
+                    >
+                      {T.calendar[lang]}
+                    </Link>
+                  </p>
+                )}
                 {daySlots.length === 0 ? (
                   <p className="text-xs text-gray-300">{T.noSlots[lang]}</p>
                 ) : (
                   <div className="space-y-1">
-                    {daySlots.map((s) => (
+                    {daySlots.map((s) => {
+                      const hidden = !s.is_booked && slotHidden(s);
+                      return (
                       <div
                         key={s.id}
-                        className={`flex items-center justify-between px-2 py-1 rounded text-xs ${s.is_booked ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}
+                        className={`flex items-center justify-between px-2 py-1 rounded text-xs ${
+                          s.is_booked ? 'bg-red-50 text-red-700' : hidden ? 'bg-gray-200 text-gray-500' : 'bg-green-50 text-green-700'
+                        }`}
                       >
-                        <span>{formatSlotClock(s.slot_datetime, lang === 'ar' ? 'ar-EG' : 'en-US')}</span>
+                        <span className={hidden ? 'line-through' : ''}>
+                          {formatSlotClock(s.slot_datetime, lang === 'ar' ? 'ar-EG' : 'en-US')}
+                        </span>
                         <div className="flex items-center gap-1">
-                          <span>{s.is_booked ? T.booked[lang] : T.open[lang]}</span>
+                          <span>
+                            {s.is_booked ? T.booked[lang] : hidden ? T.hidden[lang] : T.open[lang]}
+                          </span>
                           {!s.is_booked && (
                             <button
                               onClick={(e) => { e.stopPropagation(); handleDelete(s.id); }}
@@ -307,7 +367,8 @@ export default function DoctorAvailabilityManager({ lang }: { lang: Lang }) {
                           )}
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>

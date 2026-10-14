@@ -32,7 +32,12 @@ export async function GET(request: NextRequest) {
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  return NextResponse.json({ slots: data ?? [] });
+  // Days off in the same window, so the manager can show which open slots are
+  // hidden from patients.
+  const timeOff =
+    from && to ? await fetchTimeOff(supabase, account.doctor_id, from, to) : [];
+
+  return NextResponse.json({ slots: data ?? [], time_off: timeOff });
 }
 
 /** POST /api/doctor/availability — add one open slot for the signed-in doctor. */
