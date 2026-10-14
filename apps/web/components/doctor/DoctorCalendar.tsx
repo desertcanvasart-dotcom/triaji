@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { Lang } from '@triaji/shared/i18n';
+import { useDoctorView } from './DoctorViewContext';
 
 type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no_show' | 'payment_pending';
 
@@ -129,7 +130,9 @@ export default function DoctorCalendar({ lang }: { lang: Lang }) {
 
   const [month, setMonth] = useState(today.slice(0, 7));
   const [days, setDays] = useState<CalendarDay[]>([]);
-  const [viewerRole, setViewerRole] = useState<'doctor' | 'assistant'>('doctor');
+  const [apiRole, setViewerRole] = useState<'doctor' | 'assistant'>('doctor');
+  const view = useDoctorView();
+  const viewerRole = view?.role === 'assistant' ? 'assistant' : apiRole;
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [selected, setSelected] = useState<string | null>(today);

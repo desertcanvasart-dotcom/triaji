@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { Lang } from '@triaji/shared/i18n';
 import { formatSlotClock } from '@/lib/slots';
+import { useDoctorView } from './DoctorViewContext';
 
 type RowState = 'expected' | 'waiting' | 'called' | 'completed' | 'no_show' | 'cancelled' | 'left';
 
@@ -155,6 +156,7 @@ function formatDay(date: string, lang: Lang): string {
 export default function TodayBoard({ lang }: { lang: Lang }) {
   const isRtl = lang === 'ar';
   const t = (k: keyof typeof T) => T[k][lang];
+  const view = useDoctorView();
 
   const [data, setData] = useState<TodayData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -284,7 +286,7 @@ export default function TodayBoard({ lang }: { lang: Lang }) {
   const hasWaiting = data.stats.waiting > 0;
   const hasClinic = data.has_clinic;
   // Assistants run the front desk; the exam itself is the doctor's.
-  const canExam = data.viewer_role !== 'assistant';
+  const canExam = (view?.role ?? data.viewer_role) !== 'assistant';
   const consultHref = (bookingId: string) => `/${lang}/doctor/consultation/${bookingId}`;
 
   function renderActions(row: Row) {
